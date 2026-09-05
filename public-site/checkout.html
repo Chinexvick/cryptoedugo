@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout — CrypEduGo</title>
+<link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="assets/img/favicon-64.png">
+<link rel="apple-touch-icon" href="assets/img/favicon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0e0e10">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CrypEduGo">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap">
+    <a href="index.html" class="brand">
+      <span class="brand-mark"><img src="assets/img/logo-icon.png" alt="CrypEduGo logo"></span>
+      <span>CrypEduGo</span>
+    </a>
+    <div style="flex:1;"></div>
+    <div class="nav-actions">
+      <a href="account-cart.html" class="btn btn-ghost btn-sm">← Back to cart</a>
+    </div>
+  </div>
+</nav>
+
+<section class="section on-white" style="padding-top:44px;">
+  <div class="wrap">
+    <div class="checkout-steps">
+      <div class="checkout-step done"><span class="n"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span> Cart</div>
+      <div class="checkout-divider"></div>
+      <div class="checkout-step active" id="stepPayment"><span class="n">2</span> Payment</div>
+      <div class="checkout-divider"></div>
+      <div class="checkout-step" id="stepConfirm"><span class="n">3</span> Confirmation</div>
+    </div>
+
+    <div class="checkout-shell" id="checkoutView">
+      <div>
+        <div class="checkout-panel">
+          <h3 style="font-size:16px;margin-bottom:16px;">Payment</h3>
+          <div class="pay-method selected">
+            <div class="radio"></div>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+            <div>
+              <b style="font-size:14.5px;">Card, bank transfer, USSD or mobile money</b>
+              <div style="font-size:12.5px;color:var(--n700);">Choose your preferred method on the secure payment page</div>
+            </div>
+          </div>
+          <p style="font-size:13px;color:var(--n700);margin-top:14px;">
+            When you continue, you'll be taken to Flutterwave's secure payment page to complete your purchase.
+            Your card details are entered there and never touch our servers. You'll be brought straight back here afterwards.
+          </p>
+        </div>
+      </div>
+
+      <aside class="order-summary">
+        <h3>Order summary</h3>
+        <div id="orderItemsList"><p style="color:var(--n700);font-size:13.5px;">Loading your cart…</p></div>
+
+        <div class="coupon-row">
+          <input type="text" placeholder="Coupon code" id="couponInput">
+          <button class="btn btn-sm btn-outline-dark" id="applyCoupon">Apply</button>
+        </div>
+        <div id="couponMsg" style="display:none;font-size:12.5px;margin:-8px 0 8px;"></div>
+
+        <div class="order-total-row"><span>Subtotal</span><span id="subtotalLabel">$0</span></div>
+        <div class="order-total-row" id="discountRow" style="display:none;color:#0f9d63;"><span>Discount</span><span id="discountLabel">−$0</span></div>
+        <div class="order-total-row grand"><span>Total due</span><span id="grandTotal">$0</span></div>
+
+        <div id="checkoutError" style="display:none;background:#fdeaea;color:#b3261e;border-radius:8px;padding:10px 14px;font-size:13px;margin:12px 0 0;"></div>
+
+        <button class="btn btn-primary btn-block" style="margin-top:16px;" id="payButton">Pay &amp; enroll</button>
+        <p style="font-size:11.5px;color:var(--n700);text-align:center;margin-top:12px;">Secured checkout · 14-day refund guarantee</p>
+      </aside>
+    </div>
+
+  </div>
+</section>
+
+<style>@keyframes spin{to{transform:rotate(360deg);}}</style>
+
+<script src="assets/js/main.js"></script>
+<script type="module">
+  import { supabase, requireAuth, formatPrice, escapeHtml, getCart, clearCart } from './assets/js/supabase-client.js';
+
+  let session = null;
+  let cartCourses = [];
+  let appliedCoupon = null;
+
+  function renderSummary() {
+    const list = document.getElementById('orderItemsList');
+    if (cartCourses.length === 0) {
+      list.innerHTML = '<p style="color:var(--n700);font-size:13.5px;">Your cart is empty. <a href="courses.html">Browse courses</a></p>';
+      document.getElementById('payButton').disabled = true;
+    } else {
+      list.innerHTML = cartCourses.map(c => `
+        <div class="order-item">
+          <img src="${escapeHtml(c.thumbnail_url || 'assets/img/course-blockchain-new.jpg')}" alt="">
+          <div><div class="t">${escapeHtml(c.title)}</div><div class="p">${formatPrice(c.price_cents, c.currency)}</div></div>
+        </div>`).join('');
+    }
+
+    const subtotal = cartCourses.reduce((sum, c) => sum + c.price_cents, 0);
+    document.getElementById('subtotalLabel').textContent = formatPrice(subtotal);
+
+    let discount = 0;
+    if (appliedCoupon) {
+      discount = appliedCoupon.discount_type === 'percentage'
+        ? Math.round(subtotal * appliedCoupon.amount / 100)
+        : Math.min(subtotal, Math.round(appliedCoupon.amount * 100));
+      document.getElementById('discountRow').style.display = 'flex';
+      document.getElementById('discountLabel').textContent = '−' + formatPrice(discount);
+    } else {
+      document.getElementById('discountRow').style.display = 'none';
+    }
+
+    document.getElementById('grandTotal').textContent = formatPrice(Math.max(subtotal - discount, 0));
+  }
+
+  async function loadCart() {
+    const ids = getCart();
+    if (ids.length === 0) { renderSummary(); return; }
+    const { data: courses } = await supabase
+      .from('courses')
+      .select('id, title, price_cents, currency, thumbnail_url, is_purchasable')
+      .in('id', ids);
+
+    // Silently drop anything that isn't (or is no longer) purchasable —
+    // create_order() would reject it anyway; this just keeps the cart honest.
+    cartCourses = (courses || []).filter(c => c.is_purchasable);
+    renderSummary();
+  }
+
+  document.getElementById('applyCoupon').addEventListener('click', async () => {
+    const code = document.getElementById('couponInput').value.trim();
+    const msg = document.getElementById('couponMsg');
+    if (!code) return;
+
+    const { data, error } = await supabase.rpc('validate_coupon', { p_code: code });
+    const result = Array.isArray(data) ? data[0] : data;
+
+    if (error || !result || !result.valid) {
+      msg.textContent = result?.message || 'Could not validate that code.';
+      msg.style.color = '#b3261e';
+      msg.style.display = 'block';
+      appliedCoupon = null;
+      renderSummary();
+      return;
+    }
+
+    appliedCoupon = { code, discount_type: result.discount_type, amount: result.amount };
+    msg.textContent = `Coupon "${code}" applied — ${result.discount_type === 'percentage' ? result.amount + '% off' : formatPrice(result.amount * 100) + ' off'}`;
+    msg.style.color = '#0f9d63';
+    msg.style.display = 'block';
+    renderSummary();
+  });
+
+  document.getElementById('payButton').addEventListener('click', async () => {
+    const errorBox = document.getElementById('checkoutError');
+    errorBox.style.display = 'none';
+    const btn = document.getElementById('payButton');
+
+    if (cartCourses.length === 0) {
+      errorBox.textContent = 'Your cart is empty.';
+      errorBox.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Creating order…';
+
+    try {
+      const { data: orderId, error: orderErr } = await supabase.rpc('create_order', {
+        p_course_ids: cartCourses.map(c => c.id),
+        p_coupon_code: appliedCoupon?.code ?? null,
+      });
+      if (orderErr) throw new Error(orderErr.message);
+
+      btn.textContent = 'Opening secure payment…';
+
+      // Where Flutterwave should send the customer back to after paying.
+      const returnUrl = window.location.origin +
+        window.location.pathname.replace('checkout.html', 'order-confirmation.html') +
+        '?order=' + orderId;
+
+      const { data: { session: freshSession } } = await supabase.auth.getSession();
+      const resp = await fetch('https://rbncpakigxzbstefisgd.supabase.co/functions/v1/flutterwave-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${freshSession.access_token}`,
+        },
+        body: JSON.stringify({ order_id: orderId, return_url: returnUrl }),
+      });
+      const payResult = await resp.json();
+
+      if (!resp.ok || !payResult.checkout_url) {
+        throw new Error(payResult.error || 'Could not start payment');
+      }
+
+      // Cart is cleared here; the order already exists server-side and the
+      // webhook grants access once payment actually completes.
+      clearCart();
+      window.location.href = payResult.checkout_url;
+    } catch (e) {
+      errorBox.textContent = e.message;
+      errorBox.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Pay & enroll';
+    }
+  });
+
+  (async () => {
+    session = await requireAuth();
+    if (!session) return;
+    await loadCart();
+  })();
+</script>
+</body>
+</html>

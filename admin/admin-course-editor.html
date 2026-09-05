@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit Course — CrypEduGo Admin</title>
+<link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="assets/img/favicon-64.png">
+<link rel="apple-touch-icon" href="assets/img/favicon-180.png">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="admin-shell">
+<div class="admin-scrim"></div>
+<aside class="admin-side">
+  <div class="admin-brand">
+    <span class="brand-mark"><img src="assets/img/logo-icon.png" alt="CrypEduGo logo"></span>
+    CrypEduGo Admin
+  </div>
+  <nav class="admin-nav">
+      <a href="admin-dashboard.html" class="admin-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</a>
+      <a href="admin-courses.html" class="admin-nav-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>Courses</a>
+      <a href="admin-students.html" class="admin-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Students</a>
+      <a href="admin-orders.html" class="admin-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Orders &amp; Revenue</a>
+      <a href="admin-coupons.html" class="admin-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41L13.42 20.6a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>Coupons</a>
+      <a href="admin-bundles.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4z"/></svg>Bundles</a>
+      <a href="admin-waitlist.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>Waitlist</a>
+      <a href="admin-certificates.html" class="admin-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.5 13.5L17 22l-5-3-5 3 1.5-8.5"/></svg>Certificates</a>
+      <a href="admin-community.html" class="admin-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Community</a>
+      <a href="admin-messages.html" class="admin-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 6l-10 7L2 6"/><path d="M2 6h20v12H2z"/></svg>Messages</a>
+      <a href="admin-reviews.html" class="admin-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg>Reviews</a>
+      <a href="admin-settings.html" class="admin-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</a>
+  </nav>
+  <div class="admin-side-foot">
+    <div class="admin-avatar" id="adminAvatarLetter">A</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:14px;font-weight:700;" id="adminNameLabel">Admin</div>
+      <div style="font-size:12px;color:var(--n50);" id="adminEmailLabel">—</div>
+    </div>
+    <a href="index.html" class="icon-btn" aria-label="Log out" data-signout><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></a>
+  </div>
+</aside>
+  <main class="admin-main">
+<div class="admin-topbar">
+  <div style="display:flex;align-items:center;gap:14px;">
+    <button class="hamburger" id="adminHam" aria-label="Open menu" style="display:none;"><span></span><span></span><span></span></button>
+    <div>
+      <h1 id="editorTitle">New course</h1>
+      <p id="editorSubtitle">Fill in the details below, then save.</p>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;">
+    <button class="btn btn-ghost btn-sm" id="saveDraftBtn">Save draft</button>
+    <button class="btn btn-primary btn-sm" id="publishBtn">Publish</button>
+  </div>
+</div>
+
+<div id="saveMsg" style="display:none;margin-bottom:16px;padding:10px 14px;border-radius:8px;font-size:13.5px;"></div>
+
+<div class="editor-steps">
+  <button class="active" data-editor-tab="details">1. Details</button>
+  <button data-editor-tab="media">2. Media</button>
+  <button data-editor-tab="curriculum">3. Curriculum</button>
+  <button data-editor-tab="pricing">4. Pricing</button>
+</div>
+
+<div class="editor-panel active" id="etab-details">
+  <div class="panel">
+    <div class="form-grid">
+      <div class="form-field full"><label>Course title</label><input type="text" id="fTitle" placeholder="e.g. Solidity &amp; Smart Contracts"></div>
+      <div class="form-field"><label>Category</label><input type="text" id="fCategory" placeholder="e.g. Smart Contracts"></div>
+      <div class="form-field"><label>Level</label><select id="fLevel"><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></div>
+      <div class="form-field full"><label>Short description (subtitle)</label><input type="text" id="fSubtitle" placeholder="One line shown on course cards"></div>
+      <div class="form-field full"><label>Short description (card blurb)</label><textarea id="fDescription" style="min-height:70px;" placeholder="One or two lines shown on course cards"></textarea></div>
+      <div class="form-field full"><label>Full course description</label><textarea id="fLongDescription" style="min-height:150px;" placeholder="The main description shown on the course page. One paragraph per line."></textarea></div>
+      <div class="form-field full"><label>What students will learn</label><textarea id="fLearningOutcomes" style="min-height:130px;" placeholder="One point per line — each becomes a ticked bullet on the course page."></textarea></div>
+      <div class="form-field full"><label>Who this course is for</label><textarea id="fWhoIsFor" style="min-height:100px;" placeholder="One point per line."></textarea></div>
+      <div class="form-field full"><label>Requirements</label><textarea id="fRequirements" style="min-height:80px;" placeholder="What students need before starting. One paragraph per line."></textarea></div>
+    </div>
+  </div>
+</div>
+
+<div class="editor-panel" id="etab-media">
+  <div class="panel">
+    <div class="form-grid">
+      <div class="form-field full">
+        <label>Thumbnail image</label>
+        <div class="upload-drop" id="thumbDropZone" style="cursor:pointer;">
+          <img id="thumbPreview" style="display:none;max-width:100%;max-height:160px;border-radius:8px;margin-bottom:10px;">
+          <svg id="thumbIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          <b id="thumbLabel">Drop a thumbnail, or click to browse</b>
+          <span>JPG or PNG — 1280×720 recommended</span>
+        </div>
+        <input type="file" id="thumbFileInput" accept="image/png,image/jpeg" style="display:none;">
+      </div>
+      <div class="form-field full">
+        <label>Free preview video</label>
+        <div class="upload-drop" id="previewDropZone" style="cursor:pointer;">
+          <video id="previewVideoPlayer" controls style="display:none;max-width:100%;max-height:200px;border-radius:8px;margin-bottom:10px;background:#000;"></video>
+          <svg id="previewIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          <b id="previewLabel">Drop a preview video, or click to browse</b>
+          <span>MP4 recommended — this is the free teaser shown before purchase</span>
+        </div>
+        <input type="file" id="previewFileInput" accept="video/mp4,video/webm,video/quicktime" style="display:none;">
+      </div>
+      <div class="form-field">
+        <label>Cut preview after (seconds)</label>
+        <input type="number" id="fPreviewSeconds" min="0" step="1" placeholder="e.g. 30 — leave blank to play in full">
+        <p style="font-size:12px;color:var(--n50);margin-top:6px;">Playback stops at this point so only a teaser is shown.</p>
+      </div>
+      <div class="form-field">
+        <label>Or paste a preview video URL</label>
+        <input type="text" id="fPreviewVideoUrl" placeholder="https://...">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="editor-panel" id="etab-curriculum">
+  <div class="panel" id="curriculumPanel">
+    <div class="panel-head"><div><h3>Curriculum builder</h3><p id="curriculumHint">Save the course details first, then build your curriculum here.</p></div></div>
+    <div class="curriculum-builder" id="curriculumBuilder"></div>
+  </div>
+</div>
+
+<div class="editor-panel" id="etab-pricing">
+  <div class="panel">
+    <div class="form-grid">
+      <div class="form-field"><label>Price ($)</label><input type="number" id="fPrice" value="0" min="0" step="1"></div>
+      <div class="form-field"><label>Compare-at price ($, optional)</label><input type="number" id="fCompareAt" min="0" step="1"></div>
+      <div class="form-field"><label>Certificate on completion</label><select id="fCertificate"><option value="true">Yes</option><option value="false">No</option></select></div>
+      <div class="form-field"><label>Status</label><select id="fStatus"><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select></div>
+      <div class="form-field"><label>Available for purchase?</label><select id="fPurchasable"><option value="false">No — show "Coming soon"</option><option value="true">Yes — students can buy it</option></select></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><div><h3>Local currency prices</h3><p>Used for Nigeria/Ghana bank-transfer payments — set manually, not auto-converted</p></div></div>
+    <div class="form-grid">
+      <div class="form-field"><label>Price in NGN (₦)</label><input type="number" id="fPriceNgn" min="0" step="1" placeholder="e.g. 15500"></div>
+      <div class="form-field"><label>Price in GHS (₵)</label><input type="number" id="fPriceGhs" min="0" step="1" placeholder="e.g. 150"></div>
+    </div>
+  </div>
+</div>
+
+  </main>
+</div>
+
+<script src="assets/js/admin-config.js"></script>
+<script src="assets/js/main.js"></script>
+<script>
+  var adminHam = document.getElementById('adminHam');
+  var adminSide = document.querySelector('.admin-side');
+  var adminScrim = document.querySelector('.admin-scrim');
+  if (adminHam) {
+    adminHam.addEventListener('click', function(){ adminSide.classList.add('open'); adminScrim.classList.add('open'); });
+    adminScrim.addEventListener('click', function(){ adminSide.classList.remove('open'); adminScrim.classList.remove('open'); });
+  }
+  document.querySelectorAll('[data-editor-tab]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-editor-tab]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.editor-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('etab-' + btn.getAttribute('data-editor-tab')).classList.add('active');
+    });
+  });
+</script>
+
+<script type="module">
+  import { supabase, requireAdmin, escapeHtml } from './assets/js/supabase-client.js';
+
+  const params = new URLSearchParams(window.location.search);
+  let courseId = params.get('id'); // null = create mode
+  let pendingThumbFile = null;
+  let pendingPreviewFile = null;
+
+  const saveMsg = document.getElementById('saveMsg');
+  function showMsg(text, isError) {
+    saveMsg.textContent = text;
+    saveMsg.style.display = 'block';
+    saveMsg.style.background = isError ? 'rgba(247,107,107,.14)' : 'rgba(52,224,161,.14)';
+    saveMsg.style.color = isError ? 'var(--danger)' : '#0f9d63';
+    setTimeout(() => { saveMsg.style.display = 'none'; }, 4000);
+  }
+
+  function slugify(title) {
+    return title.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  }
+
+  function readFields() {
+    return {
+      title: document.getElementById('fTitle').value.trim(),
+      category: document.getElementById('fCategory').value.trim() || 'Blockchain',
+      level: document.getElementById('fLevel').value,
+      subtitle: document.getElementById('fSubtitle').value.trim(),
+      description: document.getElementById('fDescription').value.trim(),
+      long_description: document.getElementById('fLongDescription').value.trim(),
+      learning_outcomes: document.getElementById('fLearningOutcomes').value.trim(),
+      who_is_for: document.getElementById('fWhoIsFor').value.trim(),
+      requirements: document.getElementById('fRequirements').value.trim(),
+      preview_video_url: document.getElementById('fPreviewVideoUrl').value.trim() || null,
+      preview_video_seconds: document.getElementById('fPreviewSeconds').value
+        ? parseInt(document.getElementById('fPreviewSeconds').value, 10) : 0,
+      price_cents: Math.round(parseFloat(document.getElementById('fPrice').value || '0') * 100),
+      compare_at_price_cents: document.getElementById('fCompareAt').value
+        ? Math.round(parseFloat(document.getElementById('fCompareAt').value) * 100) : null,
+      certificate_on_completion: document.getElementById('fCertificate').value === 'true',
+      is_purchasable: document.getElementById('fPurchasable').value === 'true',
+      price_ngn_cents: document.getElementById('fPriceNgn').value
+        ? Math.round(parseFloat(document.getElementById('fPriceNgn').value) * 100) : null,
+      price_ghs_cents: document.getElementById('fPriceGhs').value
+        ? Math.round(parseFloat(document.getElementById('fPriceGhs').value) * 100) : null,
+    };
+  }
+
+  function populateFields(c) {
+    document.getElementById('fTitle').value = c.title || '';
+    document.getElementById('fCategory').value = c.category || '';
+    document.getElementById('fLevel').value = c.level || 'Beginner';
+    document.getElementById('fSubtitle').value = c.subtitle || '';
+    document.getElementById('fDescription').value = c.description || '';
+    document.getElementById('fLongDescription').value = c.long_description || '';
+    document.getElementById('fLearningOutcomes').value = c.learning_outcomes || '';
+    document.getElementById('fWhoIsFor').value = c.who_is_for || '';
+    document.getElementById('fRequirements').value = c.requirements || '';
+    document.getElementById('fPreviewVideoUrl').value = c.preview_video_url || '';
+    document.getElementById('fPreviewSeconds').value = c.preview_video_seconds || '';
+    if (c.preview_video_url) {
+      const pv = document.getElementById('previewVideoPlayer');
+      pv.src = c.preview_video_url; pv.style.display = 'block';
+      document.getElementById('previewIcon').style.display = 'none';
+      document.getElementById('previewLabel').textContent = 'Click to replace preview video';
+    }
+    document.getElementById('fPrice').value = (c.price_cents / 100).toFixed(0);
+    document.getElementById('fCompareAt').value = c.compare_at_price_cents ? (c.compare_at_price_cents / 100).toFixed(0) : '';
+    document.getElementById('fCertificate').value = c.certificate_on_completion ? 'true' : 'false';
+    document.getElementById('fPurchasable').value = c.is_purchasable ? 'true' : 'false';
+    document.getElementById('fPriceNgn').value = c.price_ngn_cents ? (c.price_ngn_cents / 100).toFixed(0) : '';
+    document.getElementById('fPriceGhs').value = c.price_ghs_cents ? (c.price_ghs_cents / 100).toFixed(0) : '';
+    document.getElementById('fStatus').value = c.status || 'draft';
+    if (c.thumbnail_url) {
+      document.getElementById('thumbPreview').src = c.thumbnail_url;
+      document.getElementById('thumbPreview').style.display = 'block';
+      document.getElementById('thumbIcon').style.display = 'none';
+      document.getElementById('thumbLabel').textContent = 'Click to replace thumbnail';
+    }
+    document.getElementById('editorTitle').textContent = 'Edit course';
+    document.getElementById('editorSubtitle').textContent = c.title;
+  }
+
+  async function uploadPreviewIfPending(id) {
+    if (!pendingPreviewFile) return null;
+    const ext = pendingPreviewFile.name.split('.').pop();
+    const path = `${id}/preview-${Date.now()}.${ext}`;
+    // Preview videos are deliberately PUBLIC — they're the free teaser shown
+    // before purchase. Full lesson videos stay in the private bucket.
+    const { error: upErr } = await supabase.storage
+      .from('course-thumbnails').upload(path, pendingPreviewFile, { upsert: true });
+    if (upErr) { showMsg('Preview video upload failed: ' + upErr.message, true); return null; }
+    const { data } = supabase.storage.from('course-thumbnails').getPublicUrl(path);
+    return data.publicUrl;
+  }
+
+  async function uploadThumbnailIfPending(id) {
+    if (!pendingThumbFile) return null;
+    const ext = pendingThumbFile.name.split('.').pop();
+    const path = `${id}/thumbnail-${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage.from('course-thumbnails').upload(path, pendingThumbFile, { upsert: true });
+    if (upErr) {
+      showMsg('Thumbnail upload failed: ' + upErr.message, true);
+      return null;
+    }
+    const { data } = supabase.storage.from('course-thumbnails').getPublicUrl(path);
+    return data.publicUrl;
+  }
+
+  async function saveCourse(publish) {
+    const fields = readFields();
+    if (!fields.title) {
+      showMsg('Course title is required.', true);
+      document.querySelector('[data-editor-tab="details"]').click();
+      return;
+    }
+
+    fields.status = publish ? 'published' : (document.getElementById('fStatus').value || 'draft');
+
+    const saveBtns = [document.getElementById('saveDraftBtn'), document.getElementById('publishBtn')];
+    saveBtns.forEach(b => b.disabled = true);
+
+    try {
+      if (!courseId) {
+        // Create mode — insert a new course row.
+        fields.slug = slugify(fields.title) + '-' + Math.random().toString(36).slice(2, 6);
+        const { data, error } = await supabase.from('courses').insert(fields).select('id').single();
+        if (error) { showMsg('Could not create course: ' + error.message, true); return; }
+        courseId = data.id;
+        const thumbUrl = await uploadThumbnailIfPending(courseId);
+        const prevUrl = await uploadPreviewIfPending(courseId);
+        const post = {};
+        if (thumbUrl) post.thumbnail_url = thumbUrl;
+        if (prevUrl) post.preview_video_url = prevUrl;
+        if (Object.keys(post).length) await supabase.from('courses').update(post).eq('id', courseId);
+        history.replaceState(null, '', 'admin-course-editor.html?id=' + courseId);
+        showMsg(publish ? 'Course created and published!' : 'Course created as draft.');
+        document.getElementById('editorTitle').textContent = 'Edit course';
+        document.getElementById('editorSubtitle').textContent = fields.title;
+        enableCurriculumTab();
+      } else {
+        const thumbUrl = await uploadThumbnailIfPending(courseId);
+        if (thumbUrl) fields.thumbnail_url = thumbUrl;
+        const prevUrl = await uploadPreviewIfPending(courseId);
+        if (prevUrl) fields.preview_video_url = prevUrl;
+        const { error } = await supabase.from('courses').update(fields).eq('id', courseId);
+        if (error) { showMsg('Could not save: ' + error.message, true); return; }
+        showMsg(publish ? 'Published!' : 'Saved.');
+      }
+      pendingThumbFile = null;
+    } finally {
+      saveBtns.forEach(b => b.disabled = false);
+    }
+  }
+
+  document.getElementById('saveDraftBtn').addEventListener('click', () => saveCourse(false));
+  document.getElementById('publishBtn').addEventListener('click', () => saveCourse(true));
+
+  // Thumbnail upload UI
+  const dropZone = document.getElementById('thumbDropZone');
+  const fileInput = document.getElementById('thumbFileInput');
+  dropZone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    pendingThumbFile = file;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      document.getElementById('thumbPreview').src = e.target.result;
+      document.getElementById('thumbPreview').style.display = 'block';
+      document.getElementById('thumbIcon').style.display = 'none';
+      document.getElementById('thumbLabel').textContent = file.name + ' — will upload on save';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  const previewZone = document.getElementById('previewDropZone');
+  const previewInput = document.getElementById('previewFileInput');
+  previewZone.addEventListener('click', () => previewInput.click());
+  previewInput.addEventListener('change', () => {
+    const file = previewInput.files[0];
+    if (!file) return;
+    pendingPreviewFile = file;
+    const pv = document.getElementById('previewVideoPlayer');
+    pv.src = URL.createObjectURL(file);
+    pv.style.display = 'block';
+    document.getElementById('previewIcon').style.display = 'none';
+    document.getElementById('previewLabel').textContent = file.name + ' — will upload on save';
+  });
+
+  // ---- Curriculum builder (writes directly to the database, no separate save step) ----
+  function enableCurriculumTab() {
+    document.getElementById('curriculumHint').textContent = 'Add modules, then add lessons with a duration to each. Changes save immediately.';
+    loadCurriculum();
+  }
+
+  function moduleHtml(mod) {
+    const lessonsHtml = (mod.course_lessons || []).sort((a, b) => a.position - b.position).map(l => `
+      <div class="builder-lesson" data-lesson-id="${l.id}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        <input type="text" value="${escapeHtml(l.title)}" data-lesson-title>
+        <input type="text" class="dur" value="${l.duration_minutes}m" data-lesson-duration style="width:60px;">
+        <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--n50);white-space:nowrap;"><input type="checkbox" data-lesson-preview ${l.is_preview ? 'checked' : ''}> Preview</label>
+        <button data-delete-lesson style="background:none;border:none;color:var(--n50);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+      </div>`).join('');
+
+    return `
+      <div class="builder-module" data-module-id="${mod.id}">
+        <div class="builder-module-head">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          <input type="text" value="${escapeHtml(mod.title)}" data-module-title>
+          <button data-delete-module style="background:none;border:none;color:var(--n50);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+        </div>
+        <div class="builder-lessons">
+          ${lessonsHtml}
+          <button class="add-lesson-btn" data-add-lesson><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add lesson</button>
+        </div>
+      </div>`;
+  }
+
+  async function loadCurriculum() {
+    const { data: modules, error } = await supabase
+      .from('course_modules')
+      .select('id, title, position, course_lessons(id, title, duration_minutes, position, is_preview)')
+      .eq('course_id', courseId)
+      .order('position');
+
+    if (error) { showMsg('Could not load curriculum: ' + error.message, true); return; }
+
+    const builder = document.getElementById('curriculumBuilder');
+    builder.innerHTML = (modules || []).map(moduleHtml).join('') +
+      '<button class="add-module-btn" id="addModuleBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add module</button>';
+
+    wireCurriculumEvents();
+  }
+
+  function wireCurriculumEvents() {
+    document.getElementById('addModuleBtn').onclick = async () => {
+      const count = document.querySelectorAll('.builder-module').length;
+      const { data, error } = await supabase.from('course_modules')
+        .insert({ course_id: courseId, title: 'New module', position: count })
+        .select('id').single();
+      if (error) { showMsg('Could not add module: ' + error.message, true); return; }
+      loadCurriculum();
+    };
+
+    document.querySelectorAll('.builder-module').forEach(modEl => {
+      const moduleId = modEl.getAttribute('data-module-id');
+
+      modEl.querySelector('[data-module-title]').addEventListener('change', async (e) => {
+        await supabase.from('course_modules').update({ title: e.target.value.trim() }).eq('id', moduleId);
+        showMsg('Module updated.');
+      });
+
+      modEl.querySelector('[data-delete-module]').addEventListener('click', async () => {
+        if (!confirm('Delete this module and all its lessons?')) return;
+        await supabase.from('course_modules').delete().eq('id', moduleId);
+        loadCurriculum();
+      });
+
+      modEl.querySelector('[data-add-lesson]').addEventListener('click', async () => {
+        const count = modEl.querySelectorAll('.builder-lesson').length;
+        const { error } = await supabase.from('course_lessons').insert({
+          module_id: moduleId, course_id: courseId, title: 'New lesson', duration_minutes: 10, position: count,
+        });
+        if (error) { showMsg('Could not add lesson: ' + error.message, true); return; }
+        loadCurriculum();
+      });
+
+      modEl.querySelectorAll('.builder-lesson').forEach(lessonEl => {
+        const lessonId = lessonEl.getAttribute('data-lesson-id');
+
+        lessonEl.querySelector('[data-lesson-title]').addEventListener('change', async (e) => {
+          await supabase.from('course_lessons').update({ title: e.target.value.trim() }).eq('id', lessonId);
+          showMsg('Lesson updated.');
+        });
+        lessonEl.querySelector('[data-lesson-duration]').addEventListener('change', async (e) => {
+          const mins = parseInt(e.target.value.replace(/\D/g, ''), 10) || 0;
+          await supabase.from('course_lessons').update({ duration_minutes: mins }).eq('id', lessonId);
+          showMsg('Lesson updated.');
+        });
+        lessonEl.querySelector('[data-lesson-preview]').addEventListener('change', async (e) => {
+          await supabase.from('course_lessons').update({ is_preview: e.target.checked }).eq('id', lessonId);
+        });
+        lessonEl.querySelector('[data-delete-lesson]').addEventListener('click', async () => {
+          await supabase.from('course_lessons').delete().eq('id', lessonId);
+          loadCurriculum();
+        });
+      });
+    });
+  }
+
+  // ---- Init ----
+  (async () => {
+    const admin = await requireAdmin();
+    if (!admin) return;
+
+    document.getElementById('adminNameLabel').textContent = admin.full_name || admin.username || 'Admin';
+    document.getElementById('adminEmailLabel').textContent = admin.email;
+    document.getElementById('adminAvatarLetter').textContent = (admin.full_name || admin.email || 'A').charAt(0).toUpperCase();
+
+    if (courseId) {
+      const { data: course, error } = await supabase.from('courses').select('*').eq('id', courseId).single();
+      if (error || !course) {
+        showMsg('Course not found.', true);
+        return;
+      }
+      populateFields(course);
+      enableCurriculumTab();
+    }
+  })();
+</script>
+</body>
+</html>

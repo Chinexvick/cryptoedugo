@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coupons — CrypEduGo Admin</title>
+<link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="assets/img/favicon-64.png">
+<link rel="apple-touch-icon" href="assets/img/favicon-180.png">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="admin-shell">
+<div class="admin-scrim"></div>
+<aside class="admin-side">
+  <div class="admin-brand">
+    <span class="brand-mark"><img src="assets/img/logo-icon.png" alt="CrypEduGo logo"></span>
+    CrypEduGo Admin
+  </div>
+  <nav class="admin-nav">
+      <a href="admin-dashboard.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</a>
+      <a href="admin-courses.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>Courses</a>
+      <a href="admin-students.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Students</a>
+      <a href="admin-orders.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Orders &amp; Revenue</a>
+      <a href="admin-coupons.html" class="admin-nav-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41L13.42 20.6a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>Coupons</a>
+      <a href="admin-bundles.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4z"/></svg>Bundles</a>
+      <a href="admin-waitlist.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>Waitlist</a>
+      <a href="admin-certificates.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.5 13.5L17 22l-5-3-5 3 1.5-8.5"/></svg>Certificates</a>
+      <a href="admin-community.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Community</a>
+      <a href="admin-messages.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 6l-10 7L2 6"/><path d="M2 6h20v12H2z"/></svg>Messages</a>
+      <a href="admin-reviews.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg>Reviews</a>
+      <a href="admin-settings.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</a>
+  </nav>
+  <div class="admin-side-foot">
+    <div class="admin-avatar">A</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:14px;font-weight:700;">Admin</div>
+      <div style="font-size:12px;color:var(--n50);">admin@edugo.com</div>
+    </div>
+    <a href="index.html" class="icon-btn" aria-label="Log out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></a>
+  </div>
+</aside>
+  <main class="admin-main">
+<div class="admin-topbar">
+  <div style="display:flex;align-items:center;gap:14px;">
+    <button class="hamburger" id="adminHam" aria-label="Open menu" style="display:none;"><span></span><span></span><span></span></button>
+    <div>
+      <h1>Coupons</h1>
+      <p>Create and manage discount codes for checkout.</p>
+    </div>
+  </div>
+  <a href="#" data-public-link="index.html" class="btn btn-ghost btn-sm">View live site ↗</a>
+</div>
+<div class="panel">
+  <div class="panel-head"><div><h3>Create a coupon</h3><p>Applies at checkout when a student enters the code</p></div></div>
+  <div class="form-grid">
+    <div class="form-field"><label>Code</label><input type="text" placeholder="e.g. LAUNCH25" id="couponCode" style="text-transform:uppercase;"></div>
+    <div class="form-field"><label>Discount type</label><select id="couponType"><option>Percentage</option><option>Fixed amount</option></select></div>
+    <div class="form-field"><label>Amount</label><input type="number" placeholder="25" id="couponAmount"></div>
+    <div class="form-field"><label>Applies to</label><select id="couponAppliesTo"><option>All courses</option><option>Bundles only</option></select></div>
+    <div class="form-field"><label>Usage limit</label><input type="number" placeholder="Leave blank for unlimited" id="couponLimit"></div>
+    <div class="form-field"><label>Expires (optional)</label><input type="date" id="couponExpires"></div>
+  </div>
+  <div class="form-actions"><button class="btn btn-primary" id="createCouponBtn">Create coupon</button></div>
+</div>
+
+<div class="panel">
+  <div class="panel-head"><div><h3>Active coupons</h3><p id="couponSummaryLabel">Loading…</p></div></div>
+  <table class="data-table">
+    <thead><tr><th>Code</th><th>Discount</th><th>Applies to</th><th>Uses</th><th>Expires</th><th>Status</th><th></th></tr></thead>
+    <tbody id="couponTableBody">
+      <tr><td colspan="7" style="color:var(--n50);text-align:center;padding:20px;">Loading…</td></tr>
+    </tbody>
+  </table>
+</div>
+
+  </main>
+</div>
+
+<script src="assets/js/admin-config.js"></script>
+<script src="assets/js/main.js"></script>
+<script>
+  var adminHam = document.getElementById('adminHam');
+  var adminSide = document.querySelector('.admin-side');
+  var adminScrim = document.querySelector('.admin-scrim');
+  if (adminHam) {
+    adminHam.addEventListener('click', function(){ adminSide.classList.add('open'); adminScrim.classList.add('open'); });
+    adminScrim.addEventListener('click', function(){ adminSide.classList.remove('open'); adminScrim.classList.remove('open'); });
+  }
+</script>
+
+<script type="module">
+  import { supabase, requireAdmin, escapeHtml } from './assets/js/supabase-client.js';
+
+  function fmtDiscount(c) {
+    return c.discount_type === 'percentage' ? `${c.amount}% off` : `€${c.amount} off`;
+  }
+  function fmtExpires(c) {
+    return c.expires_at ? new Date(c.expires_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'No expiry';
+  }
+  function isExpired(c) {
+    return c.expires_at && new Date(c.expires_at) < new Date();
+  }
+
+  function rowHtml(c) {
+    const expired = isExpired(c);
+    const active = c.is_active && !expired;
+    return `
+      <tr data-coupon-id="${c.id}">
+        <td><b>${escapeHtml(c.code)}</b></td>
+        <td>${fmtDiscount(c)}</td>
+        <td>${c.applies_to === 'all' ? 'All courses' : escapeHtml(c.applies_to)}</td>
+        <td>${c.times_used} / ${c.usage_limit ?? '—'}</td>
+        <td>${fmtExpires(c)}</td>
+        <td><span class="status-pill ${active ? 'published' : 'draft'}" ${!active ? 'style="background:rgba(247,107,107,.14);color:var(--danger);"' : ''}>${active ? 'Active' : (expired ? 'Expired' : 'Disabled')}</span></td>
+        <td><div class="row-actions">
+          <button aria-label="Toggle active" data-toggle-coupon="${c.id}" data-active="${c.is_active}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${c.is_active ? '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>' : '<polyline points="20 6 9 17 4 12"/>'}</svg></button>
+          <button aria-label="Delete" data-delete-coupon="${c.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+        </div></td>
+      </tr>`;
+  }
+
+  async function loadCoupons() {
+    const { data: coupons, error } = await supabase.from('coupons').select('*').order('created_at', { ascending: false });
+    const tbody = document.getElementById('couponTableBody');
+    if (error) {
+      tbody.innerHTML = '<tr><td colspan="7" style="color:var(--danger);text-align:center;padding:20px;">Failed to load coupons.</td></tr>';
+      return;
+    }
+    if (!coupons || coupons.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="color:var(--n50);text-align:center;padding:20px;">No coupons yet — create one above.</td></tr>';
+      document.getElementById('couponSummaryLabel').textContent = '0 coupons';
+      return;
+    }
+    tbody.innerHTML = coupons.map(rowHtml).join('');
+    const activeCount = coupons.filter(c => c.is_active && !isExpired(c)).length;
+    const expiredCount = coupons.filter(c => isExpired(c)).length;
+    document.getElementById('couponSummaryLabel').textContent = `${activeCount} active · ${expiredCount} expired`;
+
+    tbody.querySelectorAll('[data-delete-coupon]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-delete-coupon');
+        if (!confirm('Delete this coupon?')) return;
+        const { error: delErr } = await supabase.from('coupons').delete().eq('id', id);
+        if (delErr) { window.showToast(delErr.message); return; }
+        window.showToast('Coupon deleted');
+        loadCoupons();
+      });
+    });
+    tbody.querySelectorAll('[data-toggle-coupon]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-toggle-coupon');
+        const currentlyActive = btn.getAttribute('data-active') === 'true';
+        const { error: togErr } = await supabase.from('coupons').update({ is_active: !currentlyActive }).eq('id', id);
+        if (togErr) { window.showToast(togErr.message); return; }
+        window.showToast(currentlyActive ? 'Coupon disabled' : 'Coupon enabled');
+        loadCoupons();
+      });
+    });
+  }
+
+  document.getElementById('createCouponBtn').addEventListener('click', async () => {
+    const code = document.getElementById('couponCode').value.trim().toUpperCase();
+    if (!code) { window.showToast('Enter a coupon code first'); return; }
+
+    const typeSelect = document.getElementById('couponType').value;
+    const discount_type = typeSelect === 'Percentage' ? 'percentage' : 'fixed';
+    const amount = parseFloat(document.getElementById('couponAmount').value || '0');
+    const appliesToSelect = document.getElementById('couponAppliesTo').value;
+    const applies_to = appliesToSelect === 'All courses' ? 'all' : (appliesToSelect === 'Bundles only' ? 'bundles' : 'all');
+    const usage_limit = document.getElementById('couponLimit').value ? parseInt(document.getElementById('couponLimit').value, 10) : null;
+    const expiresRaw = document.getElementById('couponExpires').value.trim();
+    const expires_at = expiresRaw ? new Date(expiresRaw).toISOString() : null;
+
+    if (!amount || amount <= 0) { window.showToast('Enter a valid discount amount'); return; }
+
+    const { error } = await supabase.from('coupons').insert({ code, discount_type, amount, applies_to, usage_limit, expires_at });
+    if (error) {
+      window.showToast(error.message.includes('duplicate') ? 'That coupon code already exists' : error.message);
+      return;
+    }
+    window.showToast('Coupon ' + code + ' created');
+    document.getElementById('couponCode').value = '';
+    document.getElementById('couponAmount').value = '';
+    document.getElementById('couponLimit').value = '';
+    document.getElementById('couponExpires').value = '';
+    loadCoupons();
+  });
+
+  (async () => {
+    const admin = await requireAdmin();
+    if (!admin) return;
+    loadCoupons();
+  })();
+</script>
+
+</body>
+</html>

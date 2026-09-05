@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orders & Revenue — CrypEduGo Admin</title>
+<link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="assets/img/favicon-64.png">
+<link rel="apple-touch-icon" href="assets/img/favicon-180.png">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="admin-shell">
+<div class="admin-scrim"></div>
+<aside class="admin-side">
+  <div class="admin-brand">
+    <span class="brand-mark"><img src="assets/img/logo-icon.png" alt="CrypEduGo logo"></span>
+    CrypEduGo Admin
+  </div>
+  <nav class="admin-nav">
+      <a href="admin-dashboard.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</a>
+      <a href="admin-courses.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>Courses</a>
+      <a href="admin-students.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Students</a>
+      <a href="admin-orders.html" class="admin-nav-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Orders &amp; Revenue</a>
+      <a href="admin-coupons.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41L13.42 20.6a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>Coupons</a>
+      <a href="admin-bundles.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4z"/></svg>Bundles</a>
+      <a href="admin-waitlist.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>Waitlist</a>
+      <a href="admin-certificates.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.5 13.5L17 22l-5-3-5 3 1.5-8.5"/></svg>Certificates</a>
+      <a href="admin-community.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Community</a>
+      <a href="admin-messages.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 6l-10 7L2 6"/><path d="M2 6h20v12H2z"/></svg>Messages</a>
+      <a href="admin-reviews.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg>Reviews</a>
+      <a href="admin-settings.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</a>
+  </nav>
+  <div class="admin-side-foot">
+    <div class="admin-avatar">A</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:14px;font-weight:700;">Admin</div>
+      <div style="font-size:12px;color:var(--n50);">admin@edugo.com</div>
+    </div>
+    <a href="index.html" class="icon-btn" aria-label="Log out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></a>
+  </div>
+</aside>
+  <main class="admin-main">
+<div class="admin-topbar">
+  <div style="display:flex;align-items:center;gap:14px;">
+    <button class="hamburger" id="adminHam" aria-label="Open menu" style="display:none;"><span></span><span></span><span></span></button>
+    <div>
+      <h1>Orders &amp; Revenue</h1>
+      <p>Every transaction, refund, and payout.</p>
+    </div>
+  </div>
+  <a href="#" data-public-link="index.html" class="btn btn-ghost btn-sm">View live site ↗</a>
+</div>
+<div class="stat-grid">
+  <div class="stat-card"><div class="top"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div><b id="statMonthRevenue">—</b><span>Revenue this month</span></div>
+  <div class="stat-card"><div class="top"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 6l-10 7L2 6"/><path d="M2 6h20v12H2z"/></svg></div></div><b id="statMonthOrders">—</b><span>Orders this month</span></div>
+  <div class="stat-card"><div class="top"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></div></div><b id="statMonthRefunded">—</b><span>Refunded this month</span></div>
+  <div class="stat-card"><div class="top"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 5.4L20 9l-5.6 1.6L12 16l-2.4-5.4L4 9l5.6-1.6L12 2z"/></svg></div></div><b id="statAvgOrder">—</b><span>Average order value</span></div>
+</div>
+
+<div class="panel" id="refundPanel" style="display:none;">
+  <div class="panel-head"><div><h3>Pending refund requests</h3><p id="refundCountLabel">—</p></div></div>
+  <table class="data-table">
+    <thead><tr><th>Order</th><th>Student</th><th>Reason</th><th>Requested</th><th></th></tr></thead>
+    <tbody id="refundRequestsBody"></tbody>
+  </table>
+</div>
+
+<div class="panel">
+  <div class="panel-head"><div><h3>All orders</h3><p id="orderCountLabel">Loading…</p></div></div>
+  <table class="data-table">
+    <thead><tr><th>Order</th><th>Student</th><th>Amount</th><th>Date</th><th>Status</th><th></th></tr></thead>
+    <tbody id="ordersTableBody">
+      <tr><td colspan="6" style="color:var(--n50);text-align:center;padding:24px;">Loading…</td></tr>
+    </tbody>
+  </table>
+</div>
+
+  </main>
+</div>
+
+
+<script src="assets/js/admin-config.js"></script>
+<script src="assets/js/main.js"></script>
+<script>
+  var adminHam = document.getElementById('adminHam');
+  var adminSide = document.querySelector('.admin-side');
+  var adminScrim = document.querySelector('.admin-scrim');
+  if (adminHam) {
+    adminHam.addEventListener('click', function(){ adminSide.classList.add('open'); adminScrim.classList.add('open'); });
+    adminScrim.addEventListener('click', function(){ adminSide.classList.remove('open'); adminScrim.classList.remove('open'); });
+  }
+</script>
+
+<script type="module">
+  import { supabase, requireAdmin, formatPrice, escapeHtml } from './assets/js/supabase-client.js';
+
+  (async () => {
+    const admin = await requireAdmin();
+    if (!admin) return;
+
+    const { data: orders, error } = await supabase
+      .from('orders')
+      .select('id, order_number, total_cents, currency, status, created_at, paid_at, student:profiles(id, full_name, username)')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      document.getElementById('ordersTableBody').innerHTML = '<tr><td colspan="6" style="color:var(--danger);text-align:center;padding:24px;">Failed to load orders.</td></tr>';
+      return;
+    }
+
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const thisMonth = (orders || []).filter(o => new Date(o.created_at) >= monthStart);
+    const paidThisMonth = thisMonth.filter(o => o.status === 'paid');
+    const refundedThisMonth = thisMonth.filter(o => o.status === 'refunded');
+
+    document.getElementById('statMonthRevenue').textContent = formatPrice(paidThisMonth.reduce((s, o) => s + o.total_cents, 0));
+    document.getElementById('statMonthOrders').textContent = thisMonth.length;
+    document.getElementById('statMonthRefunded').textContent = formatPrice(refundedThisMonth.reduce((s, o) => s + o.total_cents, 0));
+    document.getElementById('statAvgOrder').textContent = paidThisMonth.length
+      ? formatPrice(Math.round(paidThisMonth.reduce((s, o) => s + o.total_cents, 0) / paidThisMonth.length))
+      : formatPrice(0);
+
+    document.getElementById('orderCountLabel').textContent = `${orders.length} total orders`;
+
+    const statusClass = { paid: 'published', pending: 'draft', refunded: 'draft', cancelled: 'draft' };
+    const tbody = document.getElementById('ordersTableBody');
+    tbody.innerHTML = (orders || []).length === 0
+      ? '<tr><td colspan="6" style="color:var(--n50);text-align:center;padding:24px;">No orders yet.</td></tr>'
+      : orders.map(o => `
+          <tr>
+            <td>#${escapeHtml(o.order_number)}</td>
+            <td>${escapeHtml(o.student?.full_name || o.student?.username || 'Unknown')}</td>
+            <td>${formatPrice(o.total_cents, o.currency)}</td>
+            <td>${new Date(o.created_at).toLocaleDateString()}</td>
+            <td><span class="status-pill ${statusClass[o.status] || 'draft'}" ${o.status === 'refunded' ? 'style="background:rgba(247,107,107,.14);color:var(--danger);"' : ''}>${escapeHtml(o.status.charAt(0).toUpperCase() + o.status.slice(1))}</span></td>
+            <td><div class="row-actions"><a href="admin-student-detail.html?id=${o.student?.id || ''}" aria-label="View"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></a></div></td>
+          </tr>`).join('');
+
+    // Pending refund requests
+    const { data: refunds } = await supabase
+      .from('refund_requests')
+      .select('id, reason, created_at, order:orders(order_number), student:profiles(full_name, username)')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+
+    if (refunds && refunds.length > 0) {
+      document.getElementById('refundPanel').style.display = 'block';
+      document.getElementById('refundCountLabel').textContent = `${refunds.length} awaiting review`;
+      document.getElementById('refundRequestsBody').innerHTML = refunds.map(r => `
+        <tr data-refund-id="${r.id}">
+          <td>#${escapeHtml(r.order?.order_number || '—')}</td>
+          <td>${escapeHtml(r.student?.full_name || r.student?.username || 'Unknown')}</td>
+          <td>${escapeHtml(r.reason || '—')}</td>
+          <td>${new Date(r.created_at).toLocaleDateString()}</td>
+          <td><div class="row-actions">
+            <button data-approve-refund="${r.id}" style="color:#0f9d63;" aria-label="Approve"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></button>
+            <button data-deny-refund="${r.id}" style="color:var(--danger);" aria-label="Deny"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+          </div></td>
+        </tr>`).join('');
+
+      document.querySelectorAll('[data-approve-refund]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-approve-refund');
+          const { error: rErr } = await supabase.rpc('resolve_refund_request', { p_request_id: id, p_approve: true });
+          if (rErr) { window.showToast(rErr.message); return; }
+          window.showToast('Refund approved');
+          btn.closest('tr').remove();
+        });
+      });
+      document.querySelectorAll('[data-deny-refund]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-deny-refund');
+          const { error: rErr } = await supabase.rpc('resolve_refund_request', { p_request_id: id, p_approve: false });
+          if (rErr) { window.showToast(rErr.message); return; }
+          window.showToast('Refund denied');
+          btn.closest('tr').remove();
+        });
+      });
+    }
+  })();
+</script>
+
+</body>
+</html>
