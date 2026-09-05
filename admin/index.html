@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Sign in</title>
+<link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="auth-shell">
+  <div class="auth-panel" style="margin:0 auto;float:none;">
+    <div class="auth-form">
+      <div class="auth-logo">
+        <span class="brand-mark"><img src="assets/img/logo-icon.png" alt="CrypEduGo logo"></span>
+        <span style="color:#000;">CrypEduGo</span>
+      </div>
+
+      <form id="loginForm">
+        <div class="auth-head">
+          <h1>Sign in</h1>
+        </div>
+
+        <div class="field has-icon">
+          <div class="input-wrap">
+            <span class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+            <input type="email" placeholder="Email" id="loginEmail" required autocomplete="username">
+          </div>
+        </div>
+        <div class="field has-icon">
+          <div class="input-wrap">
+            <span class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+            <input type="password" placeholder="Password" id="loginPassword" required autocomplete="current-password">
+            <button type="button" class="toggle-pass" aria-label="Show password"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+        </div>
+
+        <div id="loginError" style="display:none;background:#fdeaea;color:#b3261e;border-radius:8px;padding:10px 14px;font-size:13.5px;margin-bottom:16px;"></div>
+
+        <button type="submit" class="btn btn-primary btn-block" id="loginSubmitBtn">Sign In</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/admin-config.js"></script>
+<script src="assets/js/main.js"></script>
+<script type="module">
+  import { supabase } from './assets/js/supabase-client.js';
+
+  var form = document.getElementById('loginForm');
+  var emailInput = document.getElementById('loginEmail');
+  var passwordInput = document.getElementById('loginPassword');
+  var errorBox = document.getElementById('loginError');
+  var submitBtn = document.getElementById('loginSubmitBtn');
+
+  // Deliberately generic message for EVERY failure mode (wrong password, account
+  // exists but isn't an admin, suspended account, etc). Never reveal which case
+  // it was — that would let an attacker enumerate valid admin emails or confirm
+  // password guesses one bit at a time.
+  var GENERIC_ERROR = 'Invalid email or password.';
+
+  function showError() {
+    errorBox.textContent = GENERIC_ERROR;
+    errorBox.style.display = 'block';
+  }
+
+  supabase.auth.getSession().then(async function (result) {
+    if (!result.data.session) return;
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', result.data.session.user.id).single();
+    if (profile && profile.role === 'admin') window.location.href = 'admin-dashboard.html';
+    else await supabase.auth.signOut();
+  });
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    errorBox.style.display = 'none';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Signing in…';
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: emailInput.value.trim(),
+      password: passwordInput.value,
+    });
+
+    if (error) {
+      showError();
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Sign In';
+      return;
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role, is_suspended')
+      .eq('id', data.user.id)
+      .single();
+
+    // Any non-admin outcome — wrong role, suspended, missing profile — gets the
+    // exact same generic error and an immediate sign-out. No branch here leaks
+    // information about *why* access was denied.
+    if (profileError || !profile || profile.role !== 'admin' || profile.is_suspended) {
+      await supabase.auth.signOut();
+      showError();
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Sign In';
+      return;
+    }
+
+    window.location.href = 'admin-dashboard.html';
+  });
+</script>
+</body>
+</html>

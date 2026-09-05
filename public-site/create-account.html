@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create account — CrypEduGo</title>
+<link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="assets/img/favicon-64.png">
+<link rel="apple-touch-icon" href="assets/img/favicon-180.png">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="auth-shell">
+  <div class="auth-image">
+    <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200&q=80" alt="Student studying blockchain development on a laptop outdoors">
+  </div>
+  <div class="auth-panel">
+    <div class="auth-form">
+      <a href="index.html" class="auth-logo">
+        <span class="brand-mark"><img src="assets/img/logo-icon.png" alt="CrypEduGo logo"></span>
+        <span style="color:#000;">CrypEduGo</span>
+      </a>
+
+      <form id="signupForm">
+        <div class="auth-head">
+          <h1>Create&nbsp; account</h1>
+          <a href="login.html">or log in</a>
+        </div>
+
+        <div id="signupError" style="display:none;background:#fdeaea;color:#b3261e;border-radius:8px;padding:10px 14px;font-size:13.5px;margin-bottom:4px;"></div>
+
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="suEmail" required>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <div class="input-wrap">
+            <input type="password" data-pw-strength id="suPassword" minlength="8" required>
+            <button type="button" class="toggle-pass" aria-label="Show password" style="right:16px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+          <div class="pw-strength-row">
+            <div class="pw-strength"><i></i><i></i><i></i><i></i></div>
+            <span class="pw-strength-label" data-pw-label>Very weak</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>First name</label>
+          <input type="text" id="suFirstName" required>
+        </div>
+        <div class="field">
+          <label>Last name</label>
+          <input type="text" id="suLastName" required>
+        </div>
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="suUsername" pattern="[a-zA-Z0-9_]{3,20}" title="3-20 letters, numbers, or underscores" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top:8px;" id="signupSubmitBtn">Create account</button>
+      </form>
+
+      <p class="auth-terms">By creating an account you are agreeing to the Terms of Service and Privacy Policy.</p>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/main.js"></script>
+<script type="module">
+  import { supabase } from './assets/js/supabase-client.js';
+
+  // Live password-strength label (bars already handled in main.js via data-pw-strength)
+  const pw = document.querySelector('[data-pw-strength]');
+  const label = document.querySelector('[data-pw-label]');
+  if (pw && label) {
+    pw.addEventListener('input', () => {
+      const v = pw.value;
+      let score = 0;
+      if (v.length >= 8) score++;
+      if (/[A-Z]/.test(v)) score++;
+      if (/[0-9]/.test(v)) score++;
+      if (/[^A-Za-z0-9]/.test(v)) score++;
+      const labels = ['Very weak', 'Weak', 'Good', 'Strong'];
+      label.textContent = v.length === 0 ? 'Very weak' : labels[Math.max(score - 1, 0)];
+      const colors = ['#ef4444', '#f59e0b', '#f59e0b', '#34d399'];
+      document.querySelectorAll('.pw-strength i').forEach((bar, i) => {
+        bar.style.background = i < score ? colors[Math.max(score - 1, 0)] : '#e3e3e6';
+      });
+    });
+  }
+
+  const form = document.getElementById('signupForm');
+  const errorBox = document.getElementById('signupError');
+  const submitBtn = document.getElementById('signupSubmitBtn');
+
+  function showError(message) {
+    errorBox.textContent = message;
+    errorBox.style.display = 'block';
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorBox.style.display = 'none';
+
+    const email = document.getElementById('suEmail').value.trim();
+    const password = document.getElementById('suPassword').value;
+    const firstName = document.getElementById('suFirstName').value.trim();
+    const lastName = document.getElementById('suLastName').value.trim();
+    const username = document.getElementById('suUsername').value.trim();
+
+    if (password.length < 8) {
+      showError('Password must be at least 8 characters.');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating account…';
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: `${firstName} ${lastName}`.trim(),
+          username: username,
+        },
+        emailRedirectTo: window.location.origin + window.location.pathname.replace('create-account.html', 'login.html'),
+      },
+    });
+
+    if (error) {
+      showError(error.message);
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Create account';
+      return;
+    }
+
+    // Supabase Auth requires email confirmation by default — the trigger on the
+    // backend has already created their `profiles` row with role='student'.
+    window.location.href = 'confirm-email.html';
+  });
+</script>
+</body>
+</html>

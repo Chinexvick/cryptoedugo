@@ -1,0 +1,29 @@
+{
+  "name": "CrypEduGo",
+  "short_name": "CrypEduGo",
+  "description": "Learn crypto and blockchain — courses, community and certificates.",
+  "start_url": "/dashboard.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#0e0e10",
+  "icons": [
+    {
+      "src": "assets/img/favicon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/img/favicon-64.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/img/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    }
+  ]
+}

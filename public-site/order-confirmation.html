@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order Confirmed — CrypEduGo</title>
+<link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="assets/img/favicon-64.png">
+<link rel="apple-touch-icon" href="assets/img/favicon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0e0e10">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CrypEduGo">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap">
+    <a href="index.html" class="brand">
+      <span class="brand-mark"><img src="assets/img/logo-icon.png" alt="CrypEduGo logo"></span>
+      <span>CrypEduGo</span>
+    </a>
+  </div>
+</nav>
+
+<section class="section on-white">
+  <div class="wrap" style="max-width:640px;">
+    <div class="confirm-hero reveal">
+      <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <h1 style="font-size:28px;margin-bottom:10px;">You're enrolled!</h1>
+      <p style="color:var(--n700);font-size:15.5px;">A receipt has been sent to <b id="confirmEmail">your email</b>. Your courses are ready in your dashboard right now.</p>
+    </div>
+
+    <div style="border:1px solid var(--stroke-2);border-radius:14px;padding:24px;margin-bottom:28px;" id="orderDetailsBox">
+      <p style="color:var(--n700);">Loading your order…</p>
+    </div>
+
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+      <a href="dashboard.html" class="btn btn-primary">Go to my dashboard</a>
+      <a href="orders.html" class="btn btn-outline-dark">View order history</a>
+    </div>
+  </div>
+</section>
+
+<script src="assets/js/main.js"></script>
+<script type="module">
+  import { supabase, requireAuth, formatPrice, escapeHtml } from './assets/js/supabase-client.js';
+
+  (async () => {
+    const session = await requireAuth();
+    if (!session) return;
+
+    document.getElementById('confirmEmail').textContent = session.user.email;
+
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get('order');
+    const box = document.getElementById('orderDetailsBox');
+
+    if (!orderId) {
+      box.innerHTML = '<p style="color:var(--n700);">No order specified — check your <a href="orders.html">order history</a> instead.</p>';
+      return;
+    }
+
+    const { data: order, error } = await supabase
+      .from('orders')
+      .select('order_number, status, total_cents, currency, created_at, payment_provider, order_items(course:courses(title))')
+      .eq('id', orderId)
+      .eq('student_id', session.user.id)
+      .single();
+
+    if (error || !order) {
+      box.innerHTML = '<p style="color:var(--danger);">Could not find that order.</p>';
+      return;
+    }
+
+    const courseNames = (order.order_items || []).map(i => i.course?.title).filter(Boolean).join(', ');
+    const paymentLabel = order.payment_provider === 'flutterwave' ? 'Bank transfer (Flutterwave)' : (order.payment_provider || '—');
+
+    box.innerHTML = `
+      <div class="verify-row" style="border-top:none;"><span class="k">Order number</span><span class="v">#${escapeHtml(order.order_number)}</span></div>
+      <div class="verify-row"><span class="k">Date</span><span class="v">${new Date(order.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span></div>
+      <div class="verify-row"><span class="k">Courses</span><span class="v">${escapeHtml(courseNames || '—')}</span></div>
+      <div class="verify-row"><span class="k">Amount paid</span><span class="v">${formatPrice(order.total_cents, order.currency)}</span></div>
+      <div class="verify-row"><span class="k">Payment method</span><span class="v">${escapeHtml(paymentLabel)}</span></div>
+      <div class="verify-row"><span class="k">Status</span><span class="v">${escapeHtml(order.status.charAt(0).toUpperCase() + order.status.slice(1))}</span></div>
+    `;
+
+    if (order.status !== 'paid') {
+      document.querySelector('.confirm-hero h1').textContent = 'Order received';
+      document.querySelector('.confirm-hero p').innerHTML = `We're still waiting for your payment to complete. This page will make more sense once it's confirmed — check <a href="orders.html">order history</a> for the latest status.`;
+    }
+  })();
+</script>
+</body>
+</html>
