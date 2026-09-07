@@ -108,8 +108,15 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .icon-btn:hover{ color:#fff; }
 .icon-btn svg{ width:24px; height:24px; }
 
-.hamburger{ display:none; flex-direction:column; gap:5px; width:28px; background:none; border:none; }
-.hamburger span{ height:2px; background:#fff; border-radius:2px; }
+.hamburger{ display:none; flex-direction:column; align-items:flex-end; justify-content:center; gap:6px; width:26px; height:22px; background:none; border:none; padding:0; cursor:pointer; }
+.hamburger span{ display:block; height:2.5px; border-radius:3px; background:#fff; transition:transform .28s cubic-bezier(.4,0,.2,1), opacity .2s ease, width .28s ease; }
+.hamburger span:nth-child(1){ width:26px; }
+.hamburger span:nth-child(2){ width:19px; }
+.hamburger span:nth-child(3){ width:26px; }
+.hamburger.open span{ width:26px; }
+.hamburger.open span:nth-child(1){ transform:translateY(8.5px) rotate(45deg); }
+.hamburger.open span:nth-child(2){ opacity:0; transform:translateX(8px); }
+.hamburger.open span:nth-child(3){ transform:translateY(-8.5px) rotate(-45deg); }
 
 /* ==========================================================================
    Buttons
