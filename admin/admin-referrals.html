@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Referrals — Neko Academy Admin</title>
+<link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="assets/img/favicon-64.png">
+<link rel="apple-touch-icon" href="assets/img/favicon-180.png">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="admin-shell">
+<div class="admin-scrim"></div>
+<aside class="admin-side">
+  <div class="admin-brand">
+    <span class="brand-mark"><img src="assets/img/logo-icon.png" alt="Neko Academy logo"></span>
+    Neko Academy Admin
+  </div>
+  <nav class="admin-nav">
+      <a href="admin-dashboard.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</a>
+      <a href="admin-courses.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>Courses</a>
+      <a href="admin-students.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Students</a>
+      <a href="admin-orders.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Orders &amp; Revenue</a>
+      <a href="admin-coupons.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41L13.42 20.6a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>Coupons</a>
+      <a href="admin-bundles.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4z"/></svg>Bundles</a>
+      <a href="admin-waitlist.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>Waitlist</a>
+      <a href="admin-certificates.html" class="admin-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.5 13.5L17 22l-5-3-5 3 1.5-8.5"/></svg>Certificates</a>
+      <a href="admin-community.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Community</a>
+      <a href="admin-messages.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 6l-10 7L2 6"/><path d="M2 6h20v12H2z"/></svg>Messages</a>
+      <a href="admin-referrals.html" class="admin-nav-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="16" x2="16" y2="8"/><circle cx="8.5" cy="8.5" r="1.5"/><circle cx="15.5" cy="15.5" r="1.5"/></svg>Referrals</a>
+      <a href="admin-reviews.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg>Reviews</a>
+      <a href="admin-settings.html" class="admin-nav-link "><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</a>
+  </nav>
+  <div class="admin-side-foot">
+    <div class="admin-avatar">A</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:14px;font-weight:700;">Admin</div>
+      <div style="font-size:12px;color:var(--n50);">admin@nekoacademy.com</div>
+    </div>
+    <a href="index.html" class="icon-btn" aria-label="Log out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></a>
+  </div>
+</aside>
+  <main class="admin-main">
+<div class="admin-topbar">
+  <div style="display:flex;align-items:center;gap:14px;">
+    <button class="hamburger" id="adminHam" aria-label="Open menu" style="display:none;"><span></span><span></span><span></span></button>
+    <div>
+      <h1>Referrals</h1>
+      <p>Everyone earning 20% commission by referring students, and their withdrawal requests.</p>
+    </div>
+  </div>
+  <a href="#" data-public-link="index.html" class="btn btn-ghost btn-sm">View live site ↗</a>
+</div>
+<div class="stat-grid cols-3">
+  <div class="stat-card"><div class="top"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div></div><b id="statActiveReferrers">—</b><span>Students earning commissions</span></div>
+  <div class="stat-card"><div class="top"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8"/><line x1="12" y1="6" x2="12" y2="18"/></svg></div></div><b id="statTotalCommissions">—</b><span>Total commissions earned</span></div>
+  <div class="stat-card"><div class="top"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg></div></div><b id="statPendingWithdrawals">—</b><span>Pending withdrawal requests</span></div>
+</div>
+
+<div class="panel" id="pendingPanel">
+  <div class="panel-head"><div><h3>Pending withdrawal requests</h3><p id="pendingCountLabel">—</p></div></div>
+  <table class="data-table">
+    <thead><tr><th>Student</th><th>Amount</th><th>Bank details</th><th>Requested</th><th></th></tr></thead>
+    <tbody id="pendingTableBody">
+      <tr><td colspan="5" style="color:var(--n50);text-align:center;padding:24px;">Loading…</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="panel">
+  <div class="panel-head"><div><h3>All withdrawal requests</h3><p id="allCountLabel">—</p></div></div>
+  <table class="data-table">
+    <thead><tr><th>Student</th><th>Amount</th><th>Bank details</th><th>Status</th><th>Requested</th></tr></thead>
+    <tbody id="allTableBody">
+      <tr><td colspan="5" style="color:var(--n50);text-align:center;padding:24px;">Loading…</td></tr>
+    </tbody>
+  </table>
+</div>
+
+  </main>
+</div>
+
+<script src="assets/js/admin-config.js"></script>
+<script src="assets/js/main.js"></script>
+<script>
+  var adminHam = document.getElementById('adminHam');
+  var adminSide = document.querySelector('.admin-side');
+  var adminScrim = document.querySelector('.admin-scrim');
+  if (adminHam) {
+    adminHam.addEventListener('click', function(){ adminSide.classList.add('open'); adminScrim.classList.add('open'); });
+    adminScrim.addEventListener('click', function(){ adminSide.classList.remove('open'); adminScrim.classList.remove('open'); });
+  }
+</script>
+
+<script type="module">
+  import { supabase, requireAdmin, formatPrice, escapeHtml } from './assets/js/supabase-client.js';
+
+  const statusClass = { pending: 'draft', paid: 'published', rejected: 'draft' };
+
+  function renderPending(rows) {
+    const tbody = document.getElementById('pendingTableBody');
+    document.getElementById('pendingCountLabel').textContent = `${rows.length} awaiting review`;
+    if (rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="color:var(--n50);text-align:center;padding:24px;">No pending requests.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(r => `
+      <tr data-withdrawal-id="${r.id}">
+        <td>${escapeHtml(r.student?.full_name || r.student?.username || r.student?.email || '—')}</td>
+        <td>${formatPrice(r.amount_cents, 'USD')}</td>
+        <td>${escapeHtml(r.bank_name)} · ${escapeHtml(r.account_name)} · ${escapeHtml(r.account_number)}</td>
+        <td>${new Date(r.requested_at).toLocaleDateString()}</td>
+        <td>
+          <div class="row-actions">
+            <button data-approve-withdrawal="${r.id}" style="color:#0f9d63;" aria-label="Mark paid"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></button>
+            <button data-reject-withdrawal="${r.id}" style="color:var(--danger);" aria-label="Reject"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+          </div>
+        </td>
+      </tr>`).join('');
+
+    tbody.querySelectorAll('[data-approve-withdrawal]').forEach(btn => {
+      btn.addEventListener('click', () => resolveWithdrawal(btn.getAttribute('data-approve-withdrawal'), true));
+    });
+    tbody.querySelectorAll('[data-reject-withdrawal]').forEach(btn => {
+      btn.addEventListener('click', () => resolveWithdrawal(btn.getAttribute('data-reject-withdrawal'), false));
+    });
+  }
+
+  function renderAll(rows) {
+    const tbody = document.getElementById('allTableBody');
+    document.getElementById('allCountLabel').textContent = `${rows.length} total`;
+    tbody.innerHTML = rows.length
+      ? rows.map(r => `
+          <tr>
+            <td>${escapeHtml(r.student?.full_name || r.student?.username || r.student?.email || '—')}</td>
+            <td>${formatPrice(r.amount_cents, 'USD')}</td>
+            <td>${escapeHtml(r.bank_name)} · ${escapeHtml(r.account_name)} · ${escapeHtml(r.account_number)}</td>
+            <td><span class="status-pill ${statusClass[r.status] || 'draft'}" ${r.status === 'rejected' ? 'style="background:rgba(247,107,107,.14);color:var(--danger);"' : ''}>${escapeHtml(r.status.charAt(0).toUpperCase() + r.status.slice(1))}</span></td>
+            <td>${new Date(r.requested_at).toLocaleDateString()}</td>
+          </tr>`).join('')
+      : '<tr><td colspan="5" style="color:var(--n50);text-align:center;padding:24px;">No withdrawal requests yet.</td></tr>';
+  }
+
+  async function resolveWithdrawal(id, approve) {
+    let note = null;
+    if (!approve) {
+      note = prompt('Reason for rejecting this withdrawal (optional):') || null;
+    } else if (!confirm('Mark this withdrawal as paid? Only do this after you’ve actually sent the money.')) {
+      return;
+    }
+    const { error } = await supabase.rpc('resolve_referral_withdrawal', { p_id: id, p_approve: approve, p_note: note });
+    if (error) { window.showToast(error.message); return; }
+    window.showToast(approve ? 'Marked as paid' : 'Withdrawal rejected');
+    loadAll();
+  }
+
+  async function loadAll() {
+    const { data: withdrawals, error } = await supabase
+      .from('referral_withdrawals')
+      .select('id, amount_cents, bank_name, account_name, account_number, status, requested_at, student:profiles(full_name, username, email)')
+      .order('requested_at', { ascending: false });
+
+    if (error) {
+      document.getElementById('pendingTableBody').innerHTML = '<tr><td colspan="5" style="color:var(--danger);text-align:center;padding:24px;">Failed to load.</td></tr>';
+      return;
+    }
+
+    const rows = withdrawals || [];
+    renderPending(rows.filter(r => r.status === 'pending'));
+    renderAll(rows);
+    document.getElementById('statPendingWithdrawals').textContent = rows.filter(r => r.status === 'pending').length;
+  }
+
+  (async () => {
+    const admin = await requireAdmin();
+    if (!admin) return;
+
+    const { data: earnings } = await supabase.from('referral_earnings').select('referrer_id, amount_cents');
+    const totalCommissionsCents = (earnings || []).reduce((s, e) => s + e.amount_cents, 0);
+    document.getElementById('statTotalCommissions').textContent = formatPrice(totalCommissionsCents, 'USD');
+    document.getElementById('statActiveReferrers').textContent = new Set((earnings || []).map(e => e.referrer_id)).size;
+
+    loadAll();
+  })();
+</script>
+
+</body>
+</html>

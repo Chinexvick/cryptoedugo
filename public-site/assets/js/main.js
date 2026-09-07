@@ -8,6 +8,14 @@
 // event here would leave those helpers undefined when modules call them.
 (() => {
 
+  /* ---- Referral capture: whichever page a ?ref=CODE link lands on
+     (a course page, the homepage, etc.), remember it so create-account.html
+     can credit the referrer even if the visitor browses around first. ---- */
+  (function () {
+    const ref = new URLSearchParams(window.location.search).get('ref');
+    if (ref) localStorage.setItem('crypedugo_ref_code', ref);
+  })();
+
   const hamburger = document.querySelector('.hamburger');
   const mobileMenu = document.querySelector('.mobile-menu');
   if (hamburger && mobileMenu) {

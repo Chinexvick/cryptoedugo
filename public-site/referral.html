@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cart — My Account — Neko Academy</title>
+<title>Referrals — Neko Academy</title>
 <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
 <link rel="icon" type="image/png" sizes="64x64" href="assets/img/favicon-64.png">
 <link rel="apple-touch-icon" href="assets/img/favicon-180.png">
@@ -54,9 +54,9 @@
         <a href="dashboard.html" class="account-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Dashboard</a>
         <a href="profile.html" class="account-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Profile</a>
         <a href="account-courses.html" class="account-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Courses</a>
-        <a href="account-cart.html" class="account-nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Cart</a>
+        <a href="account-cart.html" class="account-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Cart</a>
         <a href="account-community.html" class="account-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> Community</a>
-        <a href="referral.html" class="account-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="16" x2="16" y2="8"/><circle cx="8.5" cy="8.5" r="1.5"/><circle cx="15.5" cy="15.5" r="1.5"/></svg> Referrals</a>
+        <a href="referral.html" class="account-nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="16" x2="16" y2="8"/><circle cx="8.5" cy="8.5" r="1.5"/><circle cx="15.5" cy="15.5" r="1.5"/></svg> Referrals</a>
         <a href="messages.html" class="account-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg> Messages</a>
         <a href="orders.html" class="account-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Orders</a>
         <a href="wishlist.html" class="account-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg> Bookmark</a>
@@ -66,91 +66,62 @@
       </aside>
 
       <div>
-        <h1 class="account-title">Cart</h1>
+        <h1 class="account-title">Referrals</h1>
+        <p style="color:var(--n700);font-size:14.5px;margin:-14px 0 24px;">Share your link — earn 20% commission every time someone buys a course through it.</p>
 
-        <div id="cart-filled" style="display:none;">
-          <div class="cart-head">
-            <h2>Cart items <span id="cart-count">0</span></h2>
-            <a href="checkout.html" class="btn btn-primary">Checkout</a>
+        <div class="details-card" style="margin-bottom:20px;">
+          <div class="details-head"><h3>Your referral link</h3></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:16px 0 6px;">
+            <input type="text" id="referralLinkInput" readonly style="flex:1;min-width:220px;padding:12px 14px;border-radius:10px;border:1.5px solid var(--stroke-2);background:var(--n30);font-size:14px;color:var(--black);">
+            <button class="btn btn-primary btn-sm" id="copyReferralBtn">Copy link</button>
           </div>
-          <div class="cart-grid" id="cartGrid"></div>
+          <p style="color:var(--n700);font-size:13px;margin:0;">Anyone who signs up and buys a course through this link earns you 20% of the sale.</p>
         </div>
 
-        <div id="cart-empty" class="empty-state" style="display:none;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-          <p>No item in cart</p>
-          <a href="account-courses.html" class="btn btn-primary">Browse courses</a>
+        <div class="dash-stats" style="margin-bottom:24px;">
+          <div class="dash-stat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <b>People referred</b>
+            <span id="refCountStat">0</span>
+          </div>
+          <div class="dash-stat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8"/><line x1="12" y1="6" x2="12" y2="18"/></svg>
+            <b>Total earned</b>
+            <span id="refEarnedStat">$0</span>
+          </div>
+          <div class="dash-stat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            <b>Available balance</b>
+            <span id="refBalanceStat">$0</span>
+          </div>
         </div>
+
+        <div class="details-card" style="margin-bottom:20px;">
+          <div class="details-head"><h3>Withdraw</h3></div>
+          <div class="form-grid">
+            <div class="form-field"><label>Amount ($)</label><input type="number" id="wdAmount" min="1" step="0.01" placeholder="0.00"></div>
+            <div class="form-field"><label>Bank name</label><input type="text" id="wdBankName" placeholder="e.g. GTBank"></div>
+            <div class="form-field"><label>Account name</label><input type="text" id="wdAccountName" placeholder="Full name on account"></div>
+            <div class="form-field"><label>Account number</label><input type="text" id="wdAccountNumber" placeholder="0123456789"></div>
+          </div>
+          <div id="wdError" style="display:none;background:#fdeaea;color:#b3261e;border-radius:8px;padding:10px 14px;font-size:13.5px;margin-top:14px;"></div>
+          <div class="form-actions"><button class="btn btn-primary btn-sm" id="wdSubmitBtn">Request withdrawal</button></div>
+        </div>
+
+        <div class="details-card">
+          <div class="details-head"><h3>Withdrawal history</h3></div>
+          <div id="wdHistoryBody"><p style="color:var(--n700);font-size:13.5px;padding:16px 0;">Loading…</p></div>
+        </div>
+
       </div>
     </div>
   </div>
 </section>
 
-<script src="assets/js/main.js"></script>
-<script type="module">
-  import { supabase, requireAuth, formatPrice, escapeHtml, getCart, removeFromCart } from './assets/js/supabase-client.js';
-
-  function cardHtml(course) {
-    return `
-      <div class="course-card reveal" data-course-id="${course.id}">
-        <div class="course-thumb">
-          <img src="${escapeHtml(course.thumbnail_url || 'assets/img/course-blockchain-new.jpg')}" alt="${escapeHtml(course.title)}">
-          <span class="course-thumb-chip">${escapeHtml(course.level)}</span>
-          <button class="course-save" aria-label="Remove" data-remove-btn="${course.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-        </div>
-        <div class="course-body">
-          <div class="course-meta-top"><div class="course-title">${escapeHtml(course.title)}</div></div>
-          <div class="course-desc">${escapeHtml(course.subtitle || '')}</div>
-          <div class="course-foot"><div class="course-price">${formatPrice(course.price_cents, course.currency)}</div></div>
-        </div>
-      </div>`;
-  }
-
-  async function loadCart() {
-    const ids = getCart();
-    const grid = document.getElementById('cartGrid');
-
-    if (ids.length === 0) {
-      document.getElementById('cart-filled').style.display = 'none';
-      document.getElementById('cart-empty').style.display = 'block';
-      return;
-    }
-
-    const { data: courses, error } = await supabase
-      .from('courses')
-      .select('id, title, subtitle, level, price_cents, currency, thumbnail_url')
-      .in('id', ids);
-
-    if (error || !courses || courses.length === 0) {
-      document.getElementById('cart-filled').style.display = 'none';
-      document.getElementById('cart-empty').style.display = 'block';
-      return;
-    }
-
-    document.getElementById('cart-filled').style.display = 'block';
-    document.getElementById('cart-empty').style.display = 'none';
-    document.getElementById('cart-count').textContent = courses.length;
-    grid.innerHTML = courses.map(cardHtml).join('');
-
-    grid.querySelectorAll('[data-remove-btn]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        removeFromCart(btn.getAttribute('data-remove-btn'));
-        loadCart();
-      });
-    });
-  }
-
-  (async () => {
-    const session = await requireAuth();
-    if (!session) return;
-    loadCart();
-  })();
-</script>
-
 <nav class="bottom-nav">
   <a href="dashboard.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
   <a href="account-courses.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Courses</a>
-  <a href="account-cart.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Cart</a>
+  <a href="account-cart.html" class="""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Cart</a>
   <a href="account-community.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Community</a>
   <button type="button" id="moreBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>More</button>
 </nav>
@@ -172,6 +143,113 @@
   </div>
 </div>
 
+<script src="assets/js/main.js"></script>
+<script type="module">
+  import { supabase, requireAuth, escapeHtml } from './assets/js/supabase-client.js';
+
+  let balanceCents = 0;
+
+  function fmtMoney(cents) {
+    return '$' + (cents / 100).toFixed(2);
+  }
+
+  (async () => {
+    const session = await requireAuth();
+    if (!session) return;
+
+    const { data: profile } = await supabase.from('profiles').select('referral_code').eq('id', session.user.id).single();
+    const code = profile?.referral_code || '';
+    const link = window.location.origin + window.location.pathname.replace('referral.html', 'create-account.html') + '?ref=' + encodeURIComponent(code);
+    document.getElementById('referralLinkInput').value = link;
+
+    document.getElementById('copyReferralBtn').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(link);
+        window.showToast && window.showToast('Referral link copied!');
+      } catch (e) {
+        document.getElementById('referralLinkInput').select();
+        document.execCommand('copy');
+        window.showToast && window.showToast('Referral link copied!');
+      }
+    });
+
+    async function loadStats() {
+      const { count: refCount } = await supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('referred_by', session.user.id);
+      document.getElementById('refCountStat').textContent = refCount || 0;
+
+      const { data: earnings } = await supabase.from('referral_earnings').select('amount_cents').eq('referrer_id', session.user.id);
+      const totalEarnedCents = (earnings || []).reduce((sum, e) => sum + e.amount_cents, 0);
+      document.getElementById('refEarnedStat').textContent = fmtMoney(totalEarnedCents);
+
+      const { data: withdrawals } = await supabase.from('referral_withdrawals').select('amount_cents, bank_name, status, requested_at').eq('user_id', session.user.id).order('requested_at', { ascending: false });
+      const reservedCents = (withdrawals || []).filter(w => w.status === 'pending' || w.status === 'paid').reduce((sum, w) => sum + w.amount_cents, 0);
+      balanceCents = totalEarnedCents - reservedCents;
+      document.getElementById('refBalanceStat').textContent = fmtMoney(Math.max(balanceCents, 0));
+
+      const statusColor = { pending: 'var(--n700)', paid: '#0f9d63', rejected: 'var(--danger)' };
+      const historyBody = document.getElementById('wdHistoryBody');
+      historyBody.innerHTML = (withdrawals || []).length
+        ? withdrawals.map(w => `
+            <div class="details-row">
+              <span class="k">${fmtMoney(w.amount_cents)} · ${escapeHtml(w.bank_name)}</span>
+              <span class="v" style="color:${statusColor[w.status] || 'var(--n700)'};text-transform:capitalize;">${escapeHtml(w.status)} · ${new Date(w.requested_at).toLocaleDateString()}</span>
+            </div>`).join('')
+        : '<p style="color:var(--n700);font-size:13.5px;padding:16px 0;">No withdrawals yet.</p>';
+    }
+    await loadStats();
+
+    document.getElementById('wdSubmitBtn').addEventListener('click', async function () {
+      const errorBox = document.getElementById('wdError');
+      errorBox.style.display = 'none';
+
+      const amountDollars = parseFloat(document.getElementById('wdAmount').value);
+      const bankName = document.getElementById('wdBankName').value.trim();
+      const accountName = document.getElementById('wdAccountName').value.trim();
+      const accountNumber = document.getElementById('wdAccountNumber').value.trim();
+
+      if (!amountDollars || amountDollars <= 0) {
+        errorBox.textContent = 'Enter a valid amount.';
+        errorBox.style.display = 'block';
+        return;
+      }
+      if (!bankName || !accountName || !accountNumber) {
+        errorBox.textContent = 'Fill in your bank name, account name and account number.';
+        errorBox.style.display = 'block';
+        return;
+      }
+      const amountCents = Math.round(amountDollars * 100);
+      if (amountCents > balanceCents) {
+        errorBox.textContent = 'That amount exceeds your available balance.';
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      this.disabled = true;
+      this.textContent = 'Submitting…';
+
+      const { error } = await supabase.rpc('request_referral_withdrawal', {
+        p_amount_cents: amountCents,
+        p_bank_name: bankName,
+        p_account_name: accountName,
+        p_account_number: accountNumber,
+      });
+
+      this.disabled = false;
+      this.textContent = 'Request withdrawal';
+
+      if (error) {
+        errorBox.textContent = error.message;
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      document.getElementById('wdAmount').value = '';
+      window.showToast && window.showToast('Withdrawal requested — the admin will process it shortly.');
+      await loadStats();
+    });
+  })();
+</script>
+
 <script>
   (function(){
     var btn = document.getElementById('moreBtn');
@@ -184,5 +262,6 @@
     scrim.addEventListener('click', close);
   })();
 </script>
+
 </body>
 </html>

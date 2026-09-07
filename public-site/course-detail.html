@@ -51,7 +51,7 @@
     <div style="display:flex;justify-content:flex-end;gap:32px;margin-bottom:24px;font-size:16px;">
       <span style="display:none;align-items:center;gap:8px;color:var(--black);cursor:pointer;" data-waitlist-btn id="waitlistAction"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg> Add to waitlist</span>
       <span style="display:none;align-items:center;gap:8px;color:var(--black);cursor:pointer;" data-wishlist-btn id="wishlistAction"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="wishlistIcon"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg> <span id="wishlistLabel">Add to bookmark</span></span>
-      <span style="display:flex;align-items:center;gap:8px;color:var(--black);cursor:pointer;" data-share-btn><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg> Share</span>
+      <span style="display:flex;align-items:center;gap:8px;color:var(--black);cursor:pointer;" data-share-btn><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg> Share &amp; earn</span>
     </div>
 
     <div class="cd-wrap">
@@ -642,6 +642,35 @@
       return;
     }
     if (window.showToast) window.showToast('You\'re on the waitlist — we\'ll email you!');
+  });
+
+  // ---- Share & earn: signed-in students get a referral link to this course
+  // (20% commission on any resulting sale); guests are pointed to sign up first.
+  document.querySelector('[data-share-btn]')?.addEventListener('click', async () => {
+    if (!currentCourse) return;
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      window.notifyAssistant
+        ? window.notifyAssistant({
+            message: 'Create a free account to get your own referral link for this course — you\'ll earn 20% commission whenever someone buys through it.',
+            actionsHtml: '<a href="create-account.html">✨ Create free account</a>',
+          })
+        : (confirm('Create a free account to get your referral link and earn 20% commission when someone buys through it. Create one now?') && (window.location.href = 'create-account.html'));
+      return;
+    }
+
+    const { data: profile } = await supabase.from('profiles').select('referral_code').eq('id', user.id).single();
+    const code = profile?.referral_code;
+    if (!code) return;
+
+    const link = window.location.origin + window.location.pathname + '?slug=' + encodeURIComponent(currentCourse.slug) + '&ref=' + encodeURIComponent(code);
+    try {
+      await navigator.clipboard.writeText(link);
+      window.showToast && window.showToast('Referral link copied! Earn 20% when someone buys through it.');
+    } catch (e) {
+      window.showToast && window.showToast('Your referral link: ' + link);
+    }
   });
 
   loadCourse();
