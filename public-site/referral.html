@@ -155,7 +155,7 @@
 
     const { data: profile } = await supabase.from('profiles').select('referral_code').eq('id', session.user.id).single();
     const code = profile?.referral_code || '';
-    const link = window.location.origin + window.location.pathname.replace('referral.html', 'create-account.html') + '?ref=' + encodeURIComponent(code);
+    const link = window.location.origin + window.location.pathname.replace('referral.html', 'referred.html') + '?ref=' + encodeURIComponent(code);
     document.getElementById('referralLinkInput').value = link;
 
     document.getElementById('copyReferralBtn').addEventListener('click', async () => {

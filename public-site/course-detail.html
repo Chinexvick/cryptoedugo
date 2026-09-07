@@ -54,6 +54,11 @@
       <span style="display:flex;align-items:center;gap:8px;color:var(--black);cursor:pointer;" data-share-btn><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg> Share &amp; earn</span>
     </div>
 
+    <div id="refBanner" style="display:none;background:var(--primary-glow, #a78bfa);color:#1a1030;border-radius:14px;padding:16px 20px;margin-bottom:20px;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+      <span style="font-weight:600;font-size:14.5px;">🎉 You've been invited to this course by a Neko Academy student — create a free account to start learning.</span>
+      <a href="create-account.html" class="btn btn-primary btn-sm" style="background:#1a1030;border-color:#1a1030;white-space:nowrap;" id="refBannerBtn">Create free account</a>
+    </div>
+
     <div class="cd-wrap">
       <div>
         <div class="cd-header">
@@ -278,6 +283,26 @@
   const params = new URLSearchParams(window.location.search);
   const slug = params.get('slug');
   let currentCourse = null;
+
+  // ---- Referral capture: if this visit came from someone's course share
+  // link (?ref=CODE), remember the code and this course so that if the
+  // visitor signs up, the sharer is credited, and after signing up they
+  // land straight back on this course instead of the generic dashboard.
+  const incomingRef = params.get('ref');
+  if (incomingRef && slug) {
+    localStorage.setItem('crypedugo_ref_code', incomingRef);
+    localStorage.setItem('crypedugo_intended_course', slug);
+  }
+
+  (async () => {
+    if (!incomingRef) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) return;
+    const banner = document.getElementById('refBanner');
+    const btn = document.getElementById('refBannerBtn');
+    if (btn) btn.href = 'create-account.html?ref=' + encodeURIComponent(incomingRef);
+    if (banner) banner.style.display = 'flex';
+  })();
 
   function bulletList(text) {
     if (!text) return '';
