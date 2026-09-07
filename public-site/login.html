@@ -76,6 +76,8 @@
     if (result.data.session) window.location.href = getPostLoginRedirect();
   });
 
+  var failedAttempts = 0;
+
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
     errorBox.style.display = 'none';
@@ -93,6 +95,13 @@
         : error.message);
       submitBtn.disabled = false;
       submitBtn.textContent = 'Log In';
+      failedAttempts++;
+      if (failedAttempts >= 2 && window.notifyAssistant) {
+        window.notifyAssistant({
+          message: "Having trouble logging in? I can help you reset your password.",
+          actionsHtml: '<a href="forgot-password.html">🔑 Reset password</a><a href="contact.html">💬 Contact support</a>',
+        });
+      }
       return;
     }
 

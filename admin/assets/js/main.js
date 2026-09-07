@@ -676,4 +676,83 @@
     }, 30000);
   })();
 
+  /* ---- AI assistant: a small animated helper that only appears when it's
+     actually useful — the user has gone quiet for a while (might be stuck),
+     or right after a real mistake (a form error, a failed payment). It is
+     never a permanent fixture on the page. Note: this offers canned
+     guidance and support links rather than free-form conversation — there
+     is no live AI backend wired into the static frontend. ---- */
+  (function () {
+    const fab = document.createElement('button');
+    fab.type = 'button';
+    fab.className = 'ai-assistant-fab';
+    fab.setAttribute('aria-label', 'Need help?');
+    fab.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="16" height="12" rx="3"/><circle cx="9" cy="13" r="1.3" fill="currentColor" stroke="none"/><circle cx="15" cy="13" r="1.3" fill="currentColor" stroke="none"/><path d="M12 7V4"/><circle cx="12" cy="3" r="1" fill="currentColor" stroke="none"/></svg>';
+
+    const panel = document.createElement('div');
+    panel.className = 'ai-assistant-panel';
+    panel.innerHTML =
+      '<div class="ai-assistant-head">' +
+        '<div class="ai-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="7" width="16" height="12" rx="3"/><circle cx="9" cy="13" r="1.3" fill="currentColor" stroke="none"/><circle cx="15" cy="13" r="1.3" fill="currentColor" stroke="none"/></svg></div>' +
+        '<div><b>CrypEduGo Assistant</b><span>Here if you need a hand</span></div>' +
+        '<button type="button" class="ai-assistant-close" aria-label="Close">✕</button>' +
+      '</div>' +
+      '<div class="ai-assistant-body">' +
+        '<p id="aiAssistantMessage">Are you lost? I can help you 👋</p>' +
+        '<div class="ai-assistant-actions" id="aiAssistantActions">' +
+          '<a href="contact.html">💬 Contact support</a>' +
+          '<a href="courses.html">📚 Browse courses</a>' +
+        '</div>' +
+      '</div>';
+
+    document.body.appendChild(fab);
+    document.body.appendChild(panel);
+    if (document.querySelector('.bottom-nav')) {
+      fab.classList.add('raised');
+      panel.classList.add('raised');
+    }
+
+    let lastShown = 0;
+    function showAssistant(message, actionsHtml) {
+      const now = Date.now();
+      if (now - lastShown < 4000) return; // guard against rapid double-fires
+      lastShown = now;
+      document.getElementById('aiAssistantMessage').textContent = message;
+      document.getElementById('aiAssistantActions').innerHTML = actionsHtml ||
+        '<a href="contact.html">💬 Contact support</a><a href="courses.html">📚 Browse courses</a>';
+      fab.classList.add('show');
+      panel.classList.add('open');
+    }
+
+    fab.addEventListener('click', () => panel.classList.toggle('open'));
+    panel.querySelector('.ai-assistant-close').addEventListener('click', () => panel.classList.remove('open'));
+
+    // Idle detection: any real interaction resets the clock. Go quiet for
+    // too long and the assistant checks in — once per idle stretch, so
+    // dismissing it doesn't trigger an immediate repeat.
+    const IDLE_MS = 45000;
+    let idleTimer = null;
+    function armIdleTimer() {
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        if (!panel.classList.contains('open')) {
+          showAssistant('Are you lost? I can help you 👋');
+        }
+      }, IDLE_MS);
+    }
+    ['mousemove', 'keydown', 'scroll', 'touchstart', 'click'].forEach((evt) => {
+      document.addEventListener(evt, armIdleTimer, { passive: true });
+    });
+    armIdleTimer();
+
+    // Public API: call this right after a real mistake (a failed payment,
+    // a repeated wrong password, a form that won't submit) so the assistant
+    // can offer help in the moment.
+    //   window.notifyAssistant({ message: '...', actionsHtml: '<a href=...>...</a>' })
+    window.notifyAssistant = function (opts) {
+      opts = opts || {};
+      showAssistant(opts.message || "Something's not working — want a hand?", opts.actionsHtml);
+    };
+  })();
+
 })();

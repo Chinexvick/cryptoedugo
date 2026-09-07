@@ -1564,3 +1564,64 @@ a, button, .btn, .icon-btn, .course-card, .course-cta, .account-nav-item, .comm-
   .promo-modal-body { padding: 16px 16px 18px; }
   .help-tip-popover { max-width: calc(100vw - 32px); }
 }
+
+/* ---- AI assistant: a small animated helper that only appears when it's
+   actually useful (idle too long, or right after a mistake) — never a
+   permanent fixture cluttering the page. ---- */
+@keyframes ai-breathe {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(134,93,247,.5); }
+  50% { transform: scale(1.06); box-shadow: 0 0 0 10px rgba(134,93,247,0); }
+}
+@keyframes ai-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.ai-assistant-fab {
+  position: fixed; right: 20px; bottom: 24px; z-index: 400;
+  width: 56px; height: 56px; border-radius: 50%; border: none; cursor: pointer;
+  background: var(--grad-brand); color: #fff; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8px 24px rgba(134,93,247,.4);
+  animation: ai-breathe 2.6s ease-in-out infinite;
+  opacity: 0; transform: scale(.4); pointer-events: none;
+  transition: opacity .3s ease, transform .3s cubic-bezier(.34,1.56,.64,1);
+}
+.ai-assistant-fab.show { opacity: 1; transform: scale(1); pointer-events: auto; }
+.ai-assistant-fab svg { width: 28px; height: 28px; animation: ai-bob 2.2s ease-in-out infinite; }
+.ai-assistant-fab .ai-dot {
+  position: absolute; top: 2px; right: 2px; width: 12px; height: 12px; border-radius: 50%;
+  background: #ff5a5f; border: 2px solid #17171b;
+}
+body:has(.bottom-nav) .ai-assistant-fab,
+.ai-assistant-fab.raised { bottom: 84px; }
+
+.ai-assistant-panel {
+  position: fixed; right: 20px; bottom: 90px; z-index: 400; width: 300px; max-width: calc(100vw - 32px);
+  background: #1a1a1f; color: #f2f2f4; border: 1px solid rgba(134,93,247,.35); border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(0,0,0,.4); overflow: hidden;
+  display: none;
+}
+body:has(.bottom-nav) .ai-assistant-panel,
+.ai-assistant-panel.raised { bottom: 150px; }
+.ai-assistant-panel.open { display: block; animation: empty-pop .3s cubic-bezier(.34,1.56,.64,1) both; }
+.ai-assistant-head {
+  display: flex; align-items: center; gap: 10px; padding: 14px 14px 12px; background: var(--grad-brand);
+}
+.ai-assistant-head .ai-avatar {
+  width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,.2); display: flex;
+  align-items: center; justify-content: center; flex-shrink: 0;
+}
+.ai-assistant-head .ai-avatar svg { width: 18px; height: 18px; }
+.ai-assistant-head b { font-size: 13.5px; display: block; }
+.ai-assistant-head span { font-size: 11px; opacity: .85; }
+.ai-assistant-close {
+  margin-left: auto; background: rgba(255,255,255,.18); border: none; color: #fff; width: 22px; height: 22px;
+  border-radius: 50%; cursor: pointer; font-size: 13px; flex-shrink: 0;
+}
+.ai-assistant-body { padding: 14px; }
+.ai-assistant-body p { font-size: 13px; line-height: 1.55; color: #d6d6db; margin: 0 0 12px; }
+.ai-assistant-actions { display: flex; flex-direction: column; gap: 8px; }
+.ai-assistant-actions a, .ai-assistant-actions button {
+  display: block; text-align: left; font-size: 12.5px; padding: 9px 12px; border-radius: 8px;
+  background: rgba(134,93,247,.14); border: 1px solid rgba(134,93,247,.3); color: #fff; cursor: pointer;
+}
+.ai-assistant-actions a:hover, .ai-assistant-actions button:hover { background: rgba(134,93,247,.24); }

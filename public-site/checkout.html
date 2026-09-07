@@ -216,6 +216,12 @@
       errorBox.style.display = 'block';
       btn.disabled = false;
       btn.textContent = 'Pay & enroll';
+      if (window.notifyAssistant) {
+        window.notifyAssistant({
+          message: "Your payment didn't go through. Want help sorting it out?",
+          actionsHtml: '<a href="contact.html">💬 Contact support</a>',
+        });
+      }
     }
   });
 
