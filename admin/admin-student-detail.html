@@ -87,8 +87,9 @@
 
   <div class="panel">
     <div class="panel-head"><div><h3>Admin notes</h3><p>Internal notes visible only to your team</p></div></div>
-    <div class="form-field full"><textarea placeholder="Add a note about this student…" style="min-height:90px;"></textarea></div>
-    <div class="form-actions"><button class="btn btn-primary btn-sm" onclick="window.showToast('Notes are not yet saved to the database — coming soon')">Save note</button></div>
+    <div id="notesList" style="margin-bottom:14px;"></div>
+    <div class="form-field full"><textarea id="newNoteInput" placeholder="Add a note about this student…" style="min-height:90px;"></textarea></div>
+    <div class="form-actions"><button class="btn btn-primary btn-sm" id="saveNoteBtn">Save note</button></div>
   </div>
 </main>
 </div>
@@ -194,6 +195,41 @@
             <td><span class="status-pill ${o.status === 'paid' ? 'published' : 'draft'}">${escapeHtml(o.status)}</span></td>
           </tr>`).join('')
       : '<tr><td colspan="4" style="color:var(--n50);text-align:center;padding:20px;">No orders yet.</td></tr>';
+
+    async function loadNotes() {
+      const { data: notes } = await supabase
+        .from('student_notes')
+        .select('body, created_at, author:profiles(full_name, username)')
+        .eq('student_id', studentId)
+        .order('created_at', { ascending: false });
+
+      document.getElementById('notesList').innerHTML = (notes && notes.length)
+        ? notes.map(n => `
+            <div style="border-bottom:1px solid rgba(255,255,255,.08);padding:10px 0;">
+              <p style="font-size:13.5px;white-space:pre-wrap;">${escapeHtml(n.body)}</p>
+              <p style="font-size:11.5px;color:var(--n50);margin-top:4px;">${escapeHtml(n.author?.full_name || n.author?.username || 'Admin')} · ${new Date(n.created_at).toLocaleString()}</p>
+            </div>`).join('')
+        : '<p style="color:var(--n50);font-size:13px;">No notes yet.</p>';
+    }
+    await loadNotes();
+
+    document.getElementById('saveNoteBtn').addEventListener('click', async function () {
+      const textarea = document.getElementById('newNoteInput');
+      const body = textarea.value.trim();
+      if (!body) return;
+      this.disabled = true;
+      const { data: { session } } = await supabase.auth.getSession();
+      const { error: noteErr } = await supabase.from('student_notes').insert({
+        student_id: studentId,
+        author_id: session.user.id,
+        body,
+      });
+      this.disabled = false;
+      if (noteErr) { window.showToast(noteErr.message); return; }
+      textarea.value = '';
+      window.showToast('Note saved');
+      await loadNotes();
+    });
   })();
 </script>
 </body>

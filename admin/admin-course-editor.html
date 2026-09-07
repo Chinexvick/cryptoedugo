@@ -364,12 +364,19 @@
 
   function moduleHtml(mod) {
     const lessonsHtml = (mod.course_lessons || []).sort((a, b) => a.position - b.position).map(l => `
-      <div class="builder-lesson" data-lesson-id="${l.id}">
+      <div class="builder-lesson" data-lesson-id="${l.id}" style="flex-wrap:wrap;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
         <input type="text" value="${escapeHtml(l.title)}" data-lesson-title>
         <input type="text" class="dur" value="${l.duration_minutes}m" data-lesson-duration style="width:60px;">
+        <select data-lesson-content-type style="width:80px;">
+          <option value="video" ${l.content_type === 'video' ? 'selected' : ''}>Video</option>
+          <option value="text" ${l.content_type === 'text' ? 'selected' : ''}>Text</option>
+          <option value="quiz" ${l.content_type === 'quiz' ? 'selected' : ''}>Quiz</option>
+        </select>
         <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--n50);white-space:nowrap;"><input type="checkbox" data-lesson-preview ${l.is_preview ? 'checked' : ''}> Preview</label>
         <button data-delete-lesson style="background:none;border:none;color:var(--n50);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+        <input type="text" value="${escapeHtml(l.video_url || '')}" data-lesson-video placeholder="Video URL (mp4/hls link)" style="flex:1 1 100%;min-width:200px;">
+        ${l.content_type === 'quiz' ? `<button class="btn btn-sm btn-outline" data-manage-quiz style="flex:1 1 100%;">Manage quiz questions</button><div data-quiz-panel style="flex:1 1 100%;display:none;"></div>` : ''}
       </div>`).join('');
 
     return `
@@ -389,7 +396,7 @@
   async function loadCurriculum() {
     const { data: modules, error } = await supabase
       .from('course_modules')
-      .select('id, title, position, course_lessons(id, title, duration_minutes, position, is_preview)')
+      .select('id, title, position, course_lessons(id, title, duration_minutes, position, is_preview, content_type, video_url)')
       .eq('course_id', courseId)
       .order('position');
 
@@ -450,9 +457,96 @@
         lessonEl.querySelector('[data-lesson-preview]').addEventListener('change', async (e) => {
           await supabase.from('course_lessons').update({ is_preview: e.target.checked }).eq('id', lessonId);
         });
+        lessonEl.querySelector('[data-lesson-video]').addEventListener('change', async (e) => {
+          await supabase.from('course_lessons').update({ video_url: e.target.value.trim() || null }).eq('id', lessonId);
+          showMsg('Lesson updated.');
+        });
+        lessonEl.querySelector('[data-lesson-content-type]').addEventListener('change', async (e) => {
+          await supabase.from('course_lessons').update({ content_type: e.target.value }).eq('id', lessonId);
+          loadCurriculum();
+        });
         lessonEl.querySelector('[data-delete-lesson]').addEventListener('click', async () => {
           await supabase.from('course_lessons').delete().eq('id', lessonId);
           loadCurriculum();
+        });
+
+        const quizBtn = lessonEl.querySelector('[data-manage-quiz]');
+        if (quizBtn) {
+          quizBtn.addEventListener('click', () => {
+            const panel = lessonEl.querySelector('[data-quiz-panel]');
+            const opening = panel.style.display === 'none';
+            panel.style.display = opening ? 'block' : 'none';
+            quizBtn.textContent = opening ? 'Hide quiz questions' : 'Manage quiz questions';
+            if (opening) loadQuizPanel(lessonId, panel);
+          });
+        }
+      });
+    });
+  }
+
+  async function loadQuizPanel(lessonId, panel) {
+    panel.innerHTML = '<p style="color:var(--n50);font-size:12.5px;">Loading…</p>';
+    const { data: questions, error } = await supabase
+      .from('quiz_questions')
+      .select('id, prompt, position, quiz_options(id, label, is_correct, position)')
+      .eq('lesson_id', lessonId)
+      .order('position');
+    if (error) { panel.innerHTML = `<p style="color:var(--danger);font-size:12.5px;">${escapeHtml(error.message)}</p>`; return; }
+
+    panel.innerHTML = `<div style="border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px;margin-top:6px;background:rgba(255,255,255,.02);">
+      ${(questions || []).map(q => `
+        <div data-question-id="${q.id}" style="border-bottom:1px solid rgba(255,255,255,.08);padding:10px 0;">
+          <input type="text" data-q-prompt value="${escapeHtml(q.prompt)}" placeholder="Question prompt" style="width:100%;margin-bottom:8px;">
+          ${(q.quiz_options || []).sort((a,b) => a.position - b.position).map(o => `
+            <div data-option-id="${o.id}" style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+              <input type="radio" name="correct-${q.id}" data-o-correct ${o.is_correct ? 'checked' : ''} title="Correct answer">
+              <input type="text" data-o-label value="${escapeHtml(o.label)}" placeholder="Option label" style="flex:1;">
+              <button data-delete-option style="background:none;border:none;color:var(--n50);">✕</button>
+            </div>`).join('')}
+          <div style="display:flex;gap:8px;margin-top:4px;">
+            <button class="btn btn-sm btn-outline" data-add-option>+ Option</button>
+            <button class="btn btn-sm btn-outline" data-delete-question style="margin-left:auto;color:var(--danger);">Delete question</button>
+          </div>
+        </div>`).join('')}
+      <button class="btn btn-sm btn-primary" data-add-question style="margin-top:8px;">+ Add question</button>
+    </div>`;
+
+    panel.querySelector('[data-add-question]').addEventListener('click', async () => {
+      const count = panel.querySelectorAll('[data-question-id]').length;
+      const { error: qErr } = await supabase.from('quiz_questions').insert({ lesson_id: lessonId, prompt: 'New question', position: count });
+      if (qErr) { showMsg('Could not add question: ' + qErr.message, true); return; }
+      loadQuizPanel(lessonId, panel);
+    });
+
+    panel.querySelectorAll('[data-question-id]').forEach(qEl => {
+      const questionId = qEl.getAttribute('data-question-id');
+
+      qEl.querySelector('[data-q-prompt]').addEventListener('change', async (e) => {
+        await supabase.from('quiz_questions').update({ prompt: e.target.value.trim() }).eq('id', questionId);
+      });
+      qEl.querySelector('[data-delete-question]').addEventListener('click', async () => {
+        if (!confirm('Delete this question and its options?')) return;
+        await supabase.from('quiz_questions').delete().eq('id', questionId);
+        loadQuizPanel(lessonId, panel);
+      });
+      qEl.querySelector('[data-add-option]').addEventListener('click', async () => {
+        const count = qEl.querySelectorAll('[data-option-id]').length;
+        await supabase.from('quiz_options').insert({ question_id: questionId, label: 'New option', position: count, is_correct: count === 0 });
+        loadQuizPanel(lessonId, panel);
+      });
+      qEl.querySelectorAll('[data-option-id]').forEach(oEl => {
+        const optionId = oEl.getAttribute('data-option-id');
+        oEl.querySelector('[data-o-label]').addEventListener('change', async (e) => {
+          await supabase.from('quiz_options').update({ label: e.target.value.trim() }).eq('id', optionId);
+        });
+        oEl.querySelector('[data-o-correct]').addEventListener('change', async () => {
+          // Only one correct option per question: clear the rest, then set this one.
+          await supabase.from('quiz_options').update({ is_correct: false }).eq('question_id', questionId);
+          await supabase.from('quiz_options').update({ is_correct: true }).eq('id', optionId);
+        });
+        oEl.querySelector('[data-delete-option]').addEventListener('click', async () => {
+          await supabase.from('quiz_options').delete().eq('id', optionId);
+          loadQuizPanel(lessonId, panel);
         });
       });
     });

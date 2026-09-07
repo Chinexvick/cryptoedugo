@@ -147,8 +147,8 @@
         <div class="aside-card">
           <div class="aside-review-head"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><h3 style="margin:0;">Reviews</h3></div>
           <div style="display:flex;align-items:baseline;gap:8px;padding:6px 0 4px;">
-            <span style="font-size:22px;font-weight:700;">4.8</span>
-            <span style="font-size:12.5px;color:var(--n50);">out of 5 · 612 reviews</span>
+            <span style="font-size:22px;font-weight:700;" id="asideAvgScore">—</span>
+            <span style="font-size:12.5px;color:var(--n50);" id="asideReviewCount">No reviews yet</span>
           </div>
           <a href="#reviewList" class="btn btn-sm btn-ghost btn-block" style="margin-top:4px;">Read all reviews</a>
         </div>
@@ -164,17 +164,11 @@
     </div>
     <div class="review-summary reveal">
       <div class="review-score">
-        <b>4.8</b>
-        <div class="stars"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg></div>
-        <span style="font-size:12.5px;color:var(--n400);">612 reviews</span>
+        <b id="summaryAvgScore">—</b>
+        <div class="stars" id="summaryStars"></div>
+        <span style="font-size:12.5px;color:var(--n400);" id="summaryCount">No reviews yet</span>
       </div>
-      <div class="review-bars">
-        <div class="review-bar-row"><span style="width:16px;">5</span><div class="review-bar-track"><div class="review-bar-fill" style="width:78%;"></div></div><span>78%</span></div>
-        <div class="review-bar-row"><span style="width:16px;">4</span><div class="review-bar-track"><div class="review-bar-fill" style="width:15%;"></div></div><span>15%</span></div>
-        <div class="review-bar-row"><span style="width:16px;">3</span><div class="review-bar-track"><div class="review-bar-fill" style="width:5%;"></div></div><span>5%</span></div>
-        <div class="review-bar-row"><span style="width:16px;">2</span><div class="review-bar-track"><div class="review-bar-fill" style="width:1%;"></div></div><span>1%</span></div>
-        <div class="review-bar-row"><span style="width:16px;">1</span><div class="review-bar-track"><div class="review-bar-fill" style="width:1%;"></div></div><span>1%</span></div>
-      </div>
+      <div class="review-bars" id="summaryBars"></div>
     </div>
 
     <div class="review-form reveal">
@@ -190,23 +184,7 @@
       <button class="btn btn-primary btn-sm" style="margin-top:12px;" id="submitReviewBtn">Submit review</button>
     </div>
 
-    <div id="reviewList">
-      <div class="review-card reveal">
-        <div class="head"><img src="https://i.pravatar.cc/80?img=15" alt=""><div><div class="name">Jae Kim</div><div class="date">2 days ago</div></div></div>
-        <div class="stars" style="margin-bottom:8px;"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg></div>
-        <p>Best Solidity course I've taken — the staking vault project made gas optimization finally click for me. Wish I'd found this before wasting money on two other courses.</p>
-      </div>
-      <div class="review-card reveal">
-        <div class="head"><img src="https://i.pravatar.cc/80?img=32" alt=""><div><div class="name">Mia Park</div><div class="date">5 days ago</div></div></div>
-        <div class="stars" style="margin-bottom:8px;"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg></div>
-        <p>Great content and the Foundry testing module was exactly what I needed. Docked one star only because I wish there was more on upgradeable contracts.</p>
-      </div>
-      <div class="review-card reveal" style="border-bottom:none;">
-        <div class="head"><img src="https://i.pravatar.cc/80?img=51" alt=""><div><div class="name">Nia Okafor</div><div class="date">1 week ago</div></div></div>
-        <div class="stars" style="margin-bottom:8px;"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg></div>
-        <p>Deployed my first audited-style contract to Sepolia after this. Direct line to the admin for questions was genuinely useful, not just marketing copy.</p>
-      </div>
-    </div>
+    <div id="reviewList"><p style="color:var(--n700);font-size:14.5px;">Loading reviews…</p></div>
   </div>
 </section>
 
@@ -332,28 +310,6 @@
         b.classList.toggle('active', parseInt(b.getAttribute('data-star'), 10) <= selectedStars);
       });
     });
-  });
-  document.getElementById('submitReviewBtn').addEventListener('click', function(){
-    var textarea = document.querySelector('.review-form textarea');
-    if (!textarea.value.trim() || selectedStars === 0) {
-      textarea.style.borderColor = 'var(--danger)';
-      return;
-    }
-    var starsSvg = '';
-    for (var i = 0; i < 5; i++) {
-      starsSvg += i < selectedStars
-        ? '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg>'
-        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg>';
-    }
-    var card = document.createElement('div');
-    card.className = 'review-card reveal in';
-    card.innerHTML = '<div class="head"><img src="https://i.pravatar.cc/80?img=68" alt=""><div><div class="name">You</div><div class="date">Just now</div></div></div>' +
-      '<div class="stars" style="margin-bottom:8px;">' + starsSvg + '</div>' +
-      '<p>' + textarea.value.replace(/</g, '&lt;') + '</p>';
-    document.getElementById('reviewList').prepend(card);
-    textarea.value = '';
-    this.textContent = 'Review posted ✓';
-    this.disabled = true;
   });
 </script>
 
@@ -512,30 +468,107 @@
     }).join('');
   }
 
+  function starSvg(filled) {
+    return filled
+      ? '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg>';
+  }
+
+  function timeAgo(iso) {
+    const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+    if (s < 60) return 'just now';
+    if (s < 3600) return Math.floor(s / 60) + 'm ago';
+    if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+    if (s < 604800) return Math.floor(s / 86400) + 'd ago';
+    return new Date(iso).toLocaleDateString();
+  }
+
   async function loadReviews(courseId) {
     const { data: reviews } = await supabase
       .from('reviews')
       .select('rating, body, created_at, student:profiles(full_name, username)')
       .eq('course_id', courseId)
       .order('created_at', { ascending: false })
-      .limit(10);
+      .limit(50);
 
     const el = document.getElementById('cdReviewsList');
+    const listEl = document.getElementById('reviewList');
+
     if (!reviews || reviews.length === 0) {
       el.innerHTML = '<p style="color:var(--n700);font-size:14.5px;">No reviews yet — be the first once you complete the course.</p>';
+      listEl.innerHTML = '<p style="color:var(--n700);font-size:14.5px;">No reviews yet — be the first once you complete the course.</p>';
+      document.getElementById('asideReviewCount').textContent = 'No reviews yet';
+      document.getElementById('summaryCount').textContent = '0 reviews';
       return;
     }
 
     const avg = (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1);
+
     el.innerHTML = `<p style="font-weight:700;margin-bottom:16px;">★ ${avg} average · ${reviews.length} review${reviews.length > 1 ? 's' : ''}</p>` +
-      reviews.map(r => `
+      reviews.slice(0, 10).map(r => `
         <div style="border-top:1px solid var(--stroke-2);padding:16px 0;">
           <div style="font-weight:700;font-size:14px;">${escapeHtml(r.student?.full_name || r.student?.username || 'Student')}
             <span style="color:#f59e0b;margin-left:8px;">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span>
           </div>
           <p style="color:var(--n700);font-size:14px;margin-top:6px;">${escapeHtml(r.body)}</p>
         </div>`).join('');
+
+    document.getElementById('asideAvgScore').textContent = avg;
+    document.getElementById('asideReviewCount').textContent = `out of 5 · ${reviews.length} review${reviews.length > 1 ? 's' : ''}`;
+    document.getElementById('summaryAvgScore').textContent = avg;
+    document.getElementById('summaryCount').textContent = `${reviews.length} review${reviews.length > 1 ? 's' : ''}`;
+    document.getElementById('summaryStars').innerHTML = [1,2,3,4,5].map(i => starSvg(i <= Math.round(avg))).join('');
+
+    const counts = [0,0,0,0,0];
+    reviews.forEach(r => { if (r.rating >= 1 && r.rating <= 5) counts[r.rating - 1]++; });
+    document.getElementById('summaryBars').innerHTML = [5,4,3,2,1].map(star => {
+      const c = counts[star - 1];
+      const pct = Math.round((c / reviews.length) * 100);
+      return `<div class="review-bar-row"><span style="width:16px;">${star}</span><div class="review-bar-track"><div class="review-bar-fill" style="width:${pct}%;"></div></div><span>${pct}%</span></div>`;
+    }).join('');
+
+    listEl.innerHTML = reviews.map(r => `
+      <div class="review-card reveal in">
+        <div class="head"><div style="width:40px;height:40px;border-radius:50%;background:var(--grad-brand-soft);display:flex;align-items:center;justify-content:center;font-weight:700;">${escapeHtml((r.student?.full_name || r.student?.username || 'S')[0].toUpperCase())}</div><div><div class="name">${escapeHtml(r.student?.full_name || r.student?.username || 'Student')}</div><div class="date">${timeAgo(r.created_at)}</div></div></div>
+        <div class="stars" style="margin-bottom:8px;">${[1,2,3,4,5].map(i => starSvg(i <= r.rating)).join('')}</div>
+        <p>${escapeHtml(r.body)}</p>
+      </div>`).join('');
   }
+
+  document.getElementById('submitReviewBtn').addEventListener('click', async function(){
+    const textarea = document.querySelector('.review-form textarea');
+    if (!textarea.value.trim() || selectedStars === 0) {
+      textarea.style.borderColor = 'var(--danger)';
+      return;
+    }
+    if (!currentCourse) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.href = 'login.html';
+      return;
+    }
+    this.disabled = true;
+    this.textContent = 'Posting…';
+    const { error } = await supabase.from('reviews').insert({
+      course_id: currentCourse.id,
+      student_id: session.user.id,
+      rating: selectedStars,
+      body: textarea.value.trim(),
+    });
+    if (error) {
+      this.disabled = false;
+      this.textContent = 'Submit review';
+      window.showToast && window.showToast(
+        error.code === '23505'
+          ? 'You already reviewed this course.'
+          : 'You need to purchase this course before reviewing it.'
+      );
+      return;
+    }
+    textarea.value = '';
+    this.textContent = 'Review posted ✓';
+    await loadReviews(currentCourse.id);
+  });
 
   document.querySelector('[data-waitlist-btn]')?.addEventListener('click', async () => {
     if (!currentCourse) return;

@@ -115,11 +115,11 @@
           <div class="details-card" style="margin-bottom:20px;">
             <div class="details-head"><h3>Change password</h3></div>
             <div class="form-grid">
-              <div class="form-field full"><label>Current password</label><input type="password" placeholder="••••••••"></div>
-              <div class="form-field"><label>New password</label><input type="password" placeholder="••••••••"></div>
-              <div class="form-field"><label>Confirm new password</label><input type="password" placeholder="••••••••"></div>
+              <div class="form-field full"><label>Current password</label><input type="password" id="pfCurrentPassword" placeholder="••••••••" autocomplete="current-password"></div>
+              <div class="form-field"><label>New password</label><input type="password" id="pfNewPassword" placeholder="••••••••" autocomplete="new-password" minlength="8"></div>
+              <div class="form-field"><label>Confirm new password</label><input type="password" id="pfConfirmPassword" placeholder="••••••••" autocomplete="new-password" minlength="8"></div>
             </div>
-            <div class="form-actions"><button class="btn btn-primary btn-sm" onclick="window.showToast('Password updated')">Update password</button></div>
+            <div class="form-actions"><button class="btn btn-primary btn-sm" id="pfUpdatePasswordBtn">Update password</button></div>
           </div>
 
           <div class="details-card">
@@ -210,6 +210,53 @@
            <p>No certificate acquired yet</p>
            <a href="courses.html" class="btn btn-primary">Browse courses</a>
          </div>`;
+
+    // ---- Change password ----
+    document.getElementById('pfUpdatePasswordBtn').addEventListener('click', async function () {
+      const current = document.getElementById('pfCurrentPassword').value;
+      const next = document.getElementById('pfNewPassword').value;
+      const confirm = document.getElementById('pfConfirmPassword').value;
+
+      if (!current || !next || !confirm) {
+        window.showToast && window.showToast('Fill in all three password fields');
+        return;
+      }
+      if (next.length < 8) {
+        window.showToast && window.showToast('New password must be at least 8 characters');
+        return;
+      }
+      if (next !== confirm) {
+        window.showToast && window.showToast('New passwords do not match');
+        return;
+      }
+
+      this.disabled = true;
+      this.textContent = 'Updating…';
+
+      // Re-authenticate with the current password before allowing the change.
+      const { error: reauthErr } = await supabase.auth.signInWithPassword({
+        email: session.user.email,
+        password: current,
+      });
+      if (reauthErr) {
+        this.disabled = false;
+        this.textContent = 'Update password';
+        window.showToast && window.showToast('Current password is incorrect');
+        return;
+      }
+
+      const { error: updateErr } = await supabase.auth.updateUser({ password: next });
+      this.disabled = false;
+      this.textContent = 'Update password';
+      if (updateErr) {
+        window.showToast && window.showToast('Could not update password: ' + updateErr.message);
+        return;
+      }
+      document.getElementById('pfCurrentPassword').value = '';
+      document.getElementById('pfNewPassword').value = '';
+      document.getElementById('pfConfirmPassword').value = '';
+      window.showToast && window.showToast('Password updated');
+    });
   })();
 </script>
 <script>
