@@ -1,6 +1,12 @@
 // CrypEduGo — shared front-end behaviour (frontend-only, no backend)
-
-document.addEventListener('DOMContentLoaded', () => {
+// Runs as an immediately-invoked function rather than waiting for
+// DOMContentLoaded: this script tag sits at the end of <body> on every page,
+// so the DOM is already parsed by the time it runs. This matters because the
+// window.* helpers defined below (watchSlowLoad, openReactionPicker, etc.)
+// must exist BEFORE any <script type="module"> tag that follows runs —
+// module scripts execute before DOMContentLoaded fires, so waiting for that
+// event here would leave those helpers undefined when modules call them.
+(() => {
 
   const hamburger = document.querySelector('.hamburger');
   const mobileMenu = document.querySelector('.mobile-menu');
@@ -506,4 +512,4 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   };
 
-});
+})();
