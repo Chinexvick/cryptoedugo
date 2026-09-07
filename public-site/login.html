@@ -59,7 +59,7 @@
 
 <script src="assets/js/main.js"></script>
 <script type="module">
-  import { supabase } from './assets/js/supabase-client.js';
+  import { supabase, getPostLoginRedirect } from './assets/js/supabase-client.js';
 
   var form = document.getElementById('loginForm');
   var emailInput = document.getElementById('loginEmail');
@@ -73,7 +73,7 @@
   }
 
   supabase.auth.getSession().then(function(result) {
-    if (result.data.session) window.location.href = 'dashboard.html';
+    if (result.data.session) window.location.href = getPostLoginRedirect();
   });
 
   form.addEventListener('submit', async function (e) {
@@ -121,7 +121,7 @@
     // General/student login. If an admin account happens to sign in here,
     // route them to their dashboard same as anyone else — no separate branch,
     // no hint anywhere on this page that a distinct admin path exists.
-    window.location.href = 'dashboard.html';
+    window.location.href = getPostLoginRedirect();
   });
 </script>
 </body>

@@ -512,4 +512,168 @@
     };
   };
 
+  /* ---- Hero stat counter: animates [data-count-to] elements from 0 once
+     they scroll into view. Supports decimals (data-decimals) and a suffix
+     (data-suffix, e.g. "+"). ---- */
+  (function () {
+    const counters = document.querySelectorAll('[data-count-to]');
+    if (!counters.length) return;
+
+    function animateCounter(el) {
+      const target = parseFloat(el.getAttribute('data-count-to'));
+      const decimals = parseInt(el.getAttribute('data-decimals') || '0', 10);
+      const suffix = el.getAttribute('data-suffix') || '';
+      const duration = 1400;
+      const start = performance.now();
+
+      function tick(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        // Ease-out so it settles smoothly instead of stopping abruptly.
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const value = target * eased;
+        el.textContent = (decimals ? value.toFixed(decimals) : Math.round(value).toLocaleString()) + suffix;
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            animateCounter(entry.target);
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.4 });
+      counters.forEach((el) => io.observe(el));
+    } else {
+      counters.forEach(animateCounter);
+    }
+  })();
+
+  /* ---- Help tooltips: any element with data-help="explanation text" gets a
+     small "?" affordance. Click toggles a popover clamped to stay on-screen;
+     click anywhere outside (or the "?" again) closes it. ---- */
+  (function () {
+    document.querySelectorAll('[data-help]').forEach((target) => {
+      const tip = document.createElement('span');
+      tip.className = 'help-tip';
+      tip.textContent = '?';
+      tip.setAttribute('role', 'button');
+      tip.setAttribute('aria-label', 'What does this do?');
+      target.insertAdjacentElement('afterend', tip);
+
+      tip.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const existing = document.querySelector('.help-tip-popover');
+        if (existing) {
+          const wasMine = existing.dataset.owner === target.getAttribute('data-help');
+          existing.remove();
+          if (wasMine) return;
+        }
+
+        const pop = document.createElement('div');
+        pop.className = 'help-tip-popover';
+        pop.dataset.owner = target.getAttribute('data-help');
+        pop.textContent = target.getAttribute('data-help');
+        document.body.appendChild(pop);
+
+        const tipRect = tip.getBoundingClientRect();
+        const popRect = pop.getBoundingClientRect();
+        let left = tipRect.left - popRect.width / 2 + tipRect.width / 2;
+        left = Math.max(10, Math.min(left, window.innerWidth - popRect.width - 10));
+        let top = tipRect.bottom + 8;
+        if (top + popRect.height > window.innerHeight - 10) {
+          top = tipRect.top - popRect.height - 8;
+        }
+        pop.style.left = left + 'px';
+        pop.style.top = top + 'px';
+
+        function closeOnOutside(evt) {
+          if (!pop.contains(evt.target) && evt.target !== tip) {
+            pop.remove();
+            document.removeEventListener('click', closeOnOutside);
+          }
+        }
+        setTimeout(() => document.addEventListener('click', closeOnOutside), 0);
+      });
+    });
+  })();
+
+  /* ---- Free-trial promo popup: shown 30s after landing on the homepage,
+     once per browser (localStorage-based — there is no reliable way to key
+     this by IP from client-side JS). Links straight into signup, and
+     remembers the intended course so login can route there afterward. ---- */
+  (function () {
+    const heroStats = document.querySelector('.hero-stats');
+    if (!heroStats) return; // only the homepage has this hook
+    if (localStorage.getItem('crypedugo_promo_seen')) return;
+
+    setTimeout(async () => {
+      if (document.querySelector('.promo-modal-scrim')) return;
+      localStorage.setItem('crypedugo_promo_seen', '1');
+
+      let course = { title: 'Introduction to Crypto', thumbnail_url: 'assets/img/course-blockchain-new.jpg', slug: 'introduction-to-crypto', subtitle: 'Your first steps into blockchain and crypto, explained clearly.' };
+      try {
+        const mod = await import('./supabase-client.js');
+        const { data } = await mod.supabase
+          .from('courses')
+          .select('title, subtitle, thumbnail_url, slug')
+          .eq('slug', 'introduction-to-crypto')
+          .single();
+        if (data) course = data;
+      } catch (e) { /* fall back to the defaults above */ }
+
+      const endsAt = Date.now() + 3 * 24 * 60 * 60 * 1000;
+
+      const scrim = document.createElement('div');
+      scrim.className = 'promo-modal-scrim';
+      scrim.innerHTML = `
+        <div class="promo-modal">
+          <button type="button" class="promo-modal-close" aria-label="Close">✕</button>
+          <img class="promo-modal-img" src="${course.thumbnail_url || 'assets/img/course-blockchain-new.jpg'}" alt="${course.title}">
+          <div class="promo-modal-body">
+            <span class="promo-modal-chip">🎁 Limited-time offer</span>
+            <h3>${course.title}</h3>
+            <p>${course.subtitle || ''} Free for 3 days once you sign up — no card required.</p>
+            <div class="promo-countdown">
+              <div class="unit"><b id="promoD">3</b><span>Days</span></div>
+              <div class="unit"><b id="promoH">00</b><span>Hrs</span></div>
+              <div class="unit"><b id="promoM">00</b><span>Min</span></div>
+              <div class="unit"><b id="promoS">00</b><span>Sec</span></div>
+            </div>
+            <button type="button" class="btn btn-primary btn-block" id="promoStartBtn">Start 3 days free</button>
+          </div>
+        </div>`;
+      document.body.appendChild(scrim);
+      requestAnimationFrame(() => scrim.classList.add('open'));
+
+      function tick() {
+        const diff = endsAt - Date.now();
+        if (diff <= 0) return;
+        document.getElementById('promoD').textContent = Math.floor(diff / 86400000);
+        document.getElementById('promoH').textContent = String(Math.floor((diff % 86400000) / 3600000)).padStart(2, '0');
+        document.getElementById('promoM').textContent = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+        document.getElementById('promoS').textContent = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+      }
+      tick();
+      const timer = setInterval(tick, 1000);
+
+      function close() {
+        clearInterval(timer);
+        scrim.classList.remove('open');
+        setTimeout(() => scrim.remove(), 250);
+      }
+      scrim.querySelector('.promo-modal-close').addEventListener('click', close);
+      scrim.addEventListener('click', (e) => { if (e.target === scrim) close(); });
+      scrim.querySelector('#promoStartBtn').addEventListener('click', () => {
+        localStorage.setItem('crypedugo_intended_course', course.slug);
+        window.location.href = 'create-account.html';
+      });
+    }, 30000);
+  })();
+
 })();

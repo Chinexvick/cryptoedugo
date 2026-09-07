@@ -80,6 +80,18 @@ export function clearPendingBundle() {
   localStorage.removeItem(BUNDLE_KEY);
 }
 
+/* ---- Post-login destination: if the visitor arrived via a course promo
+   (e.g. the homepage free-trial popup), send them straight into that course
+   on their first login instead of the generic dashboard. One-time use. ---- */
+const INTENDED_COURSE_KEY = 'crypedugo_intended_course';
+
+export function getPostLoginRedirect() {
+  const slug = localStorage.getItem(INTENDED_COURSE_KEY);
+  if (!slug) return 'dashboard.html';
+  localStorage.removeItem(INTENDED_COURSE_KEY);
+  return 'course-player.html?slug=' + encodeURIComponent(slug);
+}
+
 /* ---- Get the current session's user + profile (role, name, etc.), or null if signed out ---- */
 export async function getCurrentProfile() {
   const { data: { session } } = await supabase.auth.getSession();
