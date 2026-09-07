@@ -100,7 +100,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .brand span{ font-weight:800; font-size:19px; color:#fff; letter-spacing:-.01em; }
 
 .nav-links{ display:flex; align-items:center; gap:28px; flex-shrink:0; }
-.nav-links a{ font-weight:700; font-size:16px; color:var(--n50); letter-spacing:-.02em; white-space:nowrap; }
+.nav-links a{ font-weight:700; font-size:14px; color:var(--n50); letter-spacing:-.02em; white-space:nowrap; }
 .nav-links a:hover, .nav-links a.active{ color:#fff; }
 
 .nav-actions{ display:flex; align-items:center; gap:20px; flex-shrink:0; margin-left:28px; }
