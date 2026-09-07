@@ -128,13 +128,16 @@
     // buy today — coming-soon courses use the waitlist on their detail page instead.
     const saved = wishlistedIds.has(course.id);
     const saveBtnHtml = course.is_purchasable
-      ? `<button class="course-save${saved ? ' saved' : ''}" aria-label="${saved ? 'Remove bookmark' : 'Bookmark'}" data-save-course="${course.id}"><svg viewBox="0 0 24 24" fill="${saved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>`
+      ? `<button class="course-save${saved ? ' saved' : ''}" style="z-index:2;" aria-label="${saved ? 'Remove bookmark' : 'Bookmark'}" data-save-course="${course.id}"><svg viewBox="0 0 24 24" fill="${saved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>`
       : '';
     return `
       <div class="course-card reveal">
-        <div class="course-thumb"><img src="${escapeHtml(course.thumbnail_url || 'assets/img/course-blockchain-new.jpg')}" alt="${escapeHtml(course.title)}"><span class="course-thumb-chip">${escapeHtml(course.level)}</span>${saveBtnHtml}</div>
+        <div class="course-thumb">
+          <a href="course-detail.html?slug=${encodeURIComponent(course.slug)}" style="position:absolute;inset:0;z-index:1;"></a>
+          <img src="${escapeHtml(course.thumbnail_url || 'assets/img/course-blockchain-new.jpg')}" alt="${escapeHtml(course.title)}"><span class="course-thumb-chip">${escapeHtml(course.level)}</span>${saveBtnHtml}
+        </div>
         <div class="course-body">
-          <div class="course-meta-top"><div class="course-title">${escapeHtml(course.title)}</div></div>
+          <div class="course-meta-top"><a href="course-detail.html?slug=${encodeURIComponent(course.slug)}" style="color:inherit;text-decoration:none;"><div class="course-title">${escapeHtml(course.title)}</div></a></div>
           <div class="course-desc">${escapeHtml(course.subtitle || '')}</div>
           <div class="course-foot"><div class="course-price">${priceHtml}</div>${ctaHtml}</div>
         </div>
@@ -145,9 +148,12 @@
     const c = e.course;
     return `
       <div class="course-card reveal">
-        <div class="course-thumb"><img src="${escapeHtml(c.thumbnail_url || 'assets/img/course-blockchain-new.jpg')}" alt="${escapeHtml(c.title)}"><span class="course-thumb-chip">${escapeHtml(c.level)}</span></div>
+        <div class="course-thumb">
+          <a href="course-detail.html?slug=${encodeURIComponent(c.slug)}" style="position:absolute;inset:0;z-index:1;"></a>
+          <img src="${escapeHtml(c.thumbnail_url || 'assets/img/course-blockchain-new.jpg')}" alt="${escapeHtml(c.title)}"><span class="course-thumb-chip">${escapeHtml(c.level)}</span>
+        </div>
         <div class="course-body">
-          <div class="course-meta-top"><div class="course-title">${escapeHtml(c.title)}</div></div>
+          <div class="course-meta-top"><a href="course-detail.html?slug=${encodeURIComponent(c.slug)}" style="color:inherit;text-decoration:none;"><div class="course-title">${escapeHtml(c.title)}</div></a></div>
           <div class="course-desc">${escapeHtml(c.subtitle || '')}</div>
           <div class="progress-label">${e.progress_percent}% Complete</div>
           <div class="progress-track"><div class="progress-fill" style="width:${e.progress_percent}%;"></div></div>
