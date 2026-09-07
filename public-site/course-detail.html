@@ -49,7 +49,8 @@
 <section class="section on-white">
   <div class="wrap">
     <div style="display:flex;justify-content:flex-end;gap:32px;margin-bottom:24px;font-size:16px;">
-      <span style="display:flex;align-items:center;gap:8px;color:var(--black);cursor:pointer;" data-waitlist-btn><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg> Add to waitlist</span>
+      <span style="display:none;align-items:center;gap:8px;color:var(--black);cursor:pointer;" data-waitlist-btn id="waitlistAction"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg> Add to waitlist</span>
+      <span style="display:none;align-items:center;gap:8px;color:var(--black);cursor:pointer;" data-wishlist-btn id="wishlistAction"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="wishlistIcon"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg> <span id="wishlistLabel">Add to bookmark</span></span>
       <span style="display:flex;align-items:center;gap:8px;color:var(--black);cursor:pointer;" data-share-btn><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg> Share</span>
     </div>
 
@@ -373,15 +374,20 @@
     const addBtn = document.getElementById('mainAddToCartBtn');
     const buyBtn = document.getElementById('mainBuyNowBtn');
 
+    // Waitlist is only for courses that aren't open yet; bookmark (wishlist)
+    // is only for courses students can actually buy today.
     if (!course.is_purchasable) {
       addBtn.textContent = 'Coming soon';
       buyBtn.style.display = 'none';
       document.getElementById('comingSoonNote').style.display = 'block';
+      document.getElementById('waitlistAction').style.display = 'flex';
       addBtn.addEventListener('click', () => {
         const msg = `${course.title} is coming soon — join the waitlist above!`;
         window.showToast ? window.showToast(msg) : alert(msg);
       });
     } else {
+      document.getElementById('wishlistAction').style.display = 'flex';
+      initWishlistButton(course.id);
       addBtn.addEventListener('click', () => {
         addToCart(course.id);
         window.showToast && window.showToast('Added to cart');
@@ -588,6 +594,37 @@
     this.textContent = 'Review posted ✓';
     await loadReviews(currentCourse.id);
   });
+
+  async function initWishlistButton(courseId) {
+    const btn = document.getElementById('wishlistAction');
+    const icon = document.getElementById('wishlistIcon');
+    const label = document.getElementById('wishlistLabel');
+    if (!btn) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    let existingId = null;
+
+    async function refresh() {
+      if (!user) { existingId = null; return; }
+      const { data } = await supabase.from('wishlist_items').select('id').eq('student_id', user.id).eq('course_id', courseId).maybeSingle();
+      existingId = data?.id ?? null;
+      icon.setAttribute('fill', existingId ? 'currentColor' : 'none');
+      label.textContent = existingId ? 'Bookmarked' : 'Add to bookmark';
+    }
+    await refresh();
+
+    btn.addEventListener('click', async () => {
+      if (!user) { window.location.href = 'login.html'; return; }
+      if (existingId) {
+        const { error } = await supabase.from('wishlist_items').delete().eq('id', existingId);
+        if (!error) { window.showToast && window.showToast('Removed from bookmarks'); await refresh(); }
+      } else {
+        const { error } = await supabase.from('wishlist_items').insert({ student_id: user.id, course_id: courseId });
+        if (!error) { window.showToast && window.showToast('Added to bookmarks'); await refresh(); }
+        else if (window.showToast) window.showToast('Could not bookmark this course — try again');
+      }
+    });
+  }
 
   document.querySelector('[data-waitlist-btn]')?.addEventListener('click', async () => {
     if (!currentCourse) return;
