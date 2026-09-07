@@ -1,5 +1,5 @@
 /* ==========================================================================
-   EduGo — Design System (exact Figma tokens)
+   Neko Academy — Design System (exact Figma tokens)
    Palette, type, radii and components pulled directly from the Figma file.
    ========================================================================== */
 
@@ -213,7 +213,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .course-cta svg{ width:13px; height:13px; flex-shrink:0; }
 
 /* ==========================================================================
-   Feature / method cards ("Our EduGo approach")
+   Feature / method cards ("Our Neko Academy approach")
    ========================================================================== */
 .feature-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22.97px; }
 .feature-card{ background:#fff; border:1.56px solid var(--stroke-2); border-radius:10.88px; padding:32px 12px; min-height:325px; display:flex; flex-direction:column; gap:32px; }

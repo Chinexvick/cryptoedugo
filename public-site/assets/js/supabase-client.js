@@ -1,5 +1,5 @@
 /* ==========================================================================
-   CrypEduGo — Supabase client + shared auth/session helpers
+   Neko Academy — Supabase client + shared auth/session helpers
    Loaded on every page via <script type="module" src="assets/js/supabase-client.js">
    ========================================================================== */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
