@@ -59,11 +59,18 @@
   <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;width:100%;">
     <h2>All courses</h2>
     <div class="filter-controls">
-      <button class="select-pill">All Categories <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
-      <button class="select-pill">Sort by <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
+      <select class="select-pill" id="categoryFilter">
+        <option value="">All Categories</option>
+      </select>
+      <select class="select-pill" id="sortFilter">
+        <option value="newest">Sort by: Newest</option>
+        <option value="price_asc">Price: Low to High</option>
+        <option value="price_desc">Price: High to Low</option>
+        <option value="title_asc">Title: A–Z</option>
+      </select>
       <div class="search-pill">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-        <input type="text" placeholder="Search courses">
+        <input type="text" placeholder="Search courses" id="courseSearchInput">
       </div>
     </div>
   </div>
@@ -72,123 +79,12 @@
 <section class="section on-white" style="padding-top:56px;">
   <div class="wrap">
     <div class="course-grid" id="courseGrid">
-
-      <div class="course-card reveal">
-        <div class="course-thumb"><img src="assets/img/course-blockchain-new.jpg" alt="Blockchain Fundamentals"><span class="course-thumb-chip">Beginner</span><button class="course-save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button></div>
-        <div class="course-body">
-          <div class="course-meta-top">
-            <div class="course-stats"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 0.0</span><span><svg viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg> 0.0</span></div>
-            <div class="course-title">Blockchain Fundamentals</div>
-          </div>
-          <div class="course-desc">Self-paced courses designed to enhance your learning efficiency</div>
-          <div class="course-instructor"><img src="https://i.pravatar.cc/80?img=12" alt=""><span>The Instructor</span></div>
-          <div class="course-foot"><div class="course-price">€100</div><a href="course-detail.html" class="course-cta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Add to cart</a></div>
-        </div>
-      </div>
-
-      <div class="course-card reveal">
-        <div class="course-thumb"><img src="assets/img/course-solidity-new.jpg" alt="Solidity & Smart Contracts"><span class="course-thumb-chip">Intermediate</span><button class="course-save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button></div>
-        <div class="course-body">
-          <div class="course-meta-top">
-            <div class="course-stats"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 0.0</span><span><svg viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg> 0.0</span></div>
-            <div class="course-title">Solidity &amp; Smart Contracts</div>
-          </div>
-          <div class="course-desc">Self-paced courses designed to enhance your learning efficiency</div>
-          <div class="course-instructor"><img src="https://i.pravatar.cc/80?img=32" alt=""><span>The Instructor</span></div>
-          <div class="course-foot"><div class="course-price">€100</div><a href="course-detail.html" class="course-cta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Add to cart</a></div>
-        </div>
-      </div>
-
-      <div class="course-card reveal">
-        <div class="course-thumb"><img src="https://images.unsplash.com/photo-1620321023374-d1a68fbc720d?w=800&q=80" alt="DeFi Deep Dive"><span class="course-thumb-chip">Intermediate</span><button class="course-save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button></div>
-        <div class="course-body">
-          <div class="course-meta-top">
-            <div class="course-stats"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 0.0</span><span><svg viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg> 0.0</span></div>
-            <div class="course-title">DeFi Deep Dive</div>
-          </div>
-          <div class="course-desc">Self-paced courses designed to enhance your learning efficiency</div>
-          <div class="course-instructor"><img src="https://i.pravatar.cc/80?img=45" alt=""><span>The Instructor</span></div>
-          <div class="course-foot"><div class="course-price">€100</div><a href="course-detail.html" class="course-cta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Add to cart</a></div>
-        </div>
-      </div>
-
-      <div class="course-card reveal">
-        <div class="course-thumb"><img src="assets/img/course-nft.jpg" alt="NFTs & Digital Ownership"><span class="course-thumb-chip">Beginner</span><button class="course-save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button></div>
-        <div class="course-body">
-          <div class="course-meta-top">
-            <div class="course-stats"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 0.0</span><span><svg viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg> 0.0</span></div>
-            <div class="course-title">NFTs &amp; Digital Ownership</div>
-          </div>
-          <div class="course-desc">Self-paced courses designed to enhance your learning efficiency</div>
-          <div class="course-instructor"><img src="https://i.pravatar.cc/80?img=5" alt=""><span>The Instructor</span></div>
-          <div class="course-foot"><div class="course-price">€100</div><a href="course-detail.html" class="course-cta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Add to cart</a></div>
-        </div>
-      </div>
-
-      <div class="course-card reveal">
-        <div class="course-thumb"><img src="https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?w=800&q=80" alt="Smart Contract Security"><span class="course-thumb-chip">Advanced</span><button class="course-save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button></div>
-        <div class="course-body">
-          <div class="course-meta-top">
-            <div class="course-stats"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 0.0</span><span><svg viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg> 0.0</span></div>
-            <div class="course-title">Smart Contract Security</div>
-          </div>
-          <div class="course-desc">Self-paced courses designed to enhance your learning efficiency</div>
-          <div class="course-instructor"><img src="https://i.pravatar.cc/80?img=51" alt=""><span>The Instructor</span></div>
-          <div class="course-foot"><div class="course-price">€100</div><a href="course-detail.html" class="course-cta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Add to cart</a></div>
-        </div>
-      </div>
-
-      <div class="course-card reveal">
-        <div class="course-thumb"><img src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&q=80" alt="Crypto Trading & Technical Analysis"><span class="course-thumb-chip">Beginner</span><button class="course-save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button></div>
-        <div class="course-body">
-          <div class="course-meta-top">
-            <div class="course-stats"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 0.0</span><span><svg viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg> 0.0</span></div>
-            <div class="course-title">Crypto Trading &amp; TA</div>
-          </div>
-          <div class="course-desc">Self-paced courses designed to enhance your learning efficiency</div>
-          <div class="course-instructor"><img src="https://i.pravatar.cc/80?img=68" alt=""><span>The Instructor</span></div>
-          <div class="course-foot"><div class="course-price">€100</div><a href="course-detail.html" class="course-cta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Add to cart</a></div>
-        </div>
-      </div>
-
-      <div class="course-card reveal">
-        <div class="course-thumb"><img src="assets/img/course-tokenomics.jpg" alt="Tokenomics & Crypto Economics"><span class="course-thumb-chip">Intermediate</span><button class="course-save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button></div>
-        <div class="course-body">
-          <div class="course-meta-top">
-            <div class="course-stats"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 0.0</span><span><svg viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg> 0.0</span></div>
-            <div class="course-title">Tokenomics &amp; Economics</div>
-          </div>
-          <div class="course-desc">Self-paced courses designed to enhance your learning efficiency</div>
-          <div class="course-instructor"><img src="https://i.pravatar.cc/80?img=25" alt=""><span>The Instructor</span></div>
-          <div class="course-foot"><div class="course-price">€100</div><a href="course-detail.html" class="course-cta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Add to cart</a></div>
-        </div>
-      </div>
-
-      <div class="course-card reveal">
-        <div class="course-thumb"><img src="assets/img/course-web3frontend.jpg" alt="Web3 Frontend Development"><span class="course-thumb-chip">Intermediate</span><button class="course-save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button></div>
-        <div class="course-body">
-          <div class="course-meta-top">
-            <div class="course-stats"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 0.0</span><span><svg viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg> 0.0</span></div>
-            <div class="course-title">Web3 Frontend Dev</div>
-          </div>
-          <div class="course-desc">Self-paced courses designed to enhance your learning efficiency</div>
-          <div class="course-instructor"><img src="https://i.pravatar.cc/80?img=15" alt=""><span>The Instructor</span></div>
-          <div class="course-foot"><div class="course-price">€100</div><a href="course-detail.html" class="course-cta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Add to cart</a></div>
-        </div>
-      </div>
-
-      <div class="course-card reveal">
-        <div class="course-thumb"><img src="https://images.unsplash.com/photo-1622630998477-20aa696ecb05?w=800&q=80" alt="Layer 2s & Rollups Explained"><span class="course-thumb-chip">Advanced</span><button class="course-save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button></div>
-        <div class="course-body">
-          <div class="course-meta-top">
-            <div class="course-stats"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 0.0</span><span><svg viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg> 0.0</span></div>
-            <div class="course-title">Layer 2s &amp; Rollups</div>
-          </div>
-          <div class="course-desc">Self-paced courses designed to enhance your learning efficiency</div>
-          <div class="course-instructor"><img src="https://i.pravatar.cc/80?img=60" alt=""><span>The Instructor</span></div>
-          <div class="course-foot"><div class="course-price">€100</div><a href="course-detail.html" class="course-cta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Add to cart</a></div>
-        </div>
-      </div>
+      <div class="skeleton-row skeleton-block" style="height:320px;"></div>
+      <div class="skeleton-row skeleton-block" style="height:320px;"></div>
+      <div class="skeleton-row skeleton-block" style="height:320px;"></div>
+      <div class="skeleton-row skeleton-block" style="height:320px;"></div>
+      <div class="skeleton-row skeleton-block" style="height:320px;"></div>
+      <div class="skeleton-row skeleton-block" style="height:320px;"></div>
 
     </div>
   </div>
@@ -228,13 +124,11 @@
       </div>
       <div class="footer-cols">
         <div class="footer-col">
-          <h4>Courses</h4><hr>
+          <h4>Explore</h4><hr>
           <ul>
-            <li><a href="course-detail.html?slug=introduction-to-crypto">Blockchain Fundamentals<span class="sub">Self-paced courses designed to enhance your learning efficiency</span></a></li>
-            <li><a href="course-detail.html?slug=solidity-smart-contracts">Solidity &amp; Smart Contracts<span class="sub">Self-paced courses designed to enhance your learning efficiency</span></a></li>
-            <li><a href="course-detail.html?slug=defi-deep-dive">DeFi Deep Dive<span class="sub">Self-paced courses designed to enhance your learning efficiency</span></a></li>
-            <li><a href="course-detail.html?slug=nfts-digital-ownership">NFTs &amp; Digital Ownership<span class="sub">Self-paced courses designed to enhance your learning efficiency</span></a></li>
-            <li><a href="course-detail.html?slug=smart-contract-security">Smart Contract Security<span class="sub">Self-paced courses designed to enhance your learning efficiency</span></a></li>
+            <li><a href="courses.html">All Courses</a></li>
+            <li><a href="bundles.html">Learning Paths</a></li>
+            <li><a href="verify-certificate.html">Verify Certificate</a></li>
           </ul>
         </div>
         <div class="footer-col">
@@ -243,8 +137,6 @@
             <li><a href="about.html">About</a></li>
             <li><a href="about.html">Our Mission</a></li>
             <li><a href="index.html#success">Success Stories</a></li>
-            <li><a href="bundles.html">Learning Paths</a></li>
-            <li><a href="verify-certificate.html">Verify Certificate</a></li>
             <li><a href="privacy.html">Privacy Policy</a></li>
             <li><a href="terms.html">Terms</a></li>
             <li><a href="refund-policy.html">Refund Policy</a></li>
@@ -307,25 +199,26 @@
       </div>`;
   }
 
-  async function loadCourses() {
-    const { data: courses, error } = await supabase
-      .from('courses')
-      .select('id, slug, title, subtitle, level, price_cents, compare_at_price_cents, currency, thumbnail_url, is_purchasable')
-      .eq('status', 'published')
-      .order('created_at', { ascending: true });
+  let allCourses = [];
 
-    if (error) {
-      console.error('Failed to load courses', error);
-      grid.innerHTML = '<p style="color:var(--n700);">Could not load courses right now — please try again shortly.</p>';
-      return;
-    }
+  function renderCourses() {
+    const category = document.getElementById('categoryFilter').value;
+    const sort = document.getElementById('sortFilter').value;
+    const term = document.getElementById('courseSearchInput').value.trim().toLowerCase();
 
-    if (!courses || courses.length === 0) {
-      grid.innerHTML = '<p style="color:var(--n700);">No courses published yet.</p>';
-      return;
-    }
+    let list = allCourses.filter(c => {
+      const matchesCategory = !category || c.category === category;
+      const matchesTerm = !term || c.title.toLowerCase().includes(term) || (c.subtitle || '').toLowerCase().includes(term);
+      return matchesCategory && matchesTerm;
+    });
 
-    grid.innerHTML = courses.map(courseCardHtml).join('');
+    if (sort === 'price_asc') list = list.slice().sort((a, b) => a.price_cents - b.price_cents);
+    else if (sort === 'price_desc') list = list.slice().sort((a, b) => b.price_cents - a.price_cents);
+    else if (sort === 'title_asc') list = list.slice().sort((a, b) => a.title.localeCompare(b.title));
+
+    grid.innerHTML = list.length
+      ? list.map(courseCardHtml).join('')
+      : '<p style="color:var(--n700);">No courses match your filters.</p>';
 
     grid.querySelectorAll('[data-add-to-cart]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -342,6 +235,45 @@
       });
     });
   }
+
+  async function loadCourses() {
+    const { data: courses, error } = await supabase
+      .from('courses')
+      .select('id, slug, title, subtitle, level, category, price_cents, compare_at_price_cents, currency, thumbnail_url, is_purchasable')
+      .eq('status', 'published')
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Failed to load courses', error);
+      grid.innerHTML = '<p style="color:var(--n700);">Could not load courses right now — please try again shortly.</p>';
+      return;
+    }
+
+    if (!courses || courses.length === 0) {
+      grid.innerHTML = '<p style="color:var(--n700);">No courses published yet.</p>';
+      return;
+    }
+
+    allCourses = courses;
+
+    const categorySelect = document.getElementById('categoryFilter');
+    [...new Set(courses.map(c => c.category).filter(Boolean))].sort().forEach(cat => {
+      const opt = document.createElement('option');
+      opt.value = cat;
+      opt.textContent = cat;
+      categorySelect.appendChild(opt);
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get('q');
+    if (q) document.getElementById('courseSearchInput').value = q;
+
+    renderCourses();
+  }
+
+  document.getElementById('categoryFilter').addEventListener('change', renderCourses);
+  document.getElementById('sortFilter').addEventListener('change', renderCourses);
+  document.getElementById('courseSearchInput').addEventListener('input', renderCourses);
 
   loadCourses();
 </script>

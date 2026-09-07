@@ -107,38 +107,69 @@
     });
   }
 
-  async function openChannel(channelId) {
+  function adminReactionsHtml(messageId, reactions, myId) {
+    const byEmoji = {};
+    (reactions || []).forEach(r => {
+      byEmoji[r.emoji] = byEmoji[r.emoji] || { count: 0, mine: false };
+      byEmoji[r.emoji].count++;
+      if (r.user_id === myId) byEmoji[r.emoji].mine = true;
+    });
+    const chips = Object.entries(byEmoji).map(([emoji, info]) => `
+      <span class="reaction ${info.mine ? 'mine' : ''}" data-react-emoji="${emoji}" data-message-id="${messageId}">${emoji} ${info.count}</span>
+    `).join('');
+    return `<div class="reactions" style="margin-top:6px;">${chips}<button type="button" class="reaction-add-btn" data-add-reaction="${messageId}">+</button></div>`;
+  }
+
+  async function openChannel(channelId, silent) {
     activeChannelId = channelId;
     renderTabbar();
     const channel = channels.find(c => c.id === channelId);
     document.getElementById('commChannelTitle').textContent = '#' + channel.slug;
 
+    const list = document.getElementById('commMessageList');
+    const slow = window.watchSlowLoad(list, 8000);
+
     const { data: messages, error } = await supabase
       .from('community_messages')
-      .select('id, body, is_pinned, is_flagged, created_at, author:profiles(full_name, username, role)')
+      .select('id, body, is_pinned, is_flagged, created_at, author:profiles(full_name, username, role, avatar_url)')
       .eq('channel_id', channelId)
       .order('created_at', { ascending: false })
       .limit(30);
 
+    slow.stop();
     document.getElementById('commChannelMeta').textContent = `${(messages || []).length} recent messages`;
 
-    const list = document.getElementById('commMessageList');
     if (error) { list.innerHTML = '<p style="color:var(--danger);font-size:13px;">Failed to load messages.</p>'; return; }
     if (!messages || messages.length === 0) {
-      list.innerHTML = '<p style="color:var(--n50);font-size:13px;">No messages in this channel yet.</p>';
+      list.innerHTML = `<div class="empty-state-anim" style="text-align:center;padding:30px 16px;color:var(--n50);">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:8px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <p style="font-size:13px;">No messages in this channel yet.</p>
+      </div>`;
       return;
     }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data: reactions } = await supabase
+      .from('message_reactions')
+      .select('message_id, user_id, emoji')
+      .in('message_id', messages.map(m => m.id));
+    const reactionsByMessage = {};
+    (reactions || []).forEach(r => { (reactionsByMessage[r.message_id] = reactionsByMessage[r.message_id] || []).push(r); });
 
     list.innerHTML = messages.map(m => {
       const isAdmin = m.author?.role === 'admin';
       const name = m.author?.full_name || m.author?.username || 'Unknown';
       const initials = name.slice(0, 2).toUpperCase();
+      const avatar = m.author?.avatar_url
+        ? `<img src="${escapeHtml(m.author.avatar_url)}" alt="" style="width:34px;height:34px;border-radius:10px;object-fit:cover;flex-shrink:0;">`
+        : `<div class="room-avatar" style="width:34px;height:34px;font-size:13px;${isAdmin ? 'background:var(--grad-brand);' : ''}">${isAdmin ? 'A' : escapeHtml(initials)}</div>`;
       return `
-        <div class="inbox-item" style="${m.is_flagged ? 'background:rgba(247,107,107,.06);border:1px solid rgba(247,107,107,.2);border-radius:10px;' : ''}">
-          <div class="room-avatar" style="width:34px;height:34px;font-size:13px;${isAdmin ? 'background:var(--grad-brand);' : ''}">${isAdmin ? 'A' : escapeHtml(initials)}</div>
+        <div class="inbox-item msg-in" style="${m.is_flagged ? 'background:rgba(247,107,107,.06);border:1px solid rgba(247,107,107,.2);border-radius:10px;' : ''}">
+          ${avatar}
           <div class="txt">
             <div class="row1"><b>${escapeHtml(name)} ${m.is_flagged ? '<span style="color:var(--danger);font-size:11px;">FLAGGED</span>' : ''} ${m.is_pinned ? '<span style="color:#f59e0b;font-size:11px;">PINNED</span>' : ''}</b><span class="time">${timeAgo(m.created_at)}</span></div>
             <p>${escapeHtml(m.body)}</p>
+            ${adminReactionsHtml(m.id, reactionsByMessage[m.id], user?.id)}
           </div>
           <div class="row-actions" style="flex-shrink:0;">
             <button aria-label="Pin" data-pin-msg="${m.id}" data-pinned="${m.is_pinned}" title="Pin/unpin"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24z"/></svg></button>
@@ -146,6 +177,28 @@
           </div>
         </div>`;
     }).join('');
+
+    list.querySelectorAll('[data-react-emoji]').forEach(el => {
+      el.addEventListener('click', async () => {
+        const messageId = el.getAttribute('data-message-id');
+        const emoji = el.getAttribute('data-react-emoji');
+        if (el.classList.contains('mine')) {
+          await supabase.from('message_reactions').delete().eq('message_id', messageId).eq('user_id', user.id).eq('emoji', emoji);
+        } else {
+          await supabase.from('message_reactions').insert({ message_id: messageId, user_id: user.id, emoji });
+        }
+        openChannel(activeChannelId, true);
+      });
+    });
+    list.querySelectorAll('[data-add-reaction]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        window.openReactionPicker(btn, async (emoji) => {
+          await supabase.from('message_reactions').insert({ message_id: btn.getAttribute('data-add-reaction'), user_id: user.id, emoji });
+          openChannel(activeChannelId, true);
+        });
+      });
+    });
 
     list.querySelectorAll('[data-pin-msg]').forEach(btn => {
       btn.addEventListener('click', async () => {

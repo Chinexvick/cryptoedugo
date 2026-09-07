@@ -68,8 +68,12 @@
         <h1 class="account-title">Notifications</h1>
         <p style="color:var(--n700);font-size:14.5px;margin:-14px 0 24px;">Course updates, replies, and announcements.</p>
         
-        <div style="display:flex;flex-direction:column;gap:6px;" id="notifList"></div>
-        <div class="empty-state" id="notifEmpty" style="display:none;">
+        <div style="display:flex;flex-direction:column;gap:6px;" id="notifList">
+          <div class="skeleton-row skeleton-block" style="height:56px;"></div>
+          <div class="skeleton-row skeleton-block" style="height:56px;"></div>
+          <div class="skeleton-row skeleton-block" style="height:56px;"></div>
+        </div>
+        <div class="empty-state empty-state-anim" id="notifEmpty" style="display:none;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           <p>No notifications yet</p>
         </div>
@@ -134,6 +138,7 @@
 
     const list = document.getElementById('notifList');
     const empty = document.getElementById('notifEmpty');
+    const slow = window.watchSlowLoad(list, 8000);
 
     const { data: notifs, error } = await supabase
       .from('notifications')
@@ -142,18 +147,22 @@
       .order('created_at', { ascending: false })
       .limit(50);
 
+    slow.stop();
+
     if (error) {
+      list.innerHTML = '';
       console.error('Failed to load notifications', error);
       return;
     }
 
     if (!notifs || notifs.length === 0) {
+      list.innerHTML = '';
       empty.style.display = 'block';
       return;
     }
 
     list.innerHTML = notifs.map(n => `
-      <div class="notif-item ${n.is_read ? '' : 'unread'}" data-notif-id="${n.id}">
+      <div class="notif-item msg-in ${n.is_read ? '' : 'unread'}" data-notif-id="${n.id}">
         <div class="icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${ICONS[n.type] || ICONS.announcement}</svg></div>
         <div><p><b>${escapeHtml(n.title)}</b>${n.body ? ' — ' + escapeHtml(n.body) : ''}</p><div class="time">${timeAgo(n.created_at)}</div></div>
       </div>`).join('');

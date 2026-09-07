@@ -119,11 +119,11 @@
         </div>
         <div class="aside-card">
           <ul class="aside-meta">
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 5.4L20 9l-5.6 1.6L12 16l-2.4-5.4L4 9l5.6-1.6L12 2z"/></svg> Intermediate</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 3,580 Total Enrolled</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 9h 40m</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> July 2026 Last Updated</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Certificate of completion</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 5.4L20 9l-5.6 1.6L12 16l-2.4-5.4L4 9l5.6-1.6L12 2z"/></svg> <span id="asideLevel">—</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> <span id="asideEnrolled">—</span> Total Enrolled</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> <span id="asideDuration">—</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> <span id="asideUpdated">—</span> Last Updated</li>
+            <li id="asideCertRow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Certificate of completion</li>
           </ul>
         </div>
         <div class="aside-card">
@@ -147,8 +147,8 @@
         <div class="aside-card">
           <div class="aside-review-head"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><h3 style="margin:0;">Reviews</h3></div>
           <div style="display:flex;align-items:baseline;gap:8px;padding:6px 0 4px;">
-            <span style="font-size:22px;font-weight:700;">4.8</span>
-            <span style="font-size:12.5px;color:var(--n50);">out of 5 · 612 reviews</span>
+            <span style="font-size:22px;font-weight:700;" id="asideAvgScore">—</span>
+            <span style="font-size:12.5px;color:var(--n50);" id="asideReviewCount">No reviews yet</span>
           </div>
           <a href="#reviewList" class="btn btn-sm btn-ghost btn-block" style="margin-top:4px;">Read all reviews</a>
         </div>
@@ -164,17 +164,11 @@
     </div>
     <div class="review-summary reveal">
       <div class="review-score">
-        <b>4.8</b>
-        <div class="stars"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg></div>
-        <span style="font-size:12.5px;color:var(--n400);">612 reviews</span>
+        <b id="summaryAvgScore">—</b>
+        <div class="stars" id="summaryStars"></div>
+        <span style="font-size:12.5px;color:var(--n400);" id="summaryCount">No reviews yet</span>
       </div>
-      <div class="review-bars">
-        <div class="review-bar-row"><span style="width:16px;">5</span><div class="review-bar-track"><div class="review-bar-fill" style="width:78%;"></div></div><span>78%</span></div>
-        <div class="review-bar-row"><span style="width:16px;">4</span><div class="review-bar-track"><div class="review-bar-fill" style="width:15%;"></div></div><span>15%</span></div>
-        <div class="review-bar-row"><span style="width:16px;">3</span><div class="review-bar-track"><div class="review-bar-fill" style="width:5%;"></div></div><span>5%</span></div>
-        <div class="review-bar-row"><span style="width:16px;">2</span><div class="review-bar-track"><div class="review-bar-fill" style="width:1%;"></div></div><span>1%</span></div>
-        <div class="review-bar-row"><span style="width:16px;">1</span><div class="review-bar-track"><div class="review-bar-fill" style="width:1%;"></div></div><span>1%</span></div>
-      </div>
+      <div class="review-bars" id="summaryBars"></div>
     </div>
 
     <div class="review-form reveal">
@@ -190,23 +184,7 @@
       <button class="btn btn-primary btn-sm" style="margin-top:12px;" id="submitReviewBtn">Submit review</button>
     </div>
 
-    <div id="reviewList">
-      <div class="review-card reveal">
-        <div class="head"><img src="https://i.pravatar.cc/80?img=15" alt=""><div><div class="name">Jae Kim</div><div class="date">2 days ago</div></div></div>
-        <div class="stars" style="margin-bottom:8px;"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg></div>
-        <p>Best Solidity course I've taken — the staking vault project made gas optimization finally click for me. Wish I'd found this before wasting money on two other courses.</p>
-      </div>
-      <div class="review-card reveal">
-        <div class="head"><img src="https://i.pravatar.cc/80?img=32" alt=""><div><div class="name">Mia Park</div><div class="date">5 days ago</div></div></div>
-        <div class="stars" style="margin-bottom:8px;"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg></div>
-        <p>Great content and the Foundry testing module was exactly what I needed. Docked one star only because I wish there was more on upgradeable contracts.</p>
-      </div>
-      <div class="review-card reveal" style="border-bottom:none;">
-        <div class="head"><img src="https://i.pravatar.cc/80?img=51" alt=""><div><div class="name">Nia Okafor</div><div class="date">1 week ago</div></div></div>
-        <div class="stars" style="margin-bottom:8px;"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg></div>
-        <p>Deployed my first audited-style contract to Sepolia after this. Direct line to the admin for questions was genuinely useful, not just marketing copy.</p>
-      </div>
-    </div>
+    <div id="reviewList"><p style="color:var(--n700);font-size:14.5px;">Loading reviews…</p></div>
   </div>
 </section>
 
@@ -215,45 +193,7 @@
     <div class="section-head split reveal">
       <h2 style="margin:0;">Checkout other courses</h2>
     </div>
-    <div class="course-grid">
-
-      <div class="course-card reveal">
-        <div class="course-thumb"><img src="assets/img/course-blockchain-new.jpg" alt="Blockchain Fundamentals"><span class="course-thumb-chip">Beginner</span><button class="course-save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button></div>
-        <div class="course-body">
-          <div class="course-meta-top">
-            <div class="course-stats"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 0.0</span><span><svg viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg> 0.0</span></div>
-            <div class="course-title">Blockchain Fundamentals</div>
-          </div>
-          <div class="course-desc">Self-paced courses designed to enhance your learning efficiency</div>
-          <div class="course-foot"><div class="course-price">€100</div><a href="course-detail.html?slug=introduction-to-crypto" class="course-cta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Add to cart</a></div>
-        </div>
-      </div>
-
-      <div class="course-card reveal">
-        <div class="course-thumb"><img src="https://images.unsplash.com/photo-1620321023374-d1a68fbc720d?w=800&q=80" alt="DeFi Deep Dive"><span class="course-thumb-chip">Intermediate</span><button class="course-save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button></div>
-        <div class="course-body">
-          <div class="course-meta-top">
-            <div class="course-stats"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 0.0</span><span><svg viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg> 0.0</span></div>
-            <div class="course-title">DeFi Deep Dive</div>
-          </div>
-          <div class="course-desc">Self-paced courses designed to enhance your learning efficiency</div>
-          <div class="course-foot"><div class="course-price">€100</div><a href="course-detail.html?slug=defi-deep-dive" class="course-cta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Add to cart</a></div>
-        </div>
-      </div>
-
-      <div class="course-card reveal">
-        <div class="course-thumb"><img src="https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?w=800&q=80" alt="Smart Contract Security"><span class="course-thumb-chip">Advanced</span><button class="course-save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button></div>
-        <div class="course-body">
-          <div class="course-meta-top">
-            <div class="course-stats"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 0.0</span><span><svg viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg> 0.0</span></div>
-            <div class="course-title">Smart Contract Security</div>
-          </div>
-          <div class="course-desc">Self-paced courses designed to enhance your learning efficiency</div>
-          <div class="course-foot"><div class="course-price">€100</div><a href="course-detail.html?slug=smart-contract-security" class="course-cta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Add to cart</a></div>
-        </div>
-      </div>
-
-    </div>
+    <div class="course-grid" id="relatedCourseGrid"><p style="color:var(--n700);">Loading…</p></div>
   </div>
 </section>
 
@@ -285,13 +225,11 @@
       </div>
       <div class="footer-cols">
         <div class="footer-col">
-          <h4>Courses</h4><hr>
+          <h4>Explore</h4><hr>
           <ul>
-            <li><a href="course-detail.html?slug=introduction-to-crypto">Blockchain Fundamentals<span class="sub">Self-paced courses designed to enhance your learning efficiency</span></a></li>
-            <li><a href="course-detail.html?slug=solidity-smart-contracts">Solidity &amp; Smart Contracts<span class="sub">Self-paced courses designed to enhance your learning efficiency</span></a></li>
-            <li><a href="course-detail.html?slug=defi-deep-dive">DeFi Deep Dive<span class="sub">Self-paced courses designed to enhance your learning efficiency</span></a></li>
-            <li><a href="course-detail.html?slug=nfts-digital-ownership">NFTs &amp; Digital Ownership<span class="sub">Self-paced courses designed to enhance your learning efficiency</span></a></li>
-            <li><a href="course-detail.html?slug=smart-contract-security">Smart Contract Security<span class="sub">Self-paced courses designed to enhance your learning efficiency</span></a></li>
+            <li><a href="courses.html">All Courses</a></li>
+            <li><a href="bundles.html">Learning Paths</a></li>
+            <li><a href="verify-certificate.html">Verify Certificate</a></li>
           </ul>
         </div>
         <div class="footer-col">
@@ -300,8 +238,6 @@
             <li><a href="about.html">About</a></li>
             <li><a href="about.html">Our Mission</a></li>
             <li><a href="index.html#success">Success Stories</a></li>
-            <li><a href="bundles.html">Learning Paths</a></li>
-            <li><a href="verify-certificate.html">Verify Certificate</a></li>
             <li><a href="privacy.html">Privacy Policy</a></li>
             <li><a href="terms.html">Terms</a></li>
             <li><a href="refund-policy.html">Refund Policy</a></li>
@@ -332,28 +268,6 @@
         b.classList.toggle('active', parseInt(b.getAttribute('data-star'), 10) <= selectedStars);
       });
     });
-  });
-  document.getElementById('submitReviewBtn').addEventListener('click', function(){
-    var textarea = document.querySelector('.review-form textarea');
-    if (!textarea.value.trim() || selectedStars === 0) {
-      textarea.style.borderColor = 'var(--danger)';
-      return;
-    }
-    var starsSvg = '';
-    for (var i = 0; i < 5; i++) {
-      starsSvg += i < selectedStars
-        ? '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg>'
-        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg>';
-    }
-    var card = document.createElement('div');
-    card.className = 'review-card reveal in';
-    card.innerHTML = '<div class="head"><img src="https://i.pravatar.cc/80?img=68" alt=""><div><div class="name">You</div><div class="date">Just now</div></div></div>' +
-      '<div class="stars" style="margin-bottom:8px;">' + starsSvg + '</div>' +
-      '<p>' + textarea.value.replace(/</g, '&lt;') + '</p>';
-    document.getElementById('reviewList').prepend(card);
-    textarea.value = '';
-    this.textContent = 'Review posted ✓';
-    this.disabled = true;
   });
 </script>
 
@@ -405,6 +319,13 @@
     document.getElementById('cdSub').textContent = course.subtitle || '';
     document.getElementById('cdCategory').textContent = `Category: ${course.category}`;
     document.getElementById('cdLevel').textContent = `Level: ${course.level}`;
+
+    document.getElementById('asideLevel').textContent = course.level;
+    document.getElementById('asideUpdated').textContent = new Date(course.updated_at).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+    document.getElementById('asideCertRow').style.display = course.certificate_on_completion ? '' : 'none';
+
+    const { data: enrolledCount } = await supabase.rpc('get_course_enrollment_count', { p_course_id: course.id });
+    document.getElementById('asideEnrolled').textContent = Number(enrolledCount || 0).toLocaleString();
 
     if (course.thumbnail_url) document.getElementById('cdHeroImg').src = course.thumbnail_url;
 
@@ -475,6 +396,58 @@
 
     loadCurriculum(course.id);
     loadReviews(course.id);
+    loadRelatedCourses(course.id);
+  }
+
+  async function loadRelatedCourses(excludeCourseId) {
+    const grid = document.getElementById('relatedCourseGrid');
+    if (!grid) return;
+
+    const { data: courses, error } = await supabase
+      .from('courses')
+      .select('id, slug, title, subtitle, level, price_cents, compare_at_price_cents, currency, thumbnail_url, is_purchasable')
+      .eq('status', 'published')
+      .neq('id', excludeCourseId)
+      .order('created_at', { ascending: true })
+      .limit(3);
+
+    if (error || !courses || courses.length === 0) {
+      grid.innerHTML = '<p style="color:var(--n700);">No other courses to show yet.</p>';
+      return;
+    }
+
+    grid.innerHTML = courses.map(c => {
+      const img = c.thumbnail_url || 'assets/img/course-blockchain-new.jpg';
+      const priceHtml = c.compare_at_price_cents
+        ? `<span style="text-decoration:line-through;color:var(--n700);font-weight:500;font-size:12px;margin-right:4px;">${formatPrice(c.compare_at_price_cents, c.currency)}</span>${formatPrice(c.price_cents, c.currency)}`
+        : formatPrice(c.price_cents, c.currency);
+      const ctaHtml = c.is_purchasable
+        ? `<button class="course-cta" data-add-to-cart="${c.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Add to cart</button>`
+        : `<button class="course-cta" style="opacity:.6;" data-coming-soon="${escapeHtml(c.title)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Coming soon</button>`;
+      return `
+        <div class="course-card reveal in">
+          <div class="course-thumb"><img src="${escapeHtml(img)}" alt="${escapeHtml(c.title)}"><span class="course-thumb-chip">${escapeHtml(c.level)}</span></div>
+          <div class="course-body">
+            <div class="course-meta-top"><a href="course-detail.html?slug=${encodeURIComponent(c.slug)}" style="color:inherit;text-decoration:none;"><div class="course-title">${escapeHtml(c.title)}</div></a></div>
+            <div class="course-desc">${escapeHtml(c.subtitle || '')}</div>
+            <div class="course-foot"><div class="course-price">${priceHtml}</div>${ctaHtml}</div>
+          </div>
+        </div>`;
+    }).join('');
+
+    grid.querySelectorAll('[data-add-to-cart]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        addToCart(btn.getAttribute('data-add-to-cart'));
+        window.showToast ? window.showToast('Added to cart') : alert('Added to cart');
+      });
+    });
+    grid.querySelectorAll('[data-coming-soon]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        window.showToast
+          ? window.showToast(`${btn.getAttribute('data-coming-soon')} is coming soon — check back shortly!`)
+          : alert('Coming soon!');
+      });
+    });
   }
 
   async function loadCurriculum(courseId) {
@@ -490,12 +463,14 @@
     if (!modules || modules.length === 0) {
       countEl.textContent = 'Curriculum coming soon';
       listEl.innerHTML = '';
+      document.getElementById('asideDuration').textContent = 'Duration coming soon';
       return;
     }
 
     let lessonCount = 0, totalMins = 0;
     modules.forEach(m => (m.course_lessons || []).forEach(l => { lessonCount++; totalMins += l.duration_minutes || 0; }));
     countEl.textContent = `${modules.length} modules · ${lessonCount} lessons${totalMins ? ' · ' + fmtDuration(totalMins) : ''}`;
+    document.getElementById('asideDuration').textContent = totalMins ? fmtDuration(totalMins) : 'Duration coming soon';
 
     listEl.innerHTML = modules.map(m => {
       const lessons = (m.course_lessons || []).sort((a, b) => a.position - b.position);
@@ -512,30 +487,107 @@
     }).join('');
   }
 
+  function starSvg(filled) {
+    return filled
+      ? '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg>';
+  }
+
+  function timeAgo(iso) {
+    const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+    if (s < 60) return 'just now';
+    if (s < 3600) return Math.floor(s / 60) + 'm ago';
+    if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+    if (s < 604800) return Math.floor(s / 86400) + 'd ago';
+    return new Date(iso).toLocaleDateString();
+  }
+
   async function loadReviews(courseId) {
     const { data: reviews } = await supabase
       .from('reviews')
       .select('rating, body, created_at, student:profiles(full_name, username)')
       .eq('course_id', courseId)
       .order('created_at', { ascending: false })
-      .limit(10);
+      .limit(50);
 
     const el = document.getElementById('cdReviewsList');
+    const listEl = document.getElementById('reviewList');
+
     if (!reviews || reviews.length === 0) {
       el.innerHTML = '<p style="color:var(--n700);font-size:14.5px;">No reviews yet — be the first once you complete the course.</p>';
+      listEl.innerHTML = '<p style="color:var(--n700);font-size:14.5px;">No reviews yet — be the first once you complete the course.</p>';
+      document.getElementById('asideReviewCount').textContent = 'No reviews yet';
+      document.getElementById('summaryCount').textContent = '0 reviews';
       return;
     }
 
     const avg = (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1);
+
     el.innerHTML = `<p style="font-weight:700;margin-bottom:16px;">★ ${avg} average · ${reviews.length} review${reviews.length > 1 ? 's' : ''}</p>` +
-      reviews.map(r => `
+      reviews.slice(0, 10).map(r => `
         <div style="border-top:1px solid var(--stroke-2);padding:16px 0;">
           <div style="font-weight:700;font-size:14px;">${escapeHtml(r.student?.full_name || r.student?.username || 'Student')}
             <span style="color:#f59e0b;margin-left:8px;">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span>
           </div>
           <p style="color:var(--n700);font-size:14px;margin-top:6px;">${escapeHtml(r.body)}</p>
         </div>`).join('');
+
+    document.getElementById('asideAvgScore').textContent = avg;
+    document.getElementById('asideReviewCount').textContent = `out of 5 · ${reviews.length} review${reviews.length > 1 ? 's' : ''}`;
+    document.getElementById('summaryAvgScore').textContent = avg;
+    document.getElementById('summaryCount').textContent = `${reviews.length} review${reviews.length > 1 ? 's' : ''}`;
+    document.getElementById('summaryStars').innerHTML = [1,2,3,4,5].map(i => starSvg(i <= Math.round(avg))).join('');
+
+    const counts = [0,0,0,0,0];
+    reviews.forEach(r => { if (r.rating >= 1 && r.rating <= 5) counts[r.rating - 1]++; });
+    document.getElementById('summaryBars').innerHTML = [5,4,3,2,1].map(star => {
+      const c = counts[star - 1];
+      const pct = Math.round((c / reviews.length) * 100);
+      return `<div class="review-bar-row"><span style="width:16px;">${star}</span><div class="review-bar-track"><div class="review-bar-fill" style="width:${pct}%;"></div></div><span>${pct}%</span></div>`;
+    }).join('');
+
+    listEl.innerHTML = reviews.map(r => `
+      <div class="review-card reveal in">
+        <div class="head"><div style="width:40px;height:40px;border-radius:50%;background:var(--grad-brand-soft);display:flex;align-items:center;justify-content:center;font-weight:700;">${escapeHtml((r.student?.full_name || r.student?.username || 'S')[0].toUpperCase())}</div><div><div class="name">${escapeHtml(r.student?.full_name || r.student?.username || 'Student')}</div><div class="date">${timeAgo(r.created_at)}</div></div></div>
+        <div class="stars" style="margin-bottom:8px;">${[1,2,3,4,5].map(i => starSvg(i <= r.rating)).join('')}</div>
+        <p>${escapeHtml(r.body)}</p>
+      </div>`).join('');
   }
+
+  document.getElementById('submitReviewBtn').addEventListener('click', async function(){
+    const textarea = document.querySelector('.review-form textarea');
+    if (!textarea.value.trim() || selectedStars === 0) {
+      textarea.style.borderColor = 'var(--danger)';
+      return;
+    }
+    if (!currentCourse) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.href = 'login.html';
+      return;
+    }
+    this.disabled = true;
+    this.textContent = 'Posting…';
+    const { error } = await supabase.from('reviews').insert({
+      course_id: currentCourse.id,
+      student_id: session.user.id,
+      rating: selectedStars,
+      body: textarea.value.trim(),
+    });
+    if (error) {
+      this.disabled = false;
+      this.textContent = 'Submit review';
+      window.showToast && window.showToast(
+        error.code === '23505'
+          ? 'You already reviewed this course.'
+          : 'You need to purchase this course before reviewing it.'
+      );
+      return;
+    }
+    textarea.value = '';
+    this.textContent = 'Review posted ✓';
+    await loadReviews(currentCourse.id);
+  });
 
   document.querySelector('[data-waitlist-btn]')?.addEventListener('click', async () => {
     if (!currentCourse) return;

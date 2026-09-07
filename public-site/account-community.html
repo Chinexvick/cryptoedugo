@@ -65,6 +65,8 @@
         <span id="commSubtitle"></span>
       </div>
     </div>
+    <div class="comm-mobile-channels" id="commMobileChannels"></div>
+
     <div class="comm-pinned">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24z"/></svg>
       Pinned: Welcome! Read the community guidelines in #announcements before posting.
@@ -81,13 +83,8 @@
   </main>
 
   <aside class="comm-members">
-    <h4>Online — 6</h4>
-    <div class="comm-member"><img src="https://i.pravatar.cc/60?img=47" alt="">CrypEduGo Admin<span class="status-dot"></span></div>
-    <div class="comm-member"><img src="https://i.pravatar.cc/60?img=15" alt="">Jae Kim<span class="status-dot"></span></div>
-    <div class="comm-member"><img src="https://i.pravatar.cc/60?img=32" alt="">Mia Park<span class="status-dot"></span></div>
-    <div class="comm-member"><img src="https://i.pravatar.cc/60?img=5" alt="">Nia Okafor<span class="status-dot"></span></div>
-    <div class="comm-member"><img src="https://i.pravatar.cc/60?img=68" alt="">Ade Coker<span class="status-dot"></span></div>
-    <div class="comm-member"><img src="https://i.pravatar.cc/60?img=25" alt="">Diego Alvarez<span class="status-dot"></span></div>
+    <h4 id="onlineCountLabel">Online — 0</h4>
+    <div id="onlineMembersList"><p style="color:var(--n50);font-size:12px;">Connecting…</p></div>
   </aside>
 </div>
 
@@ -142,9 +139,60 @@
     document.querySelectorAll('[data-channel-id]').forEach(el => {
       el.addEventListener('click', () => openChannel(el.getAttribute('data-channel-id')));
     });
+
+    // Mobile: horizontal pill switcher shown when the sidebar is hidden.
+    document.getElementById('commMobileChannels').innerHTML = channels.map(c => `
+      <button type="button" data-mobile-channel-id="${c.id}" class="${activeChannel && c.id === activeChannel.id ? 'active' : ''}">${c.is_announcement_only ? '📣' : '#'} ${escapeHtml(c.slug)}</button>
+    `).join('');
+    document.querySelectorAll('[data-mobile-channel-id]').forEach(el => {
+      el.addEventListener('click', () => openChannel(el.getAttribute('data-mobile-channel-id')));
+    });
   }
 
-  async function openChannel(channelId) {
+  function avatarHtml(profile, isAdmin) {
+    const name = profile?.full_name || profile?.username || 'Unknown';
+    if (profile?.avatar_url) {
+      return `<img class="avatar" src="${escapeHtml(profile.avatar_url)}" alt="${escapeHtml(name)}">`;
+    }
+    return `<div class="avatar" style="display:flex;align-items:center;justify-content:center;background:${isAdmin ? 'var(--grad-brand)' : '#2a2a31'};color:#fff;font-weight:700;font-size:13px;">${escapeHtml(name.charAt(0).toUpperCase())}</div>`;
+  }
+
+  function reactionsHtml(messageId, reactions) {
+    const byEmoji = {};
+    (reactions || []).forEach(r => {
+      byEmoji[r.emoji] = byEmoji[r.emoji] || { count: 0, mine: false };
+      byEmoji[r.emoji].count++;
+      if (r.user_id === currentUserId) byEmoji[r.emoji].mine = true;
+    });
+    const chips = Object.entries(byEmoji).map(([emoji, info]) => `
+      <span class="reaction ${info.mine ? 'mine' : ''}" data-react-emoji="${emoji}" data-message-id="${messageId}">${emoji} ${info.count}</span>
+    `).join('');
+    return `<div class="reactions">${chips}<button type="button" class="reaction-add-btn" data-add-reaction="${messageId}">+</button></div>`;
+  }
+
+  function wireReactionEvents(feed) {
+    feed.querySelectorAll('[data-react-emoji]').forEach(el => {
+      el.addEventListener('click', () => toggleReaction(el.getAttribute('data-message-id'), el.getAttribute('data-react-emoji'), el));
+    });
+    feed.querySelectorAll('[data-add-reaction]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        window.openReactionPicker(btn, (emoji) => toggleReaction(btn.getAttribute('data-add-reaction'), emoji, null));
+      });
+    });
+  }
+
+  async function toggleReaction(messageId, emoji, existingChipEl) {
+    if (existingChipEl && existingChipEl.classList.contains('mine')) {
+      await supabase.from('message_reactions').delete()
+        .eq('message_id', messageId).eq('user_id', currentUserId).eq('emoji', emoji);
+    } else {
+      await supabase.from('message_reactions').insert({ message_id: messageId, user_id: currentUserId, emoji });
+    }
+    if (activeChannel) openChannel(activeChannel.id, true);
+  }
+
+  async function openChannel(channelId, silent) {
     activeChannel = channels.find(c => c.id === channelId);
     if (!activeChannel) return;
     renderChannels();
@@ -161,30 +209,44 @@
       : `Message #${activeChannel.slug}…`;
 
     const feed = document.getElementById('commFeed');
-    feed.innerHTML = '<p style="color:var(--n50);font-size:13.5px;">Loading messages…</p>';
+    const wasAtBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 40;
+    if (!silent) feed.innerHTML = '<p style="color:var(--n50);font-size:13.5px;">Loading messages…</p>';
+    const slow = window.watchSlowLoad(feed, 8000);
 
     const { data: messages, error } = await supabase
       .from('community_messages')
-      .select('id, body, is_pinned, created_at, author:profiles(full_name, username, role)')
+      .select('id, body, is_pinned, created_at, author:profiles(full_name, username, role, avatar_url)')
       .eq('channel_id', channelId)
       .order('created_at', { ascending: true })
       .limit(100);
+
+    slow.stop();
 
     if (error) {
       feed.innerHTML = '<p style="color:var(--danger);font-size:13.5px;">Could not load messages.</p>';
       return;
     }
     if (!messages || messages.length === 0) {
-      feed.innerHTML = '<p style="color:var(--n50);font-size:13.5px;">No messages yet — say hello!</p>';
+      feed.innerHTML = `<div class="empty-state-anim" style="text-align:center;padding:40px 20px;color:var(--n50);">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:12px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <p style="font-size:13.5px;">No messages yet — say hello!</p>
+      </div>`;
       return;
     }
+
+    const { data: reactions } = await supabase
+      .from('message_reactions')
+      .select('message_id, user_id, emoji')
+      .in('message_id', messages.map(m => m.id));
+    const reactionsByMessage = {};
+    (reactions || []).forEach(r => { (reactionsByMessage[r.message_id] = reactionsByMessage[r.message_id] || []).push(r); });
 
     feed.innerHTML = messages.map(m => {
       const name = m.author?.full_name || m.author?.username || 'Unknown';
       const isAdmin = m.author?.role === 'admin';
       return `
-        <div class="comm-msg">
-          <div class="avatar" style="display:flex;align-items:center;justify-content:center;background:${isAdmin ? 'var(--grad-brand)' : '#2a2a31'};color:#fff;font-weight:700;font-size:13px;">${escapeHtml(name.charAt(0).toUpperCase())}</div>
+        <div class="comm-msg msg-in">
+          ${avatarHtml(m.author, isAdmin)}
           <div>
             <div class="meta">
               <span class="name">${escapeHtml(name)}</span>
@@ -193,10 +255,12 @@
               <span class="time">${ago(m.created_at)}</span>
             </div>
             <div class="bubble-text">${escapeHtml(m.body)}</div>
+            ${reactionsHtml(m.id, reactionsByMessage[m.id])}
           </div>
         </div>`;
     }).join('');
-    feed.scrollTop = feed.scrollHeight;
+    wireReactionEvents(feed);
+    if (!silent || wasAtBottom) feed.scrollTop = feed.scrollHeight;
   }
 
   document.getElementById('commForm').addEventListener('submit', async function (e) {
@@ -242,12 +306,35 @@
     renderChannels();
     openChannel(channels[0].id);
 
-    // Live updates: new messages appear without a refresh.
+    const { data: myProfile } = await supabase.from('profiles').select('full_name, username').eq('id', currentUserId).single();
+    const myName = myProfile?.full_name || myProfile?.username || 'Student';
+
+    // Live updates: new messages and reactions appear without a manual refresh.
     supabase.channel('community-live')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'community_messages' }, (payload) => {
-        if (activeChannel && payload.new.channel_id === activeChannel.id) openChannel(activeChannel.id);
+        if (activeChannel && payload.new.channel_id === activeChannel.id) openChannel(activeChannel.id, true);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'message_reactions' }, () => {
+        if (activeChannel) openChannel(activeChannel.id, true);
       })
       .subscribe();
+
+    // Presence: who's online right now in the community.
+    const presenceChannel = supabase.channel('community-presence', { config: { presence: { key: currentUserId } } });
+    presenceChannel
+      .on('presence', { event: 'sync' }, () => {
+        const state = presenceChannel.presenceState();
+        const users = Object.values(state).map(entries => entries[0]);
+        document.getElementById('onlineCountLabel').textContent = `Online — ${users.length}`;
+        document.getElementById('onlineMembersList').innerHTML = users.map(u => `
+          <div class="comm-member">${u.avatar_url ? `<img src="${escapeHtml(u.avatar_url)}" alt="">` : `<div style="width:28px;height:28px;border-radius:50%;background:var(--grad-brand);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;">${escapeHtml((u.name || '?').charAt(0).toUpperCase())}</div>`}${escapeHtml(u.name)}<span class="status-dot"></span></div>
+        `).join('') || '<p style="color:var(--n50);font-size:12px;">No one else is here yet.</p>';
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await presenceChannel.track({ name: myName, avatar_url: null });
+        }
+      });
   })();
 </script>
 
