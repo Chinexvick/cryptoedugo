@@ -67,11 +67,18 @@
       <div>
         <h1 class="account-title">Courses</h1>
         <div class="acc-filters">
-          <button class="select-pill">All Categories <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
-          <button class="select-pill">Sort by <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
+          <select class="select-pill" id="categoryFilter">
+            <option value="">All Categories</option>
+          </select>
+          <select class="select-pill" id="sortFilter">
+            <option value="newest">Sort by: Newest</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
+            <option value="title_asc">Title: A–Z</option>
+          </select>
           <div class="search-pill" style="width:auto;flex:1;min-width:180px;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" placeholder="Search courses">
+            <input type="text" placeholder="Search courses" id="courseSearchInput">
           </div>
         </div>
 
@@ -158,7 +165,7 @@
 
     const { data: courses } = await supabase
       .from('courses')
-      .select('id, slug, title, subtitle, level, price_cents, currency, thumbnail_url, is_purchasable')
+      .select('id, slug, title, subtitle, level, category, price_cents, currency, thumbnail_url, is_purchasable')
       .eq('status', 'published')
       .order('created_at', { ascending: true });
 
@@ -168,8 +175,29 @@
     const allGrid = document.getElementById('allCoursesGrid');
     document.getElementById('allCountLabel').textContent = (courses || []).length;
 
+    const categorySelect = document.getElementById('categoryFilter');
+    [...new Set((courses || []).map(c => c.category).filter(Boolean))].sort().forEach(cat => {
+      const opt = document.createElement('option');
+      opt.value = cat;
+      opt.textContent = cat;
+      categorySelect.appendChild(opt);
+    });
+
     function renderAllCourses() {
-      allGrid.innerHTML = (courses || []).map(allCourseCardHtml).join('') || '<p style="color:var(--n700);">No courses published yet.</p>';
+      const category = categorySelect.value;
+      const sort = document.getElementById('sortFilter').value;
+      const term = document.getElementById('courseSearchInput').value.trim().toLowerCase();
+
+      let list = (courses || []).filter(c => {
+        const matchesCategory = !category || c.category === category;
+        const matchesTerm = !term || c.title.toLowerCase().includes(term) || (c.subtitle || '').toLowerCase().includes(term);
+        return matchesCategory && matchesTerm;
+      });
+      if (sort === 'price_asc') list = list.slice().sort((a, b) => a.price_cents - b.price_cents);
+      else if (sort === 'price_desc') list = list.slice().sort((a, b) => b.price_cents - a.price_cents);
+      else if (sort === 'title_asc') list = list.slice().sort((a, b) => a.title.localeCompare(b.title));
+
+      allGrid.innerHTML = list.length ? list.map(allCourseCardHtml).join('') : '<p style="color:var(--n700);">No courses match your filters.</p>';
 
       allGrid.querySelectorAll('[data-add-to-cart]').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -198,6 +226,9 @@
       });
     }
     renderAllCourses();
+    categorySelect.addEventListener('change', renderAllCourses);
+    document.getElementById('sortFilter').addEventListener('change', renderAllCourses);
+    document.getElementById('courseSearchInput').addEventListener('input', renderAllCourses);
 
     const { data: enrollments } = await supabase
       .from('enrollments')
