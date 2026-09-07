@@ -145,15 +145,42 @@
   }
 
   async function resolveWithdrawal(id, approve) {
-    let note = null;
     if (!approve) {
-      note = prompt('Reason for rejecting this withdrawal (optional):') || null;
-    } else if (!confirm('Mark this withdrawal as paid? Only do this after you’ve actually sent the money.')) {
+      const note = prompt('Reason for rejecting this withdrawal (optional):') || null;
+      const { error } = await supabase.rpc('resolve_referral_withdrawal', { p_id: id, p_approve: false, p_note: note });
+      if (error) { window.showToast(error.message); return; }
+      window.showToast('Withdrawal rejected');
+      loadAll();
       return;
     }
-    const { error } = await supabase.rpc('resolve_referral_withdrawal', { p_id: id, p_approve: approve, p_note: note });
-    if (error) { window.showToast(error.message); return; }
-    window.showToast(approve ? 'Marked as paid' : 'Withdrawal rejected');
+
+    if (!confirm('Pay this out via Flutterwave now? This sends real money to the student\'s bank account.')) return;
+
+    const { data: { session } } = await supabase.auth.getSession();
+    const resp = await fetch('https://rbncpakigxzbstefisgd.supabase.co/functions/v1/flutterwave-payout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ withdrawal_id: id }),
+    });
+    const result = await resp.json().catch(() => ({}));
+
+    if (!resp.ok) {
+      // Requests made before bank codes existed (or if Flutterwave rejects
+      // the transfer) have no automated path — fall back to a manual mark-paid,
+      // same as before this feature existed.
+      if (confirm((result.error || 'Automated payout failed') + '\n\nMark it as paid manually instead? Only do this after you\'ve actually sent the money yourself.')) {
+        const { error } = await supabase.rpc('resolve_referral_withdrawal', { p_id: id, p_approve: true, p_note: null });
+        if (error) { window.showToast(error.message); return; }
+        window.showToast('Marked as paid');
+        loadAll();
+      }
+      return;
+    }
+
+    window.showToast('Paid via Flutterwave ✓');
     loadAll();
   }
 

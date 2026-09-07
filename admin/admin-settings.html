@@ -90,6 +90,13 @@
     <div class="form-actions"><button class="btn btn-primary" id="saveHomeVideoBtn">Save video</button></div>
   </div>
   <div class="panel">
+    <div class="panel-head"><div><h3>Referral payouts</h3><p>Automated Flutterwave payouts convert a student's USD referral balance to NGN using this rate before sending it to their bank</p></div></div>
+    <div class="form-grid">
+      <div class="form-field"><label>USD → NGN rate</label><input type="number" min="1" step="1" placeholder="1600" id="fxRateInput"></div>
+    </div>
+    <div class="form-actions"><button class="btn btn-primary" id="saveFxRateBtn">Save rate</button></div>
+  </div>
+  <div class="panel">
     <div class="panel-head"><div><h3>Team &amp; access</h3><p>Give other admins access to this dashboard</p></div></div>
     <table class="data-table">
       <thead><tr><th>Name</th><th>Role</th><th></th></tr></thead>
@@ -250,6 +257,20 @@
     loadHomeVideo();
   });
 
+  // ---- Referral payout FX rate ----
+  async function loadFxRate() {
+    const { data } = await supabase.from('site_settings').select('value').eq('key', 'usd_to_ngn_rate').maybeSingle();
+    document.getElementById('fxRateInput').value = data?.value || '1600';
+  }
+
+  document.getElementById('saveFxRateBtn').addEventListener('click', async () => {
+    const rate = parseFloat(document.getElementById('fxRateInput').value);
+    if (!rate || rate <= 0) { window.showToast('Enter a valid rate'); return; }
+    const { error } = await supabase.from('site_settings').update({ value: String(rate), updated_at: new Date().toISOString() }).eq('key', 'usd_to_ngn_rate');
+    if (error) { window.showToast(error.message); return; }
+    window.showToast('Payout rate saved');
+  });
+
   (async () => {
     const admin = await requireAdmin();
     if (!admin) return;
@@ -257,6 +278,7 @@
     loadTeam();
     loadAuditLog();
     loadHomeVideo();
+    loadFxRate();
   })();
 </script>
 
