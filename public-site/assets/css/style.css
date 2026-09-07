@@ -290,9 +290,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .field .toggle-pass{ position:absolute; right:20px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--n700); padding:2px; }
 .field .toggle-pass svg{ width:22px; height:22px; }
 
-.field-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; font-size:20px; }
-.remember{ display:flex; align-items:center; gap:9px; color:#1e2132; }
-.remember input{ width:24px; height:24px; accent-color:var(--primary); }
+.field-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; font-size:14px; }
+.remember{ display:flex; align-items:center; gap:7px; color:#1e2132; }
+.remember input{ width:16px; height:16px; accent-color:var(--primary); }
 .field-row a{ color:var(--n400); }
 
 .auth-error{
@@ -312,7 +312,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .filter-controls{ display:flex; gap:14px; flex-wrap:wrap; }
 .select-pill{
   display:inline-flex; align-items:center; justify-content:space-between; gap:10px; height:44px; padding:0 14px; border:1px solid var(--n100); border-radius:8px;
-  font-size:14px; font-weight:500; color:#000; background:none; white-space:nowrap;
+  font-size:14px; font-weight:500; color:#000; background:#fff; white-space:nowrap; cursor:pointer;
 }
 .select-pill svg{ width:18px; height:18px; flex-shrink:0; }
 .search-pill{ display:flex; align-items:center; gap:8px; height:44px; width:240px; padding:0 14px; border:1px solid var(--n100); border-radius:8px; }

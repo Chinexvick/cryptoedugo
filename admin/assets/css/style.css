@@ -290,9 +290,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .field .toggle-pass{ position:absolute; right:20px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--n700); padding:2px; }
 .field .toggle-pass svg{ width:22px; height:22px; }
 
-.field-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; font-size:20px; }
-.remember{ display:flex; align-items:center; gap:9px; color:#1e2132; }
-.remember input{ width:24px; height:24px; accent-color:var(--primary); }
+.field-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; font-size:14px; }
+.remember{ display:flex; align-items:center; gap:7px; color:#1e2132; }
+.remember input{ width:16px; height:16px; accent-color:var(--primary); }
 .field-row a{ color:var(--n400); }
 
 .auth-error{
