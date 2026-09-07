@@ -473,11 +473,33 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .profile-head h2{ font-size:26px; font-weight:700; margin:0 0 8px; }
 .profile-head p{ font-size:16px; color:var(--n700); }
 
-.profile-tabs{ display:flex; align-items:center; gap:36px; margin-bottom:24px; padding-bottom:0; }
-.profile-tabs button{ background:none; border:none; padding:0 0 14px; font-size:17px; font-weight:600; color:var(--n400); position:relative; }
-.profile-tabs button.active{ color:var(--black); }
-.profile-tabs button.active::after{ content:''; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--primary); }
-.profile-tabs-line{ border-top:1px solid var(--stroke-2); margin-bottom:32px; }
+/* Avatar with an upload overlay, and a generated initials fallback for
+   students who haven't uploaded a picture yet (no more stock photo). */
+.profile-avatar-wrap{ position:relative; width:100px; height:100px; flex-shrink:0; }
+.profile-avatar-wrap img{ width:100%; height:100%; }
+.profile-avatar-initials{
+  width:100%; height:100%; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:34px; font-weight:700; color:#fff; background:linear-gradient(135deg,var(--primary),#3D8BFF);
+}
+.profile-avatar-edit{
+  position:absolute; right:-2px; bottom:-2px; width:32px; height:32px; border-radius:50%; background:var(--black); color:#fff;
+  border:2px solid #fff; display:flex; align-items:center; justify-content:center; cursor:pointer;
+}
+.profile-avatar-edit svg{ width:15px; height:15px; }
+.profile-avatar-edit input{ display:none; }
+
+/* Section list: replaces a horizontally-scrolling tab strip with a plain
+   vertical list of rows, each opening its own panel below. */
+.profile-tabs{ display:flex; flex-direction:column; margin-bottom:24px; border:1px solid var(--stroke-2); border-radius:12px; overflow:hidden; }
+.profile-tabs button{
+  background:none; border:none; border-bottom:1px solid var(--stroke-2); padding:16px 18px; font-size:15.5px; font-weight:600;
+  color:var(--n700); text-align:left; display:flex; align-items:center; justify-content:space-between; width:100%; gap:12px;
+}
+.profile-tabs button:last-child{ border-bottom:none; }
+.profile-tabs button.active{ color:var(--primary); background:var(--p50); }
+.profile-tabs button::after{ content:'\203A'; font-size:20px; line-height:1; color:var(--n400); font-weight:400; }
+.profile-tabs button.active::after{ color:var(--primary); }
+.profile-tabs-line{ display:none; }
 
 .profile-panel{ display:none; }
 .profile-panel.active{ display:block; }
@@ -567,7 +589,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   .details-row{ flex-direction:column; align-items:flex-start; gap:4px; }
   .details-row .v{ text-align:left; }
   .cert-grid{ grid-template-columns:1fr; }
-  .profile-tabs{ gap:20px; overflow-x:auto; }
 }
 
 /* ==========================================================================
@@ -994,6 +1015,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 
 /* ---- Messages (student inbox) ---- */
 .msg-shell{ display:grid; grid-template-columns:320px 1fr; border:1px solid var(--stroke-2); border-radius:14px; overflow:hidden; height:600px; }
+/* A single-conversation inbox (student ↔ admin): list only until a
+   conversation is opened, then the thread takes over the full width. */
+#msgShell{ grid-template-columns:1fr; height:auto; min-height:420px; }
+#msgShell .msg-thread{ height:600px; }
+#msgShell .msg-list{ border-right:none; }
 .msg-list{ border-right:1px solid var(--stroke-2); overflow-y:auto; }
 .msg-list-item{ padding:16px 18px; border-bottom:1px solid var(--stroke-2); cursor:pointer; }
 .msg-list-item.active{ background:var(--p50); }

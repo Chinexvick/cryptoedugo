@@ -755,4 +755,48 @@
     };
   })();
 
+  /* ---- Account nav badges (Messages / Notifications): only exist on
+     account pages (the "More" sheet), and must reflect real unread counts —
+     never a placeholder number. Hidden entirely when the count is 0. ---- */
+  (function () {
+    if (!document.querySelector('.more-sheet')) return; // marketing pages don't have these
+
+    window.refreshAccountBadges = async function () {
+      try {
+        const mod = await import('./supabase-client.js');
+        const { data: { session } } = await mod.supabase.auth.getSession();
+        if (!session) return;
+        const uid = session.user.id;
+
+        const [{ count: notifCount }, thread] = await Promise.all([
+          mod.supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', uid).eq('is_read', false),
+          mod.supabase.from('dm_threads').select('id').eq('student_id', uid).maybeSingle(),
+        ]);
+
+        let msgCount = 0;
+        if (thread.data) {
+          const { count } = await mod.supabase.from('dm_messages').select('id', { count: 'exact', head: true }).eq('thread_id', thread.data.id).eq('is_read', false).neq('sender_id', uid);
+          msgCount = count || 0;
+        }
+
+        setBadge('messages.html', msgCount);
+        setBadge('notifications.html', notifCount || 0);
+      } catch (e) { /* leave existing badges as-is if this fails */ }
+    };
+
+    function setBadge(href, count) {
+      document.querySelectorAll(`a[href="${href}"] .badge`).forEach(function (badge) {
+        const b = badge.querySelector('b');
+        if (count > 0) {
+          if (b) b.textContent = count > 99 ? '99+' : String(count);
+          badge.style.display = '';
+        } else {
+          badge.style.display = 'none';
+        }
+      });
+    }
+
+    window.refreshAccountBadges();
+  })();
+
 })();
