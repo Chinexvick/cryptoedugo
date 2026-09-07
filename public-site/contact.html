@@ -51,15 +51,25 @@
 
 <section class="section on-white">
   <div class="wrap reveal">
-    <div class="contact-heading">GET IN TOUCH</div>
+    <div class="contact-heading">Get in touch</div>
+    <p class="contact-subhead">Questions about a course, a payment, or anything else — send us a message and the Neko Academy team will reply here or by email.</p>
     <form class="contact-form" data-contact-form>
       <div class="contact-fields">
-        <input type="text" placeholder="First Name" id="contactName" required>
-        <input type="email" placeholder="Your Email" id="contactEmail" required>
-        <textarea placeholder="Message" id="contactMessage" required></textarea>
+        <div class="contact-field">
+          <label for="contactName">Full name</label>
+          <input type="text" placeholder="e.g. Ada Lovelace" id="contactName" required>
+        </div>
+        <div class="contact-field">
+          <label for="contactEmail">Email address</label>
+          <input type="email" placeholder="you@example.com" id="contactEmail" required>
+        </div>
+        <div class="contact-field">
+          <label for="contactMessage">Message</label>
+          <textarea placeholder="How can we help?" id="contactMessage" required></textarea>
+        </div>
       </div>
-      <div id="contactError" style="display:none;background:#fdeaea;color:#b3261e;border-radius:8px;padding:10px 14px;font-size:13.5px;margin:12px 0 0;"></div>
-      <button type="submit" class="btn btn-primary btn-block">Send Message</button>
+      <div id="contactError" style="display:none;background:#fdeaea;color:#b3261e;border-radius:8px;padding:10px 14px;font-size:13.5px;"></div>
+      <button type="submit" class="btn btn-primary btn-block">Send message</button>
     </form>
   </div>
 </section>

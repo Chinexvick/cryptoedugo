@@ -113,14 +113,22 @@
 <script type="module">
   import { supabase, requireAuth, formatPrice, escapeHtml, addToCart } from './assets/js/supabase-client.js';
 
+  let wishlistedIds = new Set();
+
   function allCourseCardHtml(course) {
     const priceHtml = formatPrice(course.price_cents, course.currency);
     const ctaHtml = course.is_purchasable
       ? `<button class="course-cta" data-add-to-cart="${course.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Add to cart</button>`
       : `<button class="course-cta" style="opacity:.6;" data-coming-soon="${escapeHtml(course.title)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Coming soon</button>`;
+    // Bookmarking (wishlist) only applies to courses students can actually
+    // buy today — coming-soon courses use the waitlist on their detail page instead.
+    const saved = wishlistedIds.has(course.id);
+    const saveBtnHtml = course.is_purchasable
+      ? `<button class="course-save${saved ? ' saved' : ''}" aria-label="${saved ? 'Remove bookmark' : 'Bookmark'}" data-save-course="${course.id}"><svg viewBox="0 0 24 24" fill="${saved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>`
+      : '';
     return `
       <div class="course-card reveal">
-        <div class="course-thumb"><img src="${escapeHtml(course.thumbnail_url || 'assets/img/course-blockchain-new.jpg')}" alt="${escapeHtml(course.title)}"><span class="course-thumb-chip">${escapeHtml(course.level)}</span><button class="course-save" aria-label="Save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button></div>
+        <div class="course-thumb"><img src="${escapeHtml(course.thumbnail_url || 'assets/img/course-blockchain-new.jpg')}" alt="${escapeHtml(course.title)}"><span class="course-thumb-chip">${escapeHtml(course.level)}</span>${saveBtnHtml}</div>
         <div class="course-body">
           <div class="course-meta-top"><div class="course-title">${escapeHtml(course.title)}</div></div>
           <div class="course-desc">${escapeHtml(course.subtitle || '')}</div>
@@ -154,23 +162,42 @@
       .eq('status', 'published')
       .order('created_at', { ascending: true });
 
+    const { data: saved } = await supabase.from('wishlist_items').select('course_id').eq('student_id', session.user.id);
+    wishlistedIds = new Set((saved || []).map(s => s.course_id));
+
     const allGrid = document.getElementById('allCoursesGrid');
     document.getElementById('allCountLabel').textContent = (courses || []).length;
-    allGrid.innerHTML = (courses || []).map(allCourseCardHtml).join('') || '<p style="color:var(--n700);">No courses published yet.</p>';
 
-    allGrid.querySelectorAll('[data-add-to-cart]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        addToCart(btn.getAttribute('data-add-to-cart'));
-        window.showToast ? window.showToast('Added to cart') : alert('Added to cart');
+    function renderAllCourses() {
+      allGrid.innerHTML = (courses || []).map(allCourseCardHtml).join('') || '<p style="color:var(--n700);">No courses published yet.</p>';
+
+      allGrid.querySelectorAll('[data-add-to-cart]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          addToCart(btn.getAttribute('data-add-to-cart'));
+          window.showToast ? window.showToast('Added to cart') : alert('Added to cart');
+        });
       });
-    });
-    allGrid.querySelectorAll('[data-coming-soon]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const name = btn.getAttribute('data-coming-soon');
-        const msg = `${name} is coming soon — check back shortly!`;
-        window.showToast ? window.showToast(msg) : alert(msg);
+      allGrid.querySelectorAll('[data-coming-soon]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const name = btn.getAttribute('data-coming-soon');
+          const msg = `${name} is coming soon — check back shortly!`;
+          window.showToast ? window.showToast(msg) : alert(msg);
+        });
       });
-    });
+      allGrid.querySelectorAll('[data-save-course]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const courseId = btn.getAttribute('data-save-course');
+          if (wishlistedIds.has(courseId)) {
+            const { error } = await supabase.from('wishlist_items').delete().eq('student_id', session.user.id).eq('course_id', courseId);
+            if (!error) { wishlistedIds.delete(courseId); window.showToast && window.showToast('Removed from bookmarks'); renderAllCourses(); }
+          } else {
+            const { error } = await supabase.from('wishlist_items').insert({ student_id: session.user.id, course_id: courseId });
+            if (!error) { wishlistedIds.add(courseId); window.showToast && window.showToast('Added to bookmarks'); renderAllCourses(); }
+          }
+        });
+      });
+    }
+    renderAllCourses();
 
     const { data: enrollments } = await supabase
       .from('enrollments')

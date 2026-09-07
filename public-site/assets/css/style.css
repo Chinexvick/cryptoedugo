@@ -345,9 +345,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .cd-prose p{ font-size:16px; color:var(--n700); line-height:1.6; margin:0 0 16px; }
 .cd-prose p:last-child{ margin-bottom:0; }
 .cd-prose b{ color:var(--black); }
-.outcome-list{ display:flex; flex-direction:column; gap:24px; }
-.outcome-list li{ font-size:16px; color:var(--n700); line-height:1.5; }
+.outcome-list, .cd-learn-list{ display:flex; flex-direction:column; gap:16px; }
+.outcome-list li, .cd-learn-list li{ display:flex; align-items:flex-start; gap:12px; font-size:16px; color:var(--n700); line-height:1.5; }
 .outcome-list b{ color:var(--black); }
+.outcome-list svg, .cd-learn-list svg{ width:20px; height:20px; flex-shrink:0; margin-top:2px; color:var(--primary); }
 
 .curriculum-panel{ background:#fff; border-radius:8px; }
 .curriculum-panel-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
@@ -411,16 +412,26 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 /* ==========================================================================
    Contact
    ========================================================================== */
-.contact-heading{ color:#5928e5; font-size:52px; font-weight:700; text-align:center; letter-spacing:-.02em; margin-bottom:32px; }
-.contact-form{ max-width:732px; margin:0 auto; display:flex; flex-direction:column; gap:40px; }
-.contact-fields{ display:flex; flex-direction:column; gap:20px; }
-.contact-fields input, .contact-fields textarea{
-  width:100%; background:#fff; border:none; border-radius:2px; padding:24px 22px; font-size:16px; color:var(--black);
-  font-family:inherit;
+.contact-heading{ color:#5928e5; font-size:44px; font-weight:700; text-align:center; letter-spacing:-.02em; margin-bottom:8px; }
+.contact-subhead{ text-align:center; color:var(--n700); font-size:15.5px; margin:0 auto 36px; max-width:480px; }
+.contact-form{
+  max-width:640px; margin:0 auto; display:flex; flex-direction:column; gap:22px;
+  background:#fff; border:1px solid var(--stroke-2); border-radius:20px; padding:36px;
+  box-shadow:0 20px 50px -30px rgba(20,10,60,.25);
 }
-.contact-fields textarea{ min-height:275px; resize:vertical; }
-.contact-fields input::placeholder, .contact-fields textarea::placeholder{ color:#b9a1fa; }
-.contact-fields input:focus, .contact-fields textarea:focus{ outline:2px solid var(--primary); }
+.contact-fields{ display:flex; flex-direction:column; gap:20px; }
+.contact-field{ display:flex; flex-direction:column; gap:7px; }
+.contact-field label{ font-size:13px; font-weight:600; color:var(--n700); }
+.contact-fields input, .contact-fields textarea{
+  width:100%; background:var(--n10,#f7f6fb); border:1.5px solid var(--stroke-2); border-radius:12px; padding:14px 16px;
+  font-size:15px; color:var(--black); font-family:inherit; box-sizing:border-box; transition:border-color .15s, background .15s;
+}
+.contact-fields textarea{ min-height:150px; resize:vertical; }
+.contact-fields input::placeholder, .contact-fields textarea::placeholder{ color:var(--n400); }
+.contact-fields input:focus, .contact-fields textarea:focus{ outline:none; border-color:var(--primary); background:#fff; }
+@media (max-width:640px){
+  .contact-form{ padding:22px; border-radius:16px; }
+}
 
 /* ==========================================================================
    Simple info page prose (About / Confirm email)
