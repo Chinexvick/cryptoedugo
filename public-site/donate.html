@@ -54,16 +54,8 @@
   .dn-stats-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
   .dn-stat-tile{ text-align:center; padding:26px 14px; background:#fff; border:1.5px solid var(--stroke-2); border-radius:16px; }
   .dn-stat-tile .ic{ width:44px; height:44px; margin:0 auto 12px; border-radius:12px; background:var(--p50); color:var(--primary); display:flex; align-items:center; justify-content:center; }
-  .dn-stat-tile b{ display:block; font-family:var(--font-display); font-size:26px; }
+  .dn-stat-tile b{ display:block; font-family:var(--font-display); font-size:26px; color:var(--black); }
   .dn-stat-tile span{ color:var(--n700); font-size:13px; }
-
-  /* ---- How it works ---- */
-  .dn-steps{ display:grid; grid-template-columns:repeat(4,1fr); gap:0; position:relative; }
-  .dn-step{ text-align:center; padding:0 14px; position:relative; }
-  .dn-step .num{ width:40px; height:40px; border-radius:50%; background:var(--grad-brand); color:#fff; font-family:var(--font-display); font-weight:700; display:flex; align-items:center; justify-content:center; margin:0 auto 14px; }
-  .dn-step b{ display:block; font-size:15px; margin-bottom:6px; }
-  .dn-step span{ color:var(--n700); font-size:13px; line-height:1.5; }
-  .dn-step-arrow{ position:absolute; top:20px; right:-14px; color:var(--stroke-2); }
 
   /* ---- Giving wall ---- */
   .dn-wall{ display:grid; grid-template-columns:1fr 1.1fr; gap:28px; align-items:stretch; }
@@ -80,13 +72,6 @@
   .dn-donor-row b{ font-size:14px; color:#fff; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
   .dn-donor-row span{ font-size:12px; color:#9a9aa4; }
   .dn-donor-row .amt{ color:var(--primary-glow); font-weight:700; font-size:14.5px; white-space:nowrap; }
-
-  /* ---- CTA ---- */
-  .dn-cta{ background:var(--grad-brand); border-radius:24px; padding:56px 40px; text-align:center; color:#fff; }
-  .dn-cta h2{ font-family:var(--font-display); font-size:clamp(24px,3.4vw,34px); margin:0 0 12px; }
-  .dn-cta p{ opacity:.9; max-width:520px; margin:0 auto 26px; line-height:1.6; }
-  .dn-cta .dn-btn-donate{ background:#fff; color:var(--primary); box-shadow:0 10px 30px rgba(0,0,0,.2); }
-  .dn-cta .dn-btn-donate:hover{ box-shadow:0 16px 40px rgba(0,0,0,.3); }
 
   /* ---- Donate modal ---- */
   .dn-scrim{ display:none; position:fixed; inset:0; background:rgba(8,6,16,.72); z-index:200; align-items:center; justify-content:center; padding:20px; }
@@ -111,8 +96,6 @@
   @media (max-width: 980px){
     .dn-cause-grid{ grid-template-columns:repeat(2,1fr); }
     .dn-stats-row{ grid-template-columns:repeat(2,1fr); }
-    .dn-steps{ grid-template-columns:repeat(2,1fr); row-gap:28px; }
-    .dn-step-arrow{ display:none; }
     .dn-wall{ grid-template-columns:1fr; }
     .dn-story-grid{ grid-template-columns:1fr; }
     .dn-video-wrap{ aspect-ratio:16/9; }
@@ -120,8 +103,6 @@
   @media (max-width: 560px){
     .dn-cause-grid{ grid-template-columns:1fr; }
     .dn-stats-row{ grid-template-columns:1fr 1fr; }
-    .dn-steps{ grid-template-columns:1fr; }
-    .dn-cta{ padding:40px 22px; }
     .dn-hero-actions{ flex-direction:column; align-items:stretch; }
     .dn-hero-ctabar{ flex-direction:column; align-items:stretch; }
     .dn-hero-live{ justify-content:center; }
@@ -138,7 +119,7 @@
     </a>
     <div class="nav-links">
       <a href="courses.html">Courses</a>
-      <a href="about.html">About Neko Academy</a>
+      <a href="about.html">About</a>
       <a href="donate.html" class="active">Donate</a>
       <a href="contact.html">Contact</a>
     </div>
@@ -151,7 +132,7 @@
   <div class="mobile-menu">
     <a href="index.html">Home</a>
     <a href="courses.html">Courses</a>
-    <a href="about.html">About Neko Academy</a>
+    <a href="about.html">About</a>
     <a href="donate.html">Donate</a>
     <a href="contact.html">Contact</a>
   </div>
@@ -281,40 +262,6 @@
   </div>
 </section>
 
-<section class="section on-white" style="padding-top:0;">
-  <div class="wrap">
-    <div class="section-head">
-      <h2>Giving is simple</h2>
-      <p>No account, no paperwork — just three steps between you and the mission field.</p>
-    </div>
-    <div class="dn-steps">
-      <div class="dn-step reveal">
-        <div class="num">1</div>
-        <b>Choose an amount</b>
-        <span>Pick a suggested gift or enter your own.</span>
-        <svg class="dn-step-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </div>
-      <div class="dn-step reveal">
-        <div class="num">2</div>
-        <b>Add your details</b>
-        <span>Just your name and email — nothing else needed.</span>
-        <svg class="dn-step-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </div>
-      <div class="dn-step reveal">
-        <div class="num">3</div>
-        <b>Give securely</b>
-        <span>Pay safely through Flutterwave in seconds.</span>
-        <svg class="dn-step-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </div>
-      <div class="dn-step reveal">
-        <div class="num">4</div>
-        <b>Change lives</b>
-        <span>Your gift joins the wall and goes straight to the field.</span>
-      </div>
-    </div>
-  </div>
-</section>
-
 <section class="section on-black" id="dnWall">
   <div class="wrap">
     <div class="section-head">
@@ -331,16 +278,6 @@
       <div class="dn-donor-list reveal" id="donorList">
         <div class="dn-donor-row"><span style="color:#9a9aa4;font-size:13.5px;padding:10px;">Loading recent gifts…</span></div>
       </div>
-    </div>
-  </div>
-</section>
-
-<section class="section on-white">
-  <div class="wrap">
-    <div class="dn-cta reveal">
-      <h2>Your gift carries the Good News further</h2>
-      <p>Whatever you can give today helps reach one more village, fund one more crusade, and celebrate one more baptism.</p>
-      <button class="dn-btn-donate" data-open-donate>Donate Now</button>
     </div>
   </div>
 </section>
