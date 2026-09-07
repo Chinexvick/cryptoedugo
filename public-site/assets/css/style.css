@@ -695,8 +695,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .form-field{ display:flex; flex-direction:column; gap:7px; }
 .form-field.full{ grid-column:1/-1; }
-.form-field label{ font-size:13px; font-weight:600; color:var(--n50); }
-.form-field input, .form-field select, .form-field textarea{ padding:12px 14px; border-radius:10px; background:#0f0f12; border:1px solid rgba(255,255,255,.12); color:#fff; font-size:14px; font-family:inherit; }
+.form-field label{ font-size:13px; font-weight:600; color:var(--n700); }
+.form-field input, .form-field select, .form-field textarea{ padding:12px 14px; border-radius:10px; background:#fff; border:1.5px solid var(--stroke-2); color:var(--black); font-size:14px; font-family:inherit; }
+.form-field input:focus, .form-field select:focus, .form-field textarea:focus{ outline:none; border-color:var(--primary); }
+.form-field input::placeholder, .form-field textarea::placeholder{ color:var(--n400); }
 .form-field textarea{ resize:vertical; min-height:100px; }
 .form-actions{ display:flex; justify-content:flex-end; gap:12px; margin-top:22px; }
 .tabbar{ display:flex; gap:8px; margin-bottom:28px; flex-wrap:wrap; }
@@ -1031,6 +1033,13 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 #msgShell{ grid-template-columns:1fr; height:auto; min-height:420px; }
 #msgShell .msg-thread{ height:600px; }
 #msgShell .msg-list{ border-right:none; }
+@media (max-width:640px){
+  /* A fixed 600px thread is often taller than the visible viewport once the
+     top nav, page title and bottom tab bar are accounted for — pushing the
+     composer (input + Send button) out of view. Cap it to what's actually
+     visible instead. */
+  #msgShell .msg-thread{ height:min(600px, calc(100vh - 260px)); min-height:320px; }
+}
 .msg-list{ border-right:1px solid var(--stroke-2); overflow-y:auto; }
 .msg-list-item{ padding:16px 18px; border-bottom:1px solid var(--stroke-2); cursor:pointer; }
 .msg-list-item.active{ background:var(--p50); }
