@@ -351,4 +351,159 @@ document.addEventListener('DOMContentLoaded', () => {
     window.updateCartBadge = updateCartBadge;
   })();
 
+  /* ---- Approved reaction emoji set (community chat) ---- */
+  window.APPROVED_REACTIONS = [
+    '🙏','🤣','🤙','🙌','🫳','👊','💥','😊','👏','👋','🤲','🫴','👐','👌','🫡','🤔',
+    '❤️‍🔥','🎂','😇','😩','🥲','🔥','❤️','✅','🥹','🥺','😂','🙃','🥳','🤩','😔','😌',
+    '😏','😜','😝','😛','😠','😡','🤬','😓','😥','😨','😰','🤯','😲','😯','😦','🙁','😢','☹️'
+  ];
+
+  /* ---- Reaction picker: opens a small emoji grid anchored to a button, clamped to stay
+     within the nearest scrolling chat container so it never spills outside the chat screen. ---- */
+  window.openReactionPicker = function (anchorEl, onPick) {
+    document.querySelectorAll('.reaction-picker').forEach(function (el) { el.remove(); });
+
+    const picker = document.createElement('div');
+    picker.className = 'reaction-picker';
+    window.APPROVED_REACTIONS.forEach(function (emoji) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = emoji;
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        picker.remove();
+        onPick(emoji);
+      });
+      picker.appendChild(btn);
+    });
+
+    // Anchor inside the message row, and clamp against the nearest scrolling chat/list
+    // container so the picker always stays within the chat screen, never outside it.
+    const containerEl = anchorEl.closest('.comm-msg, .inbox-item') || anchorEl.parentElement;
+    const scrollBounds = anchorEl.closest('.comm-feed, .inbox-list') || containerEl;
+    containerEl.style.position = containerEl.style.position || 'relative';
+    containerEl.appendChild(picker);
+
+    requestAnimationFrame(function () {
+      const anchorRect = anchorEl.getBoundingClientRect();
+      const containerRect = containerEl.getBoundingClientRect();
+      const boundsRect = scrollBounds.getBoundingClientRect();
+      const pickerRect = picker.getBoundingClientRect();
+
+      const desiredLeft = anchorRect.left - containerRect.left;
+      const maxLeft = boundsRect.right - containerRect.left - pickerRect.width - 8;
+      const minLeft = boundsRect.left - containerRect.left + 8;
+      const left = Math.max(minLeft, Math.min(desiredLeft, maxLeft));
+
+      const desiredTop = anchorEl.offsetTop + anchorEl.offsetHeight + 6;
+      const wouldOverflowBottom = containerRect.top + desiredTop + pickerRect.height > boundsRect.bottom;
+      const top = wouldOverflowBottom ? (anchorEl.offsetTop - pickerRect.height - 6) : desiredTop;
+
+      picker.style.left = left + 'px';
+      picker.style.top = Math.max(0, top) + 'px';
+    });
+
+    function closeOnOutsideClick(e) {
+      if (!picker.contains(e.target) && e.target !== anchorEl) {
+        picker.remove();
+        document.removeEventListener('click', closeOnOutsideClick);
+      }
+    }
+    setTimeout(function () { document.addEventListener('click', closeOnOutsideClick); }, 0);
+  };
+
+  /* ---- Trial countdown: renders "Xh Ym Zs" (or "Xd Yh") into an element, live-updating.
+     Returns a stop() handle. Call again on the same element id is safe (auto-clears). ---- */
+  window._trialTimers = window._trialTimers || {};
+  window.startTrialCountdown = function (elId, endsAtIso) {
+    if (window._trialTimers[elId]) clearInterval(window._trialTimers[elId]);
+    const el = document.getElementById(elId);
+    if (!el) return;
+    function tick() {
+      const diff = new Date(endsAtIso).getTime() - Date.now();
+      if (diff <= 0) {
+        el.textContent = 'expired';
+        clearInterval(window._trialTimers[elId]);
+        return;
+      }
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      el.textContent = d > 0 ? `${d}d ${h}h ${m}m` : `${String(h).padStart(2,'0')}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`;
+    }
+    tick();
+    window._trialTimers[elId] = setInterval(tick, 1000);
+  };
+
+  /* ---- Trial welcome popup: shown once after signup. Reads/writes localStorage so it
+     never re-appears after being dismissed. ---- */
+  window.maybeShowTrialPopup = function (trialEndsAtIso) {
+    if (localStorage.getItem('crypedugo_trial_popup_seen')) return;
+    if (!trialEndsAtIso || new Date(trialEndsAtIso) <= new Date()) return;
+    localStorage.setItem('crypedugo_trial_popup_seen', '1');
+
+    const scrim = document.createElement('div');
+    scrim.className = 'trial-modal-scrim';
+    scrim.innerHTML = `
+      <div class="trial-modal">
+        <div class="icon">🎁</div>
+        <h2>Your 3-day free trial has started!</h2>
+        <p>Explore every course on CrypEduGo free for the next 3 days. After your trial ends, you'll need to purchase a course to keep watching its lessons.</p>
+        <div class="trial-countdown">
+          <div class="unit"><b id="trialPopupD">3</b><span>Days</span></div>
+          <div class="unit"><b id="trialPopupH">00</b><span>Hours</span></div>
+          <div class="unit"><b id="trialPopupM">00</b><span>Mins</span></div>
+          <div class="unit"><b id="trialPopupS">00</b><span>Secs</span></div>
+        </div>
+        <button type="button" class="btn btn-primary btn-block" id="trialPopupCloseBtn">Start exploring courses</button>
+      </div>`;
+    document.body.appendChild(scrim);
+    requestAnimationFrame(() => scrim.classList.add('open'));
+
+    function tick() {
+      const diff = new Date(trialEndsAtIso).getTime() - Date.now();
+      if (diff <= 0) return;
+      document.getElementById('trialPopupD').textContent = Math.floor(diff / 86400000);
+      document.getElementById('trialPopupH').textContent = String(Math.floor((diff % 86400000) / 3600000)).padStart(2, '0');
+      document.getElementById('trialPopupM').textContent = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+      document.getElementById('trialPopupS').textContent = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+    }
+    tick();
+    const timer = setInterval(tick, 1000);
+
+    function close() {
+      clearInterval(timer);
+      scrim.classList.remove('open');
+      setTimeout(() => scrim.remove(), 250);
+    }
+    document.getElementById('trialPopupCloseBtn').addEventListener('click', close);
+    scrim.addEventListener('click', (e) => { if (e.target === scrim) close(); });
+  };
+
+  /* ---- Slow-load apology: call start() when a fetch begins; call stop() when it resolves.
+     If it's still pending after `timeoutMs`, an apologetic banner is shown in `container`. ---- */
+  window.watchSlowLoad = function (container, timeoutMs) {
+    if (!container) return { stop: function () {} };
+    let done = false;
+    const timer = setTimeout(function () {
+      if (done) return;
+      const note = document.createElement('div');
+      note.className = 'slow-load-note';
+      note.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="42" stroke-dashoffset="12"/></svg>' +
+        '<span>Sorry, this is taking longer than usual — we\'re still trying to reach the server.</span>' +
+        '<button type="button" class="btn btn-sm btn-outline">Retry</button>';
+      note.querySelector('button').addEventListener('click', function () { window.location.reload(); });
+      container.prepend(note);
+    }, timeoutMs || 8000);
+    return {
+      stop: function () {
+        done = true;
+        clearTimeout(timer);
+        const note = container.querySelector && container.querySelector('.slow-load-note');
+        if (note) note.remove();
+      }
+    };
+  };
+
 });

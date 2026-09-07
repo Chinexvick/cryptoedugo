@@ -309,10 +309,25 @@
       .eq('course_id', course.id)
       .eq('student_id', session.user.id)
       .maybeSingle();
-    if (!enrollment || enrollment.status !== 'paid') {
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('trial_ends_at')
+      .eq('id', session.user.id)
+      .single();
+    const trialActive = profile?.trial_ends_at && new Date(profile.trial_ends_at) > new Date();
+
+    if ((!enrollment || enrollment.status !== 'paid') && !trialActive) {
       document.getElementById('playerVideoWrap').innerHTML =
-        `<p style="color:var(--n50);padding:20px;text-align:center;">You're not enrolled in this course yet. <a href="course-detail.html?slug=${encodeURIComponent(slug)}" style="color:var(--primary-glow);">View course details</a></p>`;
+        `<p style="color:var(--n50);padding:20px;text-align:center;">Your free trial has ended and you're not enrolled in this course. <a href="course-detail.html?slug=${encodeURIComponent(slug)}" style="color:var(--primary-glow);">Purchase this course</a> to keep learning.</p>`;
       return;
+    }
+    if ((!enrollment || enrollment.status !== 'paid') && trialActive) {
+      const banner = document.createElement('div');
+      banner.className = 'trial-banner';
+      banner.innerHTML = `<span>🎁 You're in your free trial —</span> <span class="trial-banner-time" id="playerTrialCountdown"></span> <span>left to explore this course.</span>`;
+      document.querySelector('.player-main').prepend(banner);
+      window.startTrialCountdown && window.startTrialCountdown('playerTrialCountdown', profile.trial_ends_at);
     }
 
     const { data: moduleRows } = await supabase

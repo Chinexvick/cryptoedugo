@@ -144,6 +144,21 @@
       document.getElementById('dashGreeting').textContent = `Good to see you, ${firstName} 👋`;
     }
 
+    const { data: trialProfile } = await supabase.from('profiles').select('trial_ends_at').eq('id', session.user.id).single();
+    if (trialProfile?.trial_ends_at) {
+      const trialActive = new Date(trialProfile.trial_ends_at) > new Date();
+      if (trialActive) {
+        window.maybeShowTrialPopup(trialProfile.trial_ends_at);
+        const banner = document.createElement('div');
+        banner.className = 'trial-banner';
+        banner.style.borderRadius = '14px';
+        banner.style.marginBottom = '18px';
+        banner.innerHTML = `<span>🎁 Free trial active —</span> <span class="trial-banner-time" id="dashTrialCountdown"></span> <span>left. <a href="courses.html" style="color:#fff;text-decoration:underline;">Explore courses</a></span>`;
+        document.querySelector('.dash-hero').before(banner);
+        window.startTrialCountdown('dashTrialCountdown', trialProfile.trial_ends_at);
+      }
+    }
+
     const { data: enrollments, error } = await supabase
       .from('enrollments')
       .select('id, status, progress_percent, last_activity_at, course:courses(id, slug, title, thumbnail_url, level)')
