@@ -806,4 +806,19 @@
     window.refreshAccountBadges();
   })();
 
+  /* ---- Real logout: every "Logout" link across the account pages pointed
+     straight at index.html without ever ending the Supabase session, so
+     users never actually signed out. Delegate on the whole document so this
+     works no matter which page (or how many logout links) rendered it. ---- */
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('[data-logout-btn]');
+    if (!btn) return;
+    e.preventDefault();
+    import('./supabase-client.js').then(function (mod) {
+      return mod.supabase.auth.signOut();
+    }).finally(function () {
+      window.location.href = 'index.html';
+    });
+  });
+
 })();
