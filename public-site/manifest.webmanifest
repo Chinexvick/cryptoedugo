@@ -1,6 +1,6 @@
 {
-  "name": "CrypEduGo",
-  "short_name": "CrypEduGo",
+  "name": "Neko Academy",
+  "short_name": "Neko Academy",
   "description": "Learn crypto and blockchain — courses, community and certificates.",
   "start_url": "/dashboard.html",
   "scope": "/",

@@ -1,4 +1,4 @@
-// CrypEduGo — shared front-end behaviour (frontend-only, no backend)
+// Neko Academy — shared front-end behaviour (frontend-only, no backend)
 // Runs as an immediately-invoked function rather than waiting for
 // DOMContentLoaded: this script tag sits at the end of <body> on every page,
 // so the DOM is already parsed by the time it runs. This matters because the
@@ -455,7 +455,7 @@
       <div class="trial-modal">
         <div class="icon">🎁</div>
         <h2>Your 3-day free trial has started!</h2>
-        <p>Explore every course on CrypEduGo free for the next 3 days. After your trial ends, you'll need to purchase a course to keep watching its lessons.</p>
+        <p>Explore every course on Neko Academy free for the next 3 days. After your trial ends, you'll need to purchase a course to keep watching its lessons.</p>
         <div class="trial-countdown">
           <div class="unit"><b id="trialPopupD">3</b><span>Days</span></div>
           <div class="unit"><b id="trialPopupH">00</b><span>Hours</span></div>
@@ -694,7 +694,7 @@
     panel.innerHTML =
       '<div class="ai-assistant-head">' +
         '<div class="ai-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="7" width="16" height="12" rx="3"/><circle cx="9" cy="13" r="1.3" fill="currentColor" stroke="none"/><circle cx="15" cy="13" r="1.3" fill="currentColor" stroke="none"/></svg></div>' +
-        '<div><b>CrypEduGo Assistant</b><span>Here if you need a hand</span></div>' +
+        '<div><b>Neko Academy Assistant</b><span>Here if you need a hand</span></div>' +
         '<button type="button" class="ai-assistant-close" aria-label="Close">✕</button>' +
       '</div>' +
       '<div class="ai-assistant-body">' +
