@@ -673,7 +673,7 @@
         localStorage.setItem('crypedugo_intended_course', course.slug);
         window.location.href = 'create-account.html';
       });
-    }, 30000);
+    }, 10000);
   })();
 
   /* ---- AI assistant: a small animated helper that only appears when it's
