@@ -11,33 +11,35 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
-  /* ---- Hero ---- */
-  .dn-hero-grid{ display:grid; grid-template-columns:1.05fr .95fr; gap:56px; align-items:center; }
-  .dn-eyebrow{ display:inline-flex; align-items:center; gap:8px; background:rgba(134,93,247,.18); border:1px solid rgba(167,139,250,.45); color:#e4d9ff; padding:7px 16px; border-radius:999px; font-size:12.5px; font-weight:700; letter-spacing:.03em; margin-bottom:22px; }
-  .dn-hero h1{ font-family:var(--font-display); font-size:clamp(34px,4.6vw,54px); line-height:1.1; font-weight:700; color:#fff; margin:0 0 18px; }
-  .dn-hero h1 span{ background:var(--grad-text); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
-  .dn-hero p.lead{ font-size:17px; color:var(--bg-tint); max-width:520px; margin:0 0 30px; line-height:1.65; }
+  /* ---- Hero CTA bar (below the shared page-banner) ---- */
   .dn-btn-donate{ background:var(--grad-brand); border:none; color:#fff; font-weight:700; font-size:16px; padding:16px 32px; border-radius:14px; cursor:pointer; box-shadow:0 12px 32px rgba(134,93,247,.4); transition:transform .2s ease, box-shadow .2s ease; }
   .dn-btn-donate:hover{ transform:translateY(-2px); box-shadow:0 18px 42px rgba(134,93,247,.55); }
   .dn-btn-ghost{ background:rgba(255,255,255,.06); border:1.5px solid rgba(255,255,255,.18); color:#fff; font-weight:600; font-size:15px; padding:14.5px 26px; border-radius:14px; cursor:pointer; }
-  .dn-hero-actions{ display:flex; flex-wrap:wrap; gap:14px; margin-bottom:34px; }
-  .dn-hero-trust{ display:flex; align-items:center; gap:14px; }
-  .dn-avatar-stack{ display:flex; }
-  .dn-avatar-stack span{ width:36px; height:36px; border-radius:50%; border:2.5px solid var(--black); background:var(--grad-brand); margin-left:-10px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px; font-weight:700; }
-  .dn-avatar-stack span:first-child{ margin-left:0; }
-  .dn-hero-trust b{ color:#fff; font-size:14.5px; display:block; }
-  .dn-hero-trust span.lbl{ color:var(--n50); font-size:12.5px; }
+  .dn-hero-actions{ display:flex; flex-wrap:wrap; gap:14px; }
+  .dn-hero-ctabar{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:20px; }
+  .dn-hero-live{ display:flex; align-items:center; gap:22px; }
+  .dn-hero-live .div{ width:1px; height:32px; background:rgba(255,255,255,.15); }
+  .dn-hero-live b{ display:block; font-family:var(--font-display); font-size:21px; color:#fff; }
+  .dn-hero-live span{ font-size:12px; color:var(--n50); }
 
-  .dn-hero-card{ background:linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,.02)); border:1.5px solid rgba(255,255,255,.14); border-radius:26px; padding:34px 30px; backdrop-filter:blur(20px); position:relative; overflow:hidden; }
-  .dn-hero-card::before{ content:''; position:absolute; width:220px; height:220px; background:radial-gradient(circle,rgba(134,93,247,.5),transparent 70%); top:-90px; right:-70px; border-radius:50%; }
-  .dn-hero-card-head{ display:flex; align-items:center; gap:10px; color:var(--n50); font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px; position:relative; }
-  .dn-hero-card .amt{ font-family:var(--font-display); font-size:clamp(38px,4.2vw,50px); font-weight:700; color:#fff; margin-bottom:22px; position:relative; }
-  .dn-hero-stat-row{ display:grid; grid-template-columns:1fr 1fr; gap:14px; position:relative; margin-bottom:24px; }
-  .dn-hero-stat-row div{ background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:14px; padding:14px 16px; }
-  .dn-hero-stat-row b{ display:block; font-family:var(--font-display); font-size:21px; color:#fff; }
-  .dn-hero-stat-row span{ font-size:12px; color:var(--n50); }
-  .dn-hero-card-quote{ position:relative; font-size:13.5px; color:var(--bg-tint); line-height:1.6; border-top:1px solid rgba(255,255,255,.12); padding-top:18px; }
-  .dn-hero-card-quote b{ color:#fff; }
+  /* ---- Our story: video + founder testimony ---- */
+  .dn-story-grid{ display:grid; grid-template-columns:.95fr 1.05fr; gap:44px; align-items:center; }
+  .dn-video-wrap{ position:relative; border-radius:22px; overflow:hidden; aspect-ratio:4/5; background:#000; box-shadow:0 20px 50px rgba(0,0,0,.4); }
+  .dn-video-wrap video{ width:100%; height:100%; object-fit:cover; display:block; }
+  .dn-video-play{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.28); cursor:pointer; transition:background .2s ease; border:none; }
+  .dn-video-play:hover{ background:rgba(0,0,0,.18); }
+  .dn-video-play span{ width:76px; height:76px; border-radius:50%; background:rgba(255,255,255,.95); display:flex; align-items:center; justify-content:center; box-shadow:0 10px 30px rgba(0,0,0,.35); transition:transform .2s ease; }
+  .dn-video-play:hover span{ transform:scale(1.08); }
+  .dn-video-play svg{ margin-left:4px; }
+  .dn-video-wrap.playing .dn-video-play{ display:none; }
+  .dn-story-copy .dn-kicker{ color:var(--primary); font-weight:700; font-size:12.5px; letter-spacing:.08em; text-transform:uppercase; margin-bottom:10px; }
+  .dn-story-copy h2{ font-family:var(--font-display); font-size:clamp(24px,3vw,32px); margin:0 0 16px; }
+  .dn-story-copy p{ color:var(--n700); font-size:14.5px; line-height:1.75; margin:0 0 14px; }
+  .dn-story-copy blockquote{ margin:18px 0; padding:14px 20px; border-left:3px solid var(--primary); background:var(--p50); border-radius:0 12px 12px 0; font-style:italic; color:var(--black); font-size:15px; }
+  .dn-story-signature{ display:flex; align-items:center; gap:12px; margin-top:20px; }
+  .dn-story-signature .av{ width:44px; height:44px; border-radius:50%; background:var(--grad-brand); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-family:var(--font-display); flex:none; }
+  .dn-story-signature b{ display:block; font-size:14px; }
+  .dn-story-signature span{ color:var(--n700); font-size:12.5px; }
 
   /* ---- Cause cards ---- */
   .dn-cause-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
@@ -47,13 +49,6 @@
   .dn-cause-icon svg{ width:24px; height:24px; stroke:#fff; }
   .dn-cause-card b{ display:block; font-size:16.5px; margin-bottom:6px; }
   .dn-cause-card span{ color:var(--n700); font-size:13.5px; line-height:1.55; }
-
-  /* ---- Field photo strip ---- */
-  .dn-strip{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
-  .dn-strip figure{ margin:0; position:relative; border-radius:16px; overflow:hidden; aspect-ratio:4/5; }
-  .dn-strip img{ width:100%; height:100%; object-fit:cover; transition:transform .5s ease; }
-  .dn-strip figure:hover img{ transform:scale(1.07); }
-  .dn-strip figcaption{ position:absolute; left:0; right:0; bottom:0; padding:14px; font-size:12.5px; font-weight:600; color:#fff; background:linear-gradient(180deg,transparent,rgba(0,0,0,.75)); }
 
   /* ---- Impact stats ---- */
   .dn-stats-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
@@ -114,21 +109,22 @@
   .dn-secure{ display:flex; align-items:center; justify-content:center; gap:6px; color:var(--n400); font-size:12px; margin-top:14px; }
 
   @media (max-width: 980px){
-    .dn-hero-grid{ grid-template-columns:1fr; }
     .dn-cause-grid{ grid-template-columns:repeat(2,1fr); }
-    .dn-strip{ grid-template-columns:repeat(2,1fr); }
     .dn-stats-row{ grid-template-columns:repeat(2,1fr); }
     .dn-steps{ grid-template-columns:repeat(2,1fr); row-gap:28px; }
     .dn-step-arrow{ display:none; }
     .dn-wall{ grid-template-columns:1fr; }
+    .dn-story-grid{ grid-template-columns:1fr; }
+    .dn-video-wrap{ aspect-ratio:16/9; }
   }
   @media (max-width: 560px){
     .dn-cause-grid{ grid-template-columns:1fr; }
-    .dn-strip{ grid-template-columns:1fr 1fr; }
     .dn-stats-row{ grid-template-columns:1fr 1fr; }
     .dn-steps{ grid-template-columns:1fr; }
     .dn-cta{ padding:40px 22px; }
     .dn-hero-actions{ flex-direction:column; align-items:stretch; }
+    .dn-hero-ctabar{ flex-direction:column; align-items:stretch; }
+    .dn-hero-live{ justify-content:center; }
   }
 </style>
 </head>
@@ -161,41 +157,25 @@
   </div>
 </nav>
 
-<section class="section on-black dn-hero" style="padding:0;overflow:hidden;position:relative;">
-  <div class="color-circles">
-    <div class="cc cc3 dodge"></div>
-    <div class="cc cc4 screen"></div>
-    <div class="cc cc1 dodge"></div>
-    <div class="cc cc2 screen"></div>
+<header class="page-banner">
+  <div class="banner-art" style="background-image:url('assets/img/donate/mission-1.jpg');"></div>
+  <div class="banner-fade"></div>
+  <div class="wrap">
+    <h1>Support God's work across the Nations</h1>
+    <p>Every gift funds real crusades, baptisms and disciples reaching villages and cities that haven't heard the Gospel yet. No account needed — just your heart to give.</p>
   </div>
-  <div class="wrap" style="position:relative;z-index:2;padding-top:96px;padding-bottom:96px;">
-    <div class="dn-hero-grid">
-      <div>
-        <span class="dn-eyebrow">🌍 Neko Academy Missions</span>
-        <h1>Your giving brings <span>hope to the Nations</span></h1>
-        <p class="lead">Every gift funds real crusades, baptisms and disciples reaching villages and cities that haven't heard the Gospel yet. No account needed — just your heart to give.</p>
-        <div class="dn-hero-actions">
-          <button class="dn-btn-donate" data-open-donate>Donate Now</button>
-          <button class="dn-btn-ghost" onclick="document.getElementById('dnWall').scrollIntoView({behavior:'smooth'})">See the giving wall</button>
-        </div>
-        <div class="dn-hero-trust">
-          <div class="dn-avatar-stack"><span>J</span><span>M</span><span>A</span><span>+</span></div>
-          <div><b>Join those already giving</b><span class="lbl">Every gift below is real</span></div>
-        </div>
-      </div>
+</header>
 
-      <div class="dn-hero-card reveal">
-        <div class="dn-hero-card-head">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8"/><line x1="12" y1="6" x2="12" y2="18"/></svg>
-          Total raised
-        </div>
-        <div class="amt" id="heroTotal">$0</div>
-        <div class="dn-hero-stat-row">
-          <div><b id="heroDonorCount">0</b><span>people have given</span></div>
-          <div><b>100%</b><span>goes to the field</span></div>
-        </div>
-        <div class="dn-hero-card-quote">"A gift given in faith reaches further than we can see." <b>— Neko Academy Missions</b></div>
-      </div>
+<section class="section on-black" style="padding-top:32px;padding-bottom:32px;">
+  <div class="wrap dn-hero-ctabar">
+    <div class="dn-hero-actions" style="margin:0;">
+      <button class="dn-btn-donate" data-open-donate>Donate Now</button>
+      <button class="dn-btn-ghost" onclick="document.getElementById('dnWall').scrollIntoView({behavior:'smooth'})">See the giving wall</button>
+    </div>
+    <div class="dn-hero-live">
+      <div><b id="heroTotal">$0</b><span>raised so far</span></div>
+      <div class="div"></div>
+      <div><b id="heroDonorCount">0</b><span>people have given</span></div>
     </div>
   </div>
 </section>
@@ -241,22 +221,40 @@
   </div>
 </section>
 
-<section class="section on-black">
+<section class="section on-white">
   <div class="wrap">
     <div class="section-head">
-      <h2>Real people, real moments</h2>
-      <p>Every gift below reaches scenes like these — happening right now across the Nations.</p>
+      <h2>Our Story</h2>
+      <p>How the Evangelism &amp; Mission arm of this project began.</p>
     </div>
-    <div class="dn-strip">
-      <figure class="reveal"><img src="assets/img/donate/mission-1.jpg" alt="Crowd gathered at a night crusade"><figcaption>Night Crusades</figcaption></figure>
-      <figure class="reveal"><img src="assets/img/donate/mission-2.jpg" alt="Congregation in prayer at an outdoor gathering"><figcaption>Prayer &amp; Worship</figcaption></figure>
-      <figure class="reveal"><img src="assets/img/donate/mission-3.jpg" alt="Believers worshipping in white during a service"><figcaption>Discipleship</figcaption></figure>
-      <figure class="reveal"><img src="assets/img/donate/mission-4.jpg" alt="A baptism taking place in a river"><figcaption>Baptisms</figcaption></figure>
+    <div class="dn-story-grid">
+      <div class="dn-video-wrap reveal" id="dnVideoWrap">
+        <video id="dnVideo" poster="assets/img/donate/mission-1.jpg" playsinline>
+          <source src="assets/img/donate/mission-video.mp4" type="video/mp4">
+        </video>
+        <button class="dn-video-play" id="dnVideoPlayBtn" aria-label="Play video">
+          <span><svg width="26" height="26" viewBox="0 0 24 24" fill="var(--primary)"><polygon points="6 3 20 12 6 21 6 3"/></svg></span>
+        </button>
+      </div>
+      <div class="dn-story-copy reveal">
+        <div class="dn-kicker">The Birth of the Mission</div>
+        <h2>The Birth of the Evangelism &amp; Mission Arm</h2>
+        <p>This is a brief story of the encounter that led to the birth of the Evangelism and Mission Arm of the Nekomeow Project, as experienced by Dr. Charles Remi Ezeh.</p>
+        <p>In November 2017, Evangelist Reinhard Bonnke came to Lagos for his farewell crusade. The Lord told Dr. Ezeh to fly to Lagos for an encounter that would birth a ministerial evangelistic community — a blueprint already engraved in his spirit through visions and revelations.</p>
+        <p>He arrived at the crusade ground with an uncommon hunger for impartation. On the final day, as the crusade ended, a man sitting close by walked up and said: <em>"The Lord asked me to give you this wristwatch. I bought it for $1,500 from the US."</em> He asked, "Just like that?" The man said, "Yes."</p>
+        <p>He thanked him, collected it, and felt led to wear it immediately. Suddenly, he heard a voice clearly say:</p>
+        <blockquote>"The time is now." — the time to save the lost and assemble soul winners around the world.</blockquote>
+        <p>That was how the journey into Evangelism and Missions began. Since then, this mandate has led to one-on-one evangelism, crusades, and outreaches across nations of the world. The Nekomeow BSC Token Project — first a vision for education and onboarding people into crypto — is now committed to supporting this work God has entrusted to us. Buying this token and donating to this cause helps fund more of this glorious assignment.</p>
+        <div class="dn-story-signature">
+          <div class="av">CE</div>
+          <div><b>Dr. Charles Remi Ezeh</b><span>Founder, Evangelism &amp; Mission Arm</span></div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="section on-white">
+<section class="section on-black">
   <div class="wrap">
     <div class="section-head">
       <h2>Together, we've reached more</h2>
@@ -265,19 +263,19 @@
     <div class="dn-stats-row">
       <div class="dn-stat-tile reveal">
         <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
-        <b>25,000+</b><span>Lives touched</span>
+        <b>1,000+</b><span>Lives touched</span>
       </div>
       <div class="dn-stat-tile reveal">
         <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg></div>
-        <b>1,200+</b><span>Baptisms recorded</span>
+        <b>400+</b><span>Baptisms recorded</span>
       </div>
       <div class="dn-stat-tile reveal">
         <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="16" x2="16" y2="8"/><circle cx="8.5" cy="8.5" r="1.5"/><circle cx="15.5" cy="15.5" r="1.5"/></svg></div>
-        <b>60+</b><span>Villages reached</span>
+        <b>10+</b><span>Villages reached</span>
       </div>
       <div class="dn-stat-tile reveal">
         <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
-        <b>40+</b><span>Missionaries supported</span>
+        <b>40+</b><span>Mission trips</span>
       </div>
     </div>
   </div>
@@ -460,6 +458,21 @@
       : '<div style="padding:20px;color:#9a9aa4;font-size:13.5px;text-align:center;">Be the first to give today.</div>';
   }
   loadWall();
+
+  // ---- Story video: click-to-play, poster stays until pressed ----
+  (function () {
+    const wrap = document.getElementById('dnVideoWrap');
+    const video = document.getElementById('dnVideo');
+    const playBtn = document.getElementById('dnVideoPlayBtn');
+    if (!wrap || !video || !playBtn) return;
+    playBtn.addEventListener('click', () => {
+      wrap.classList.add('playing');
+      video.controls = true;
+      video.play();
+    });
+    video.addEventListener('pause', () => wrap.classList.remove('playing'));
+    video.addEventListener('ended', () => wrap.classList.remove('playing'));
+  })();
 
   // ---- Donate modal ----
   const scrim = document.getElementById('dnScrim');
