@@ -73,6 +73,22 @@
     <div class="form-actions"><button class="btn btn-primary" onclick="window.showToast('Payment settings updated')">Update</button></div>
   </div>
   <div class="panel">
+    <div class="panel-head"><div><h3>Homepage video</h3><p>The promo video shown on the public homepage — paste a link or upload a file</p></div></div>
+    <div class="form-grid">
+      <div class="form-field full"><label>Video URL</label><input type="text" placeholder="https://... (mp4 link, or paste one after uploading below)" id="homeVideoUrlInput"></div>
+      <div class="form-field full">
+        <label>Or upload a video file</label>
+        <input type="file" accept="video/mp4,video/webm" id="homeVideoFileInput">
+        <div id="homeVideoUploadStatus" style="font-size:12.5px;color:var(--n50);margin-top:6px;"></div>
+      </div>
+      <div class="form-field full" id="homeVideoPreviewWrap" style="display:none;">
+        <label>Current video</label>
+        <video id="homeVideoPreview" controls style="width:100%;max-width:420px;border-radius:10px;background:#000;"></video>
+      </div>
+    </div>
+    <div class="form-actions"><button class="btn btn-primary" id="saveHomeVideoBtn">Save video</button></div>
+  </div>
+  <div class="panel">
     <div class="panel-head"><div><h3>Team &amp; access</h3><p>Give other admins access to this dashboard</p></div></div>
     <table class="data-table">
       <thead><tr><th>Name</th><th>Role</th><th></th></tr></thead>
@@ -193,12 +209,53 @@
       </tr>`).join('');
   }
 
+  // ---- Homepage video ----
+  async function loadHomeVideo() {
+    const { data } = await supabase.from('site_settings').select('key, value').eq('key', 'homepage_video_url').maybeSingle();
+    const url = data?.value;
+    document.getElementById('homeVideoUrlInput').value = url || '';
+    const preview = document.getElementById('homeVideoPreview');
+    const previewWrap = document.getElementById('homeVideoPreviewWrap');
+    if (url) {
+      preview.src = url;
+      previewWrap.style.display = 'block';
+    }
+  }
+
+  document.getElementById('homeVideoFileInput').addEventListener('change', async function () {
+    const file = this.files[0];
+    if (!file) return;
+    const status = document.getElementById('homeVideoUploadStatus');
+    status.textContent = 'Uploading…';
+
+    const ext = (file.name.split('.').pop() || 'mp4').toLowerCase();
+    const path = `homepage-video-${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage.from('site-media').upload(path, file, { cacheControl: '3600' });
+    if (upErr) {
+      status.textContent = 'Upload failed: ' + upErr.message;
+      return;
+    }
+    const { data: pub } = supabase.storage.from('site-media').getPublicUrl(path);
+    document.getElementById('homeVideoUrlInput').value = pub.publicUrl;
+    status.textContent = 'Uploaded — click "Save video" to publish it.';
+    this.value = '';
+  });
+
+  document.getElementById('saveHomeVideoBtn').addEventListener('click', async () => {
+    const url = document.getElementById('homeVideoUrlInput').value.trim();
+    const { error } = await supabase.from('site_settings').update({ value: url || null, updated_at: new Date().toISOString() }).eq('key', 'homepage_video_url');
+    if (error) { window.showToast(error.message); return; }
+    window.showToast('Homepage video saved');
+    loadHomeVideo();
+  });
+
   (async () => {
     const admin = await requireAdmin();
     if (!admin) return;
     currentAdminId = admin.id;
     loadTeam();
     loadAuditLog();
+    loadHomeVideo();
   })();
 </script>
 
