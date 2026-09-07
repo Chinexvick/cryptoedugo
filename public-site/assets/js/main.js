@@ -785,13 +785,12 @@
     };
 
     function setBadge(href, count) {
-      document.querySelectorAll(`a[href="${href}"] .badge`).forEach(function (badge) {
-        const b = badge.querySelector('b');
+      document.querySelectorAll(`a[href="${href}"] .badge b`).forEach(function (b) {
         if (count > 0) {
-          if (b) b.textContent = count > 99 ? '99+' : String(count);
-          badge.style.display = '';
+          b.textContent = count > 99 ? '99+' : String(count);
+          b.style.display = '';
         } else {
-          badge.style.display = 'none';
+          b.style.display = 'none';
         }
       });
     }
