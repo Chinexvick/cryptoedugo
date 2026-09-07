@@ -52,72 +52,7 @@
 <section class="section on-black">
   <div class="blob-field" style="opacity:.4;"><div class="blob b1"></div><div class="blob b2"></div></div>
   <div class="wrap" style="position:relative;">
-    <div class="bundle-grid">
-
-      <div class="bundle-card reveal">
-        <span class="save-chip">Save 30%</span>
-        <h3>Become a Smart Contract Developer</h3>
-        <p>The complete path from zero blockchain knowledge to shipping audited, production-grade smart contracts.</p>
-        <ul class="bundle-course-list">
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Blockchain Fundamentals</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Solidity &amp; Smart Contracts</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Smart Contract Security</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Web3 Frontend Dev</li>
-        </ul>
-        <div class="bundle-price-row">
-          <div class="bundle-price"><b>$10</b><s>$10</s></div>
-          <a href="checkout.html" class="btn btn-primary">Get this path</a>
-        </div>
-      </div>
-
-      <div class="bundle-card reveal">
-        <span class="save-chip">Save 25%</span>
-        <h3>DeFi &amp; Trading Specialist</h3>
-        <p>Understand the mechanics behind DeFi protocols and trade with a real risk framework, not guesswork.</p>
-        <ul class="bundle-course-list">
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Blockchain Fundamentals</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> DeFi Deep Dive</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Crypto Trading &amp; TA</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Tokenomics &amp; Economics</li>
-        </ul>
-        <div class="bundle-price-row">
-          <div class="bundle-price"><b>$10</b><s>$10</s></div>
-          <a href="checkout.html" class="btn btn-primary">Get this path</a>
-        </div>
-      </div>
-
-      <div class="bundle-card reveal">
-        <span class="save-chip">Save 20%</span>
-        <h3>NFT &amp; Digital Ownership Creator</h3>
-        <p>Design, mint and market a full NFT collection — from art pipeline to marketplace mechanics.</p>
-        <ul class="bundle-course-list">
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Blockchain Fundamentals</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> NFTs &amp; Digital Ownership</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Solidity &amp; Smart Contracts</li>
-        </ul>
-        <div class="bundle-price-row">
-          <div class="bundle-price"><b>$10</b><s>$10</s></div>
-          <a href="checkout.html" class="btn btn-primary">Get this path</a>
-        </div>
-      </div>
-
-      <div class="bundle-card reveal">
-        <span class="save-chip">Save 25%</span>
-        <h3>Full-Stack Web3 Engineer</h3>
-        <p>Every layer of the stack — contracts, security, and the front end that connects it to real users.</p>
-        <ul class="bundle-course-list">
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Solidity &amp; Smart Contracts</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Web3 Frontend Dev</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Layer 2s &amp; Rollups</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Smart Contract Security</li>
-        </ul>
-        <div class="bundle-price-row">
-          <div class="bundle-price"><b>$10</b><s>$10</s></div>
-          <a href="checkout.html" class="btn btn-primary">Get this path</a>
-        </div>
-      </div>
-
-    </div>
+    <div class="bundle-grid" id="bundleGrid"><p style="color:#fff;opacity:.7;">Loading learning paths…</p></div>
   </div>
 </section>
 
@@ -171,5 +106,69 @@
 </footer>
 
 <script src="assets/js/main.js"></script>
+<script type="module">
+  import { supabase, formatPrice, escapeHtml, addToCart, setPendingBundle } from './assets/js/supabase-client.js';
+
+  (async () => {
+    const grid = document.getElementById('bundleGrid');
+    const slow = window.watchSlowLoad(grid, 8000);
+
+    const { data: bundles, error } = await supabase
+      .from('bundles')
+      .select('id, title, description, discount_percent, bundle_courses(course:courses(id, title, price_cents, currency, is_purchasable))')
+      .eq('status', 'published')
+      .order('created_at', { ascending: true });
+
+    slow.stop();
+
+    if (error) {
+      grid.innerHTML = '<p style="color:#fff;opacity:.7;">Could not load learning paths right now — please try again shortly.</p>';
+      return;
+    }
+    if (!bundles || bundles.length === 0) {
+      grid.innerHTML = `<div class="empty-state-anim" style="text-align:center;padding:40px 20px;color:#fff;opacity:.8;grid-column:1/-1;">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:12px;"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4z"/></svg>
+        <p>No learning paths published yet — check back soon.</p>
+      </div>`;
+      return;
+    }
+
+    grid.innerHTML = bundles.map(b => {
+      const courses = (b.bundle_courses || []).map(bc => bc.course).filter(Boolean);
+      const subtotal = courses.reduce((s, c) => s + c.price_cents, 0);
+      const discounted = Math.round(subtotal * (1 - (b.discount_percent || 0) / 100));
+      const currency = courses[0]?.currency || 'USD';
+      const allPurchasable = courses.length > 0 && courses.every(c => c.is_purchasable);
+
+      const ctaHtml = allPurchasable
+        ? `<button class="btn btn-primary" data-bundle-buy="${b.id}">Get this path</button>`
+        : `<button class="btn btn-outline-dark" disabled style="opacity:.6;">Coming soon</button>`;
+
+      return `
+        <div class="bundle-card reveal in">
+          ${b.discount_percent ? `<span class="save-chip">Save ${b.discount_percent}%</span>` : ''}
+          <h3>${escapeHtml(b.title)}</h3>
+          <p>${escapeHtml(b.description || '')}</p>
+          <ul class="bundle-course-list">
+            ${courses.map(c => `<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> ${escapeHtml(c.title)}</li>`).join('') || '<li>No courses added to this path yet</li>'}
+          </ul>
+          <div class="bundle-price-row">
+            <div class="bundle-price"><b>${formatPrice(discounted, currency)}</b>${b.discount_percent ? `<s>${formatPrice(subtotal, currency)}</s>` : ''}</div>
+            ${ctaHtml}
+          </div>
+        </div>`;
+    }).join('');
+
+    grid.querySelectorAll('[data-bundle-buy]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const bundle = bundles.find(b => b.id === btn.getAttribute('data-bundle-buy'));
+        if (!bundle) return;
+        (bundle.bundle_courses || []).forEach(bc => { if (bc.course) addToCart(bc.course.id); });
+        setPendingBundle(bundle.id);
+        window.location.href = 'account-cart.html';
+      });
+    });
+  })();
+</script>
 </body>
 </html>

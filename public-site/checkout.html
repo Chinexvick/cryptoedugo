@@ -87,7 +87,7 @@
 
 <script src="assets/js/main.js"></script>
 <script type="module">
-  import { supabase, requireAuth, formatPrice, escapeHtml, getCart, clearCart } from './assets/js/supabase-client.js';
+  import { supabase, requireAuth, formatPrice, escapeHtml, getCart, clearCart, getPendingBundle, clearPendingBundle } from './assets/js/supabase-client.js';
 
   let session = null;
   let cartCourses = [];
@@ -176,11 +176,14 @@
     btn.textContent = 'Creating order…';
 
     try {
+      const pendingBundle = getPendingBundle();
       const { data: orderId, error: orderErr } = await supabase.rpc('create_order', {
         p_course_ids: cartCourses.map(c => c.id),
-        p_coupon_code: appliedCoupon?.code ?? null,
+        p_coupon_code: pendingBundle ? null : (appliedCoupon?.code ?? null),
+        p_bundle_id: pendingBundle || null,
       });
       if (orderErr) throw new Error(orderErr.message);
+      clearPendingBundle();
 
       btn.textContent = 'Opening secure payment…';
 

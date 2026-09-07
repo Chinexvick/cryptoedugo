@@ -64,6 +64,22 @@ export function clearCart() {
   localStorage.removeItem(CART_KEY);
 }
 
+/* ---- Bundle purchase: remembers which bundle (if any) the current cart came from,
+   so checkout can pass it to create_order() for the bundle discount. ---- */
+const BUNDLE_KEY = 'crypedugo_bundle_id';
+
+export function setPendingBundle(bundleId) {
+  localStorage.setItem(BUNDLE_KEY, bundleId);
+}
+
+export function getPendingBundle() {
+  return localStorage.getItem(BUNDLE_KEY);
+}
+
+export function clearPendingBundle() {
+  localStorage.removeItem(BUNDLE_KEY);
+}
+
 /* ---- Get the current session's user + profile (role, name, etc.), or null if signed out ---- */
 export async function getCurrentProfile() {
   const { data: { session } } = await supabase.auth.getSession();
