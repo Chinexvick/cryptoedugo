@@ -117,6 +117,8 @@
     submitBtn.disabled = true;
     submitBtn.textContent = 'Creating account…';
 
+    const refCode = new URLSearchParams(window.location.search).get('ref') || localStorage.getItem('crypedugo_ref_code');
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -124,6 +126,7 @@
         data: {
           full_name: `${firstName} ${lastName}`.trim(),
           username: username,
+          ref_code: refCode || undefined,
         },
         emailRedirectTo: window.location.origin + window.location.pathname.replace('create-account.html', 'login.html'),
       },
