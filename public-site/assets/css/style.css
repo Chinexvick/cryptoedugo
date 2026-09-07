@@ -1082,7 +1082,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .comm-channel{ display:flex; align-items:center; gap:10px; padding:10px 10px; border-radius:9px; font-size:14px; color:var(--n50); font-weight:500; }
 .comm-channel:hover{ background:rgba(255,255,255,.05); }
 .comm-channel.active{ background:var(--grad-brand-soft); color:#fff; }
-.comm-channel .hash{ opacity:.6; }
+.comm-channel .hash{ color:var(--primary-glow); opacity:1; font-weight:700; }
+.comm-channel.active .hash{ color:#fff; }
 .comm-channel .badge{ margin-left:auto; background:var(--primary); color:#fff; font-size:10.5px; font-weight:700; padding:1px 6px; border-radius:99px; }
 .comm-main{ display:flex; flex-direction:column; min-width:0; }
 .comm-header{ display:flex; align-items:center; gap:12px; padding:16px 24px; border-bottom:1px solid rgba(255,255,255,.08); }
@@ -1096,7 +1097,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .comm-msg .avatar{ width:36px; height:36px; border-radius:10px; flex-shrink:0; object-fit:cover; }
 .comm-msg > div:last-child{ min-width:0; flex:1; }
 .comm-msg .meta{ display:flex; align-items:center; gap:8px; margin-bottom:4px; }
-.comm-msg .name{ font-weight:700; font-size:13.5px; }
+.comm-msg .name{ font-weight:700; font-size:13.5px; color:#fff; }
 .comm-msg .admin-badge{ background:var(--grad-brand); color:#fff; font-size:9.5px; font-weight:700; padding:1px 7px; border-radius:99px; }
 .comm-msg .time{ font-size:11px; color:var(--n700); }
 .comm-msg .bubble-text{ font-size:14px; color:#e8e8ea; line-height:1.55; overflow-wrap:break-word; }
