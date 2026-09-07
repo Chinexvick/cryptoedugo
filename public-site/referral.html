@@ -97,7 +97,32 @@
           <div class="details-head"><h3>Withdraw</h3></div>
           <div class="form-grid">
             <div class="form-field"><label>Amount ($)</label><input type="number" id="wdAmount" min="1" step="0.01" placeholder="0.00"></div>
-            <div class="form-field"><label>Bank name</label><input type="text" id="wdBankName" placeholder="e.g. GTBank"></div>
+            <div class="form-field">
+              <label>Bank</label>
+              <select id="wdBankSelect">
+                <option value="">Select your bank…</option>
+                <option value="044">Access Bank</option>
+                <option value="063">Access Bank (Diamond)</option>
+                <option value="050">Ecobank Nigeria</option>
+                <option value="070">Fidelity Bank</option>
+                <option value="011">First Bank of Nigeria</option>
+                <option value="214">First City Monument Bank (FCMB)</option>
+                <option value="058">Guaranty Trust Bank (GTBank)</option>
+                <option value="30">Heritage Bank</option>
+                <option value="50211">Kuda Microfinance Bank</option>
+                <option value="50515">Moniepoint MFB</option>
+                <option value="999992">OPay</option>
+                <option value="999991">PalmPay</option>
+                <option value="076">Polaris Bank</option>
+                <option value="221">Stanbic IBTC Bank</option>
+                <option value="232">Sterling Bank</option>
+                <option value="032">Union Bank of Nigeria</option>
+                <option value="033">United Bank for Africa (UBA)</option>
+                <option value="215">Unity Bank</option>
+                <option value="035">Wema Bank</option>
+                <option value="057">Zenith Bank</option>
+              </select>
+            </div>
             <div class="form-field"><label>Account name</label><input type="text" id="wdAccountName" placeholder="Full name on account"></div>
             <div class="form-field"><label>Account number</label><input type="text" id="wdAccountNumber" placeholder="0123456789"></div>
           </div>
@@ -201,7 +226,9 @@
       errorBox.style.display = 'none';
 
       const amountDollars = parseFloat(document.getElementById('wdAmount').value);
-      const bankName = document.getElementById('wdBankName').value.trim();
+      const bankSelect = document.getElementById('wdBankSelect');
+      const bankCode = bankSelect.value;
+      const bankName = bankSelect.options[bankSelect.selectedIndex]?.text || '';
       const accountName = document.getElementById('wdAccountName').value.trim();
       const accountNumber = document.getElementById('wdAccountNumber').value.trim();
 
@@ -210,8 +237,8 @@
         errorBox.style.display = 'block';
         return;
       }
-      if (!bankName || !accountName || !accountNumber) {
-        errorBox.textContent = 'Fill in your bank name, account name and account number.';
+      if (!bankCode || !accountName || !accountNumber) {
+        errorBox.textContent = 'Select your bank and fill in your account name and account number.';
         errorBox.style.display = 'block';
         return;
       }
@@ -228,6 +255,7 @@
       const { error } = await supabase.rpc('request_referral_withdrawal', {
         p_amount_cents: amountCents,
         p_bank_name: bankName,
+        p_bank_code: bankCode,
         p_account_name: accountName,
         p_account_number: accountNumber,
       });
