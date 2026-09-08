@@ -247,7 +247,7 @@
 
     const { data: messages, error } = await supabase
       .from('dm_messages')
-      .select('body, created_at, sender_id, sender:profiles(full_name, username, role)')
+      .select('body, created_at, sender_id')
       .eq('thread_id', threadId)
       .order('created_at', { ascending: true });
 
@@ -259,6 +259,15 @@
       body.innerHTML = '<p style="color:var(--n700);font-size:13.5px;">No messages yet. Send us a message below and the team will reply here.</p>';
       return;
     }
+
+    // Sender names come from the profiles_public view (safe fields only)
+    // rather than an embed against profiles, which is now restricted to
+    // the owner or an admin.
+    const { data: senders } = await supabase
+      .rpc('get_profiles_public', { p_ids: [...new Set(messages.map(m => m.sender_id))] });
+    const sendersById = {};
+    (senders || []).forEach(s => { sendersById[s.id] = s; });
+    messages.forEach(m => { m.sender = sendersById[m.sender_id]; });
 
     body.innerHTML = messages.map(m => {
       const isMine = m.sender_id === currentUserId;

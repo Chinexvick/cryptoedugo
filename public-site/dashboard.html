@@ -243,9 +243,20 @@
     const pulseCard = document.getElementById('pulseCard');
     const { data: pulse, error: pulseErr } = await supabase
       .from('community_messages')
-      .select('body, created_at, channel:community_channels(slug), author:profiles(full_name, username)')
+      .select('body, created_at, author_id, channel:community_channels(slug)')
       .order('created_at', { ascending: false })
       .limit(4);
+
+    // Author names come from the profiles_public view (safe fields only)
+    // rather than an embed against profiles, which is now restricted to
+    // the owner or an admin.
+    if (pulse && pulse.length > 0) {
+      const { data: authors } = await supabase
+        .rpc('get_profiles_public', { p_ids: [...new Set(pulse.map(m => m.author_id))] });
+      const authorsById = {};
+      (authors || []).forEach(a => { authorsById[a.id] = a; });
+      pulse.forEach(m => { m.author = authorsById[m.author_id]; });
+    }
 
     function ago(dateStr) {
       const mins = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
