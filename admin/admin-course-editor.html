@@ -110,6 +110,17 @@
         <label>Or paste a preview video URL</label>
         <input type="text" id="fPreviewVideoUrl" placeholder="https://...">
       </div>
+      <div class="form-field full">
+        <label>Full course video</label>
+        <div class="upload-drop" id="mainVideoDropZone" style="cursor:pointer;">
+          <video id="mainVideoPlayer" controls style="display:none;max-width:100%;max-height:200px;border-radius:8px;margin-bottom:10px;background:#000;"></video>
+          <svg id="mainVideoIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          <b id="mainVideoLabel">Drop the full course video, or click to browse</b>
+          <span>MP4 recommended — one video covering the entire curriculum. No length limit. Kept private; only enrolled students (or an active free trial) can play it.</span>
+        </div>
+        <input type="file" id="mainVideoFileInput" accept="video/mp4,video/webm,video/quicktime" style="display:none;">
+        <p id="mainVideoStatus" style="font-size:12px;color:var(--n50);margin-top:6px;display:none;"></p>
+      </div>
     </div>
   </div>
 </div>
@@ -170,6 +181,8 @@
   let courseId = params.get('id'); // null = create mode
   let pendingThumbFile = null;
   let pendingPreviewFile = null;
+  let pendingMainVideoFile = null;
+  const MAX_PREVIEW_SECONDS = 300; // 5 minutes — the free teaser only, never the full course video
 
   const saveMsg = document.getElementById('saveMsg');
   function showMsg(text, isError) {
@@ -226,6 +239,13 @@
       document.getElementById('previewIcon').style.display = 'none';
       document.getElementById('previewLabel').textContent = 'Click to replace preview video';
     }
+    if (c.main_video_url) {
+      document.getElementById('mainVideoIcon').style.display = 'none';
+      document.getElementById('mainVideoLabel').textContent = 'Click to replace the full course video';
+      const statusEl = document.getElementById('mainVideoStatus');
+      statusEl.textContent = 'A course video is already uploaded. Selecting a new file will replace it on save.';
+      statusEl.style.display = 'block';
+    }
     document.getElementById('fPrice').value = (c.price_cents / 100).toFixed(0);
     document.getElementById('fCompareAt').value = c.compare_at_price_cents ? (c.compare_at_price_cents / 100).toFixed(0) : '';
     document.getElementById('fCertificate').value = c.certificate_on_completion ? 'true' : 'false';
@@ -254,6 +274,20 @@
     if (upErr) { showMsg('Preview video upload failed: ' + upErr.message, true); return null; }
     const { data } = supabase.storage.from('course-thumbnails').getPublicUrl(path);
     return data.publicUrl;
+  }
+
+  async function uploadMainVideoIfPending(id) {
+    if (!pendingMainVideoFile) return null;
+    const ext = pendingMainVideoFile.name.split('.').pop();
+    const path = `${id}/main-${Date.now()}.${ext}`;
+    // Private bucket — no size cap set here or in Storage policy, so any
+    // length is accepted. Students never get this path directly; it's only
+    // ever resolved to a short-lived signed URL after an entitlement check
+    // (see the get-course-video-url edge function).
+    const { error: upErr } = await supabase.storage
+      .from('course-videos').upload(path, pendingMainVideoFile, { upsert: true });
+    if (upErr) { showMsg('Course video upload failed: ' + upErr.message, true); return null; }
+    return path;
   }
 
   async function uploadThumbnailIfPending(id) {
@@ -291,9 +325,11 @@
         courseId = data.id;
         const thumbUrl = await uploadThumbnailIfPending(courseId);
         const prevUrl = await uploadPreviewIfPending(courseId);
+        const mainVideoPath = await uploadMainVideoIfPending(courseId);
         const post = {};
         if (thumbUrl) post.thumbnail_url = thumbUrl;
         if (prevUrl) post.preview_video_url = prevUrl;
+        if (mainVideoPath) post.main_video_url = mainVideoPath;
         if (Object.keys(post).length) await supabase.from('courses').update(post).eq('id', courseId);
         history.replaceState(null, '', 'admin-course-editor.html?id=' + courseId);
         showMsg(publish ? 'Course created and published!' : 'Course created as draft.');
@@ -305,11 +341,15 @@
         if (thumbUrl) fields.thumbnail_url = thumbUrl;
         const prevUrl = await uploadPreviewIfPending(courseId);
         if (prevUrl) fields.preview_video_url = prevUrl;
+        const mainVideoPath = await uploadMainVideoIfPending(courseId);
+        if (mainVideoPath) fields.main_video_url = mainVideoPath;
         const { error } = await supabase.from('courses').update(fields).eq('id', courseId);
         if (error) { showMsg('Could not save: ' + error.message, true); return; }
         showMsg(publish ? 'Published!' : 'Saved.');
       }
       pendingThumbFile = null;
+      pendingPreviewFile = null;
+      pendingMainVideoFile = null;
     } finally {
       saveBtns.forEach(b => b.disabled = false);
     }
@@ -342,17 +382,49 @@
   previewInput.addEventListener('change', () => {
     const file = previewInput.files[0];
     if (!file) return;
-    pendingPreviewFile = file;
     const pv = document.getElementById('previewVideoPlayer');
-    pv.src = URL.createObjectURL(file);
-    pv.style.display = 'block';
-    document.getElementById('previewIcon').style.display = 'none';
-    document.getElementById('previewLabel').textContent = file.name + ' — will upload on save';
+    const objectUrl = URL.createObjectURL(file);
+    pv.src = objectUrl;
+    // Reject anything longer than 5 minutes — the free preview is meant to
+    // be a short teaser, not the full course. The full course video (below)
+    // has no such limit.
+    pv.addEventListener('loadedmetadata', function checkDuration() {
+      pv.removeEventListener('loadedmetadata', checkDuration);
+      if (pv.duration > MAX_PREVIEW_SECONDS) {
+        showMsg(`Preview video is ${Math.ceil(pv.duration / 60)} minutes — please keep the free preview under 5 minutes. Use the "Full course video" field below for the complete lesson.`, true);
+        pv.src = '';
+        pv.style.display = 'none';
+        previewInput.value = '';
+        URL.revokeObjectURL(objectUrl);
+        return;
+      }
+      pendingPreviewFile = file;
+      pv.style.display = 'block';
+      document.getElementById('previewIcon').style.display = 'none';
+      document.getElementById('previewLabel').textContent = file.name + ' — will upload on save';
+    }, { once: true });
+  });
+
+  const mainVideoZone = document.getElementById('mainVideoDropZone');
+  const mainVideoInput = document.getElementById('mainVideoFileInput');
+  mainVideoZone.addEventListener('click', () => mainVideoInput.click());
+  mainVideoInput.addEventListener('change', () => {
+    const file = mainVideoInput.files[0];
+    if (!file) return;
+    pendingMainVideoFile = file;
+    const mv = document.getElementById('mainVideoPlayer');
+    mv.src = URL.createObjectURL(file);
+    mv.style.display = 'block';
+    document.getElementById('mainVideoIcon').style.display = 'none';
+    document.getElementById('mainVideoLabel').textContent = file.name + ' — will upload on save';
+    const statusEl = document.getElementById('mainVideoStatus');
+    statusEl.textContent = 'No length limit — this can be as long as the full course.';
+    statusEl.style.display = 'block';
   });
 
   // ---- Curriculum builder (writes directly to the database, no separate save step) ----
   function enableCurriculumTab() {
-    document.getElementById('curriculumHint').textContent = 'Add modules, then add lessons with a duration to each. Changes save immediately.';
+    document.getElementById('curriculumHint').textContent = 'List your modules and lessons here as the course syllabus — one video for the whole course is uploaded on the Details tab. Changes save immediately.';
     loadCurriculum();
   }
 
@@ -369,7 +441,6 @@
         </select>
         <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--n50);white-space:nowrap;"><input type="checkbox" data-lesson-preview ${l.is_preview ? 'checked' : ''}> Preview</label>
         <button data-delete-lesson style="background:none;border:none;color:var(--n50);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
-        <input type="text" value="${escapeHtml(l.video_url || '')}" data-lesson-video placeholder="Video URL (mp4/hls link)" style="flex:1 1 100%;min-width:200px;">
         ${l.content_type === 'quiz' ? `<button class="btn btn-sm btn-outline" data-manage-quiz style="flex:1 1 100%;">Manage quiz questions</button><div data-quiz-panel style="flex:1 1 100%;display:none;"></div>` : ''}
       </div>`).join('');
 
@@ -450,10 +521,6 @@
         });
         lessonEl.querySelector('[data-lesson-preview]').addEventListener('change', async (e) => {
           await supabase.from('course_lessons').update({ is_preview: e.target.checked }).eq('id', lessonId);
-        });
-        lessonEl.querySelector('[data-lesson-video]').addEventListener('change', async (e) => {
-          await supabase.from('course_lessons').update({ video_url: e.target.value.trim() || null }).eq('id', lessonId);
-          showMsg('Lesson updated.');
         });
         lessonEl.querySelector('[data-lesson-content-type]').addEventListener('change', async (e) => {
           await supabase.from('course_lessons').update({ content_type: e.target.value }).eq('id', lessonId);
