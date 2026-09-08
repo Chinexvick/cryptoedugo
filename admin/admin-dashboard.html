@@ -140,10 +140,9 @@
 <script type="module">
   import { supabase, requireAdmin, formatPrice, escapeHtml } from './assets/js/supabase-client.js';
 
-  (async () => {
-    const admin = await requireAdmin();
-    if (!admin) return;
+  let dashboardRefreshTimer = null;
 
+  async function loadDashboard() {
     // Enrolled students (distinct students with a paid enrollment)
     const { data: paidEnrollments } = await supabase
       .from('enrollments')
@@ -252,6 +251,24 @@
         <div class="inbox-item unread"><span class="dot"></span><div class="txt"><div class="row1"><b>${escapeHtml(m.name)}</b></div><p>${escapeHtml(m.message.slice(0, 80))}${m.message.length > 80 ? '…' : ''}</p></div></div>
       `).join('');
     }
+  }
+
+  (async () => {
+    const admin = await requireAdmin();
+    if (!admin) return;
+
+    await loadDashboard();
+
+    // Keep the numbers live while the dashboard is open — a new enrollment,
+    // order, or message from a visitor shouldn't need a manual page refresh
+    // to show up. Paused while the tab is hidden so it doesn't poll forever
+    // in a background tab.
+    dashboardRefreshTimer = setInterval(() => {
+      if (document.visibilityState === 'visible') loadDashboard();
+    }, 20000);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') loadDashboard();
+    });
   })();
 </script>
 

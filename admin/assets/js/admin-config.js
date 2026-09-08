@@ -1,4 +1,4 @@
-window.PUBLIC_SITE_URL = 'https://40f44.netlify.app';
+window.PUBLIC_SITE_URL = 'https://learn.nekomeowtoken.com';
 document.addEventListener('DOMContentLoaded', function () {
   var base = (window.PUBLIC_SITE_URL || '').replace(/\/$/, '');
   if (!base) return;
