@@ -84,9 +84,14 @@
   });
 
   document.querySelectorAll('.toggle-pass').forEach(btn => {
+    const eyeOpen = btn.innerHTML;
+    const eyeClosed = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.6 21.6 0 0 1 5.06-6.06M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 8 11 8a21.7 21.7 0 0 1-2.66 3.79m-6.3-.87a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
     btn.addEventListener('click', () => {
       const input = btn.closest('.input-wrap').querySelector('input');
-      input.type = input.type === 'password' ? 'text' : 'password';
+      const showing = input.type === 'password';
+      input.type = showing ? 'text' : 'password';
+      btn.innerHTML = showing ? eyeClosed : eyeOpen;
+      btn.setAttribute('aria-label', showing ? 'Hide password' : 'Show password');
     });
   });
 
