@@ -214,7 +214,7 @@
 
     const { data: messages, error } = await supabase
       .from('community_messages')
-      .select('id, body, is_pinned, created_at, author:profiles(full_name, username, role, avatar_url)')
+      .select('id, body, is_pinned, created_at, author_id')
       .eq('channel_id', channelId)
       .order('created_at', { ascending: true })
       .limit(100);
@@ -232,6 +232,16 @@
       </div>`;
       return;
     }
+
+    // Author names/avatars come from the profiles_public view (safe fields
+    // only — full_name, username, role, avatar_url) rather than an embed
+    // against profiles directly, since profiles is now restricted to the
+    // owner or an admin.
+    const { data: authors } = await supabase
+      .rpc('get_profiles_public', { p_ids: [...new Set(messages.map(m => m.author_id))] });
+    const authorsById = {};
+    (authors || []).forEach(a => { authorsById[a.id] = a; });
+    messages.forEach(m => { m.author = authorsById[m.author_id]; });
 
     const { data: reactions } = await supabase
       .from('message_reactions')

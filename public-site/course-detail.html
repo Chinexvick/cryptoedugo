@@ -535,10 +535,21 @@
   async function loadReviews(courseId) {
     const { data: reviews } = await supabase
       .from('reviews')
-      .select('rating, body, created_at, student:profiles(full_name, username)')
+      .select('rating, body, created_at, student_id')
       .eq('course_id', courseId)
       .order('created_at', { ascending: false })
       .limit(50);
+
+    // Reviewer names come from the profiles_public view (safe fields only)
+    // rather than an embed against profiles, which is now restricted to
+    // the owner or an admin.
+    if (reviews && reviews.length > 0) {
+      const { data: reviewers } = await supabase
+        .rpc('get_profiles_public', { p_ids: [...new Set(reviews.map(r => r.student_id))] });
+      const reviewersById = {};
+      (reviewers || []).forEach(p => { reviewersById[p.id] = p; });
+      reviews.forEach(r => { r.student = reviewersById[r.student_id]; });
+    }
 
     const el = document.getElementById('cdReviewsList');
     const listEl = document.getElementById('reviewList');
