@@ -796,6 +796,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   .stat-grid{ grid-template-columns:1fr 1fr; }
   .form-grid{ grid-template-columns:1fr; }
   .data-table{ display:block; overflow-x:auto; white-space:nowrap; max-width:100%; }
+  /* The actions column (edit/delete) is the last column on every admin table.
+     Without this, it just scrolls off-screen on narrow phones with no visual
+     hint that there's more to the row — pin it to the right edge instead so
+     it's always reachable without having to discover the horizontal scroll. */
+  .data-table th:last-child, .data-table td:last-child{ position:sticky; right:0; background:#17171b; box-shadow:-8px 0 8px -8px rgba(0,0,0,.4); }
 
   .account-title{ font-size:22px; }
   .dash-stat span{ font-size:24px; }
