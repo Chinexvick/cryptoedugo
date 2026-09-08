@@ -90,6 +90,7 @@
   let lessons = [];
   let progressByLesson = {}; // lesson_id -> { completed }
   let currentLesson = null;
+  let mainVideoUrl = null; // one signed video URL covering the whole course
 
   document.querySelectorAll('[data-player-tab]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -150,11 +151,15 @@
     document.getElementById('lessonTitle').textContent = currentLesson.title;
     document.getElementById('lessonMeta').textContent = `${currentLesson.duration_minutes} min · ${currentLesson.content_type}`;
 
+    // One video covers the whole course — it doesn't change per lesson.
+    // Only render it once so switching lessons doesn't restart playback.
     const videoWrap = document.getElementById('playerVideoWrap');
-    if (currentLesson.video_url) {
-      videoWrap.innerHTML = `<video controls playsinline style="width:100%;height:100%;object-fit:contain;background:#000;" src="${escapeHtml(currentLesson.video_url)}"></video>`;
+    if (mainVideoUrl) {
+      if (!videoWrap.querySelector('video')) {
+        videoWrap.innerHTML = `<video controls playsinline style="width:100%;height:100%;object-fit:contain;background:#000;" src="${escapeHtml(mainVideoUrl)}"></video>`;
+      }
     } else {
-      videoWrap.innerHTML = '<p style="color:var(--n50);font-size:14px;padding:20px;text-align:center;">Video not available for this lesson.</p>';
+      videoWrap.innerHTML = '<p style="color:var(--n50);font-size:14px;padding:20px;text-align:center;">Course video not available yet.</p>';
     }
 
     const isDone = !!progressByLesson[currentLesson.id]?.completed;
@@ -292,7 +297,7 @@
 
     const { data: courseRow, error: courseErr } = await supabase
       .from('courses')
-      .select('id, title, slug')
+      .select('id, title, slug, status, main_video_url')
       .eq('slug', slug)
       .single();
     if (courseErr || !courseRow) {
@@ -328,6 +333,23 @@
       banner.innerHTML = `<span>🎁 You're in your free trial —</span> <span class="trial-banner-time" id="playerTrialCountdown"></span> <span>left to explore this course.</span>`;
       document.querySelector('.player-main').prepend(banner);
       window.startTrialCountdown && window.startTrialCountdown('playerTrialCountdown', profile.trial_ends_at);
+    }
+
+    // One video covers the whole course curriculum. It lives in a private
+    // bucket — this asks a server-side function to re-check entitlement and
+    // hand back a short-lived signed URL, rather than trusting anything
+    // client-side.
+    if (course.main_video_url) {
+      const resp = await fetch('https://rbncpakigxzbstefisgd.supabase.co/functions/v1/get-course-video-url', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ course_id: course.id }),
+      });
+      const result = await resp.json().catch(() => ({}));
+      if (resp.ok && result.url) mainVideoUrl = result.url;
     }
 
     const { data: moduleRows } = await supabase
