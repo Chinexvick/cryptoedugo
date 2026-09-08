@@ -360,13 +360,6 @@
       const v = document.getElementById('cdPreviewVideo');
       v.src = course.preview_video_url;
       if (course.thumbnail_url) v.poster = course.thumbnail_url;
-      // If a preview length is set, stop playback there so only a teaser is shown.
-      const limit = course.preview_video_seconds;
-      if (limit && limit > 0) {
-        v.addEventListener('timeupdate', () => {
-          if (v.currentTime >= limit) { v.pause(); v.currentTime = limit; }
-        });
-      }
     }
 
     const learnHtml = bulletList(course.learning_outcomes);

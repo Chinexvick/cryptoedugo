@@ -107,11 +107,6 @@
         <input type="file" id="previewFileInput" accept="video/mp4,video/webm,video/quicktime" style="display:none;">
       </div>
       <div class="form-field">
-        <label>Cut preview after (seconds)</label>
-        <input type="number" id="fPreviewSeconds" min="0" step="1" placeholder="e.g. 30 — leave blank to play in full">
-        <p style="font-size:12px;color:var(--n50);margin-top:6px;">Playback stops at this point so only a teaser is shown.</p>
-      </div>
-      <div class="form-field">
         <label>Or paste a preview video URL</label>
         <input type="text" id="fPreviewVideoUrl" placeholder="https://...">
       </div>
@@ -201,8 +196,7 @@
       who_is_for: document.getElementById('fWhoIsFor').value.trim(),
       requirements: document.getElementById('fRequirements').value.trim(),
       preview_video_url: document.getElementById('fPreviewVideoUrl').value.trim() || null,
-      preview_video_seconds: document.getElementById('fPreviewSeconds').value
-        ? parseInt(document.getElementById('fPreviewSeconds').value, 10) : 0,
+      preview_video_seconds: 0,
       price_cents: Math.round(parseFloat(document.getElementById('fPrice').value || '0') * 100),
       compare_at_price_cents: document.getElementById('fCompareAt').value
         ? Math.round(parseFloat(document.getElementById('fCompareAt').value) * 100) : null,
@@ -226,7 +220,6 @@
     document.getElementById('fWhoIsFor').value = c.who_is_for || '';
     document.getElementById('fRequirements').value = c.requirements || '';
     document.getElementById('fPreviewVideoUrl').value = c.preview_video_url || '';
-    document.getElementById('fPreviewSeconds').value = c.preview_video_seconds || '';
     if (c.preview_video_url) {
       const pv = document.getElementById('previewVideoPlayer');
       pv.src = c.preview_video_url; pv.style.display = 'block';
