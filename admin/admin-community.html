@@ -132,7 +132,7 @@
 
     const { data: messages, error } = await supabase
       .from('community_messages')
-      .select('id, body, is_pinned, is_flagged, created_at, author:profiles(full_name, username, role, avatar_url)')
+      .select('id, body, is_pinned, is_flagged, created_at, audio_url, audio_duration_seconds, author:profiles(full_name, username, role, avatar_url)')
       .eq('channel_id', channelId)
       .order('created_at', { ascending: false })
       .limit(30);
@@ -169,7 +169,7 @@
           ${avatar}
           <div class="txt">
             <div class="row1"><b>${escapeHtml(name)} ${m.is_flagged ? '<span style="color:var(--danger);font-size:11px;">FLAGGED</span>' : ''} ${m.is_pinned ? '<span style="color:#f59e0b;font-size:11px;">PINNED</span>' : ''}</b><span class="time">${timeAgo(m.created_at)}</span></div>
-            <p>${escapeHtml(m.body)}</p>
+            ${m.audio_url ? `<audio controls preload="metadata" src="${escapeHtml(m.audio_url)}" style="height:32px;max-width:240px;"></audio>` : `<p>${escapeHtml(m.body)}</p>`}
             ${adminReactionsHtml(m.id, reactionsByMessage[m.id], user?.id)}
           </div>
           <div class="row-actions" style="flex-shrink:0;">
