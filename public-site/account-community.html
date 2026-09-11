@@ -74,7 +74,13 @@
       <p style="color:var(--n50);font-size:13.5px;">Loading messages…</p>
     </div>
 
+    <div class="recording-indicator" id="recordingIndicator" style="display:none;">
+      <span class="dot"></span> Recording… <span id="recordingTime">0:00</span>
+      <button type="button" class="btn btn-sm btn-outline" id="cancelRecordingBtn" style="margin-left:auto;">Cancel</button>
+      <button type="button" class="btn btn-sm btn-primary" id="sendRecordingBtn">Send</button>
+    </div>
     <form class="comm-input-bar" id="commForm">
+      <button type="button" class="mic-btn" id="micBtn" aria-label="Record voice note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
       <input type="text" placeholder="Message #general…" id="commInput">
       <button type="submit" class="btn btn-primary btn-sm">Send</button>
     </form>
@@ -118,6 +124,7 @@
   let channels = [];
   let activeChannel = null;
   let currentUserId = null;
+  let isCurrentUserAdmin = false;
 
   function ago(dateStr) {
     const mins = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
@@ -214,7 +221,7 @@
 
     const { data: messages, error } = await supabase
       .from('community_messages')
-      .select('id, body, is_pinned, created_at, author_id')
+      .select('id, body, is_pinned, created_at, author_id, audio_url, audio_duration_seconds')
       .eq('channel_id', channelId)
       .order('created_at', { ascending: true })
       .limit(100);
@@ -253,6 +260,10 @@
     feed.innerHTML = messages.map(m => {
       const name = m.author?.full_name || m.author?.username || 'Unknown';
       const isAdmin = m.author?.role === 'admin';
+      const canDelete = m.author_id === currentUserId || isCurrentUserAdmin;
+      const contentHtml = m.audio_url
+        ? `<div class="voice-note"><audio controls preload="metadata" src="${escapeHtml(m.audio_url)}"></audio>${m.audio_duration_seconds ? `<span style="font-size:11px;color:var(--n50);">${Math.floor(m.audio_duration_seconds / 60)}:${String(m.audio_duration_seconds % 60).padStart(2, '0')}</span>` : ''}</div>`
+        : `<div class="bubble-text">${escapeHtml(m.body)}</div>`;
       return `
         <div class="comm-msg msg-in">
           ${avatarHtml(m.author, isAdmin)}
@@ -263,14 +274,112 @@
               ${m.is_pinned ? '<span class="admin-badge" style="background:#f59e0b;">PINNED</span>' : ''}
               <span class="time">${ago(m.created_at)}</span>
             </div>
-            <div class="bubble-text">${escapeHtml(m.body)}</div>
+            ${contentHtml}
             ${reactionsHtml(m.id, reactionsByMessage[m.id])}
           </div>
+          ${canDelete ? `<button type="button" class="msg-delete-btn" data-delete-message="${m.id}" aria-label="Delete message"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>` : ''}
         </div>`;
     }).join('');
     wireReactionEvents(feed);
+    feed.querySelectorAll('[data-delete-message]').forEach(btn => {
+      btn.addEventListener('click', () => deleteMessage(btn.getAttribute('data-delete-message')));
+    });
     if (!silent || wasAtBottom) feed.scrollTop = feed.scrollHeight;
   }
+
+  async function deleteMessage(messageId) {
+    if (!confirm('Delete this message? This cannot be undone.')) return;
+    // Deleting the row is enough — a database trigger safely archives the
+    // content first (for moderation/legal purposes only, never shown in the
+    // app) before it disappears from the chat. RLS only allows this for the
+    // message's own author or an admin.
+    const { error } = await supabase.from('community_messages').delete().eq('id', messageId);
+    if (error) {
+      window.showToast ? window.showToast('Could not delete message.') : alert('Could not delete message.');
+      return;
+    }
+    if (activeChannel) openChannel(activeChannel.id, true);
+  }
+
+  // ---- Voice notes ----
+  let mediaRecorder = null;
+  let recordedChunks = [];
+  let recordingStartedAt = 0;
+  let recordingTimerId = null;
+
+  function formatRecordingTime(seconds) {
+    return Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
+  }
+
+  async function startRecording() {
+    if (!activeChannel || activeChannel.is_announcement_only) return;
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (e) {
+      window.showToast ? window.showToast('Microphone access is needed to send a voice note.') : alert('Microphone access denied.');
+      return;
+    }
+    recordedChunks = [];
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
+    mediaRecorder.start();
+    recordingStartedAt = Date.now();
+
+    document.getElementById('commForm').style.display = 'none';
+    const indicator = document.getElementById('recordingIndicator');
+    indicator.style.display = 'flex';
+    recordingTimerId = setInterval(() => {
+      document.getElementById('recordingTime').textContent = formatRecordingTime(Math.floor((Date.now() - recordingStartedAt) / 1000));
+    }, 500);
+  }
+
+  function stopRecordingStream() {
+    if (mediaRecorder) {
+      mediaRecorder.stream.getTracks().forEach(t => t.stop());
+      mediaRecorder = null;
+    }
+    clearInterval(recordingTimerId);
+    document.getElementById('recordingIndicator').style.display = 'none';
+    document.getElementById('commForm').style.display = 'flex';
+  }
+
+  document.getElementById('micBtn').addEventListener('click', startRecording);
+
+  document.getElementById('cancelRecordingBtn').addEventListener('click', () => {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+    stopRecordingStream();
+  });
+
+  document.getElementById('sendRecordingBtn').addEventListener('click', () => {
+    if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
+    const durationSeconds = Math.round((Date.now() - recordingStartedAt) / 1000);
+    mediaRecorder.onstop = async () => {
+      stopRecordingStream();
+      if (recordedChunks.length === 0 || !activeChannel) return;
+      const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+      const path = `${currentUserId}/${Date.now()}.webm`;
+      const { error: upErr } = await supabase.storage.from('community-audio').upload(path, blob, { contentType: 'audio/webm' });
+      if (upErr) {
+        window.showToast ? window.showToast('Could not upload voice note.') : alert('Could not upload voice note.');
+        return;
+      }
+      const { data: pub } = supabase.storage.from('community-audio').getPublicUrl(path);
+      const { error } = await supabase.from('community_messages').insert({
+        channel_id: activeChannel.id,
+        author_id: currentUserId,
+        body: '',
+        audio_url: pub.publicUrl,
+        audio_duration_seconds: durationSeconds,
+      });
+      if (error) {
+        window.showToast ? window.showToast(error.message) : alert(error.message);
+        return;
+      }
+      openChannel(activeChannel.id);
+    };
+    mediaRecorder.stop();
+  });
 
   document.getElementById('commForm').addEventListener('submit', async function (e) {
     e.preventDefault();
@@ -298,6 +407,9 @@
     const session = await requireAuth();
     if (!session) return;
     currentUserId = session.user.id;
+
+    const { data: adminCheck } = await supabase.rpc('is_admin');
+    isCurrentUserAdmin = !!adminCheck;
 
     const { data: chans, error } = await supabase
       .from('community_channels')
