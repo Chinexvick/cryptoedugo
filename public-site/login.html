@@ -22,6 +22,14 @@
         <span style="color:#000;">Neko Academy</span>
       </a>
 
+      <div class="confirm-box" id="verifiedBanner" style="display:none;margin-bottom:28px;">
+        <h2 style="display:flex;align-items:center;gap:10px;font-size:19px;">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0f9d63" stroke-width="2.4"><circle cx="12" cy="12" r="10"/><polyline points="8 12.5 11 15.5 16 9"/></svg>
+          Email verified!
+        </h2>
+        <p style="color:var(--n700);font-size:14px;margin-top:6px;">Your account is now active. Sign in below to continue.</p>
+      </div>
+
       <form data-redirect="dashboard.html" id="loginForm">
         <div class="auth-head">
           <h1>Log in</h1>
@@ -72,9 +80,23 @@
     errorBox.style.display = 'block';
   }
 
-  supabase.auth.getSession().then(function(result) {
-    if (result.data.session) window.location.href = getPostLoginRedirect();
-  });
+  // Supabase's email confirmation link lands here with #...&type=signup in
+  // the hash, and detectSessionInUrl auto-creates a session from it — which
+  // would otherwise silently skip this page and drop the user straight into
+  // the dashboard with no confirmation of what just happened. Catch that
+  // case first: sign the auto-created session back out, show a clear
+  // "verified" message, and let them log in on purpose below.
+  var justVerified = /type=signup/.test(window.location.hash);
+
+  if (justVerified) {
+    document.getElementById('verifiedBanner').style.display = 'flex';
+    history.replaceState(null, '', window.location.pathname);
+    supabase.auth.signOut();
+  } else {
+    supabase.auth.getSession().then(function(result) {
+      if (result.data.session) window.location.href = getPostLoginRedirect();
+    });
+  }
 
   var failedAttempts = 0;
 
