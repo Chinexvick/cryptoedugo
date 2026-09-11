@@ -164,11 +164,15 @@
 
     const isDone = !!progressByLesson[currentLesson.id]?.completed;
     const btn = document.getElementById('markCompleteBtn');
-    btn.disabled = isDone;
-    btn.textContent = isDone ? 'Lesson complete ✓' : 'Mark lesson complete';
-    btn.innerHTML = isDone
-      ? 'Lesson complete ✓'
-      : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><polyline points="20 6 9 17 4 12"/></svg>Mark lesson complete';
+    if (currentLesson.content_type === 'quiz') {
+      btn.style.display = 'none';
+    } else {
+      btn.style.display = '';
+      btn.disabled = isDone;
+      btn.innerHTML = isDone
+        ? 'Lesson complete ✓'
+        : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><polyline points="20 6 9 17 4 12"/></svg>Mark lesson complete';
+    }
 
     document.getElementById('quizTabBtn').style.display = currentLesson.content_type === 'quiz' ? '' : 'none';
 
@@ -216,6 +220,15 @@
     await supabase.from('enrollments').update(patch).eq('course_id', course.id);
   }
 
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
   async function loadQuiz() {
     if (!currentLesson || currentLesson.content_type !== 'quiz') return;
     const container = document.getElementById('quizContainer');
@@ -230,47 +243,90 @@
       byQuestion[row.question_id] = byQuestion[row.question_id] || { prompt: row.prompt, options: [] };
       byQuestion[row.question_id].options.push({ id: row.option_id, label: row.option_label });
     });
-    const questions = Object.entries(byQuestion);
+
+    // Always shuffle question order and each question's option order —
+    // a fresh shuffle every load naturally covers both first attempts and retakes.
+    let questions = shuffle(Object.entries(byQuestion)).map(([questionId, q]) => ({
+      questionId,
+      prompt: q.prompt,
+      options: shuffle(q.options),
+    }));
     let qi = 0;
+    const answers = {}; // questionId -> optionId
 
     function renderQuestion() {
-      if (qi >= questions.length) {
-        container.innerHTML = '<p style="color:var(--mint);font-weight:700;">Quiz complete — nice work!</p>';
-        return;
-      }
-      const [questionId, q] = questions[qi];
+      const q = questions[qi];
+      const selectedOptionId = answers[q.questionId];
+      const isLast = qi === questions.length - 1;
       container.innerHTML = `<div class="quiz-card">
         <div class="quiz-progress">Question ${qi + 1} of ${questions.length}</div>
         <div class="quiz-question">${escapeHtml(q.prompt)}</div>
-        ${q.options.map((o, i) => `<div class="quiz-option" data-option-id="${o.id}"><span class="letter">${String.fromCharCode(65 + i)}</span> ${escapeHtml(o.label)}</div>`).join('')}
-        <button class="btn btn-primary btn-sm" style="margin-top:18px;" id="quizNextBtn" disabled>Next question</button>
+        ${q.options.map((o, i) => `<div class="quiz-option${o.id === selectedOptionId ? ' selected' : ''}" data-option-id="${o.id}"><span class="letter">${String.fromCharCode(65 + i)}</span> ${escapeHtml(o.label)}</div>`).join('')}
+        <div style="display:flex;gap:10px;margin-top:18px;">
+          <button class="btn btn-outline btn-sm" id="quizBackBtn" ${qi === 0 ? 'disabled' : ''}>← Back</button>
+          <button class="btn btn-primary btn-sm" id="quizNextBtn" ${selectedOptionId ? '' : 'disabled'}>${isLast ? 'Submit quiz' : 'Next question'}</button>
+        </div>
       </div>`;
 
-      let answered = false;
       container.querySelectorAll('.quiz-option').forEach(el => {
-        el.addEventListener('click', async () => {
-          if (answered) return;
-          answered = true;
-          container.querySelectorAll('.quiz-option').forEach(o => o.style.pointerEvents = 'none');
-          const { data: result, error: gradeErr } = await supabase.rpc('grade_quiz_attempt', {
-            p_question_id: questionId,
-            p_option_id: el.getAttribute('data-option-id'),
-          });
-          if (gradeErr) {
-            window.showToast && window.showToast(gradeErr.message);
-          } else if (result) {
-            el.classList.add('correct');
-          } else {
-            el.classList.add('incorrect');
-          }
+        el.addEventListener('click', () => {
+          answers[q.questionId] = el.getAttribute('data-option-id');
+          container.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
+          el.classList.add('selected');
           document.getElementById('quizNextBtn').disabled = false;
         });
       });
+      document.getElementById('quizBackBtn').addEventListener('click', () => {
+        if (qi > 0) { qi -= 1; renderQuestion(); }
+      });
       document.getElementById('quizNextBtn').addEventListener('click', () => {
-        qi += 1;
-        renderQuestion();
+        if (isLast) {
+          submitQuiz();
+        } else {
+          qi += 1;
+          renderQuestion();
+        }
       });
     }
+
+    async function submitQuiz() {
+      container.innerHTML = '<p style="color:var(--n700);font-size:14.5px;">Scoring your quiz…</p>';
+      const payload = questions.map(q => ({ question_id: q.questionId, option_id: answers[q.questionId] }));
+      const { data: result, error: submitErr } = await supabase.rpc('submit_quiz_attempt', {
+        p_lesson_id: currentLesson.id,
+        p_answers: payload,
+      });
+      if (submitErr || !result || result.length === 0) {
+        container.innerHTML = `<p style="color:var(--danger);font-size:14.5px;">Could not submit quiz: ${escapeHtml(submitErr?.message || 'Unknown error')}</p>`;
+        return;
+      }
+      const r = result[0];
+      renderResults(r);
+      if (r.passed) {
+        progressByLesson[currentLesson.id] = { completed: true };
+        renderSidebar();
+        renderLesson();
+        await updateEnrollmentProgress();
+      }
+    }
+
+    function renderResults(r) {
+      const passed = r.passed;
+      container.innerHTML = `<div class="quiz-card" style="text-align:center;">
+        <div style="font-size:42px;font-weight:800;color:${passed ? 'var(--mint)' : 'var(--danger)'};margin-bottom:6px;">${r.score_percent}%</div>
+        <div style="color:var(--n50);font-size:14px;margin-bottom:18px;">${r.correct_count} of ${r.total_questions} correct — 70% needed to pass</div>
+        <div style="font-weight:700;font-size:17px;margin-bottom:18px;color:${passed ? 'var(--mint)' : 'var(--danger)'};">
+          ${passed ? '✓ You passed! This lesson is now complete.' : '✗ Not quite — you need 70% to pass.'}
+        </div>
+        ${passed
+          ? ''
+          : '<button class="btn btn-primary btn-sm" id="quizRetakeBtn">Retake quiz</button>'}
+      </div>`;
+      if (!passed) {
+        document.getElementById('quizRetakeBtn').addEventListener('click', () => loadQuiz());
+      }
+    }
+
     renderQuestion();
   }
 
