@@ -373,7 +373,7 @@
       const { error } = await supabase.from('community_messages').insert({
         channel_id: activeChannel.id,
         author_id: currentUserId,
-        body: '',
+        body: '🎤 Voice note',
         audio_url: pub.publicUrl,
         audio_duration_seconds: durationSeconds,
       });
