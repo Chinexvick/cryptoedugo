@@ -307,6 +307,7 @@
   let recordedChunks = [];
   let recordingStartedAt = 0;
   let recordingTimerId = null;
+  const MAX_RECORDING_SECONDS = 300; // 5 minutes
 
   function formatRecordingTime(seconds) {
     return Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
@@ -318,7 +319,7 @@
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch (e) {
-      window.showToast ? window.showToast('Microphone access is needed to send a voice note.') : alert('Microphone access denied.');
+      window.showToast ? window.showToast('Microphone access is needed to send a voice note. Please allow microphone permission in your browser.') : alert('Microphone access denied.');
       return;
     }
     recordedChunks = [];
@@ -331,7 +332,10 @@
     const indicator = document.getElementById('recordingIndicator');
     indicator.style.display = 'flex';
     recordingTimerId = setInterval(() => {
-      document.getElementById('recordingTime').textContent = formatRecordingTime(Math.floor((Date.now() - recordingStartedAt) / 1000));
+      const elapsed = Math.floor((Date.now() - recordingStartedAt) / 1000);
+      document.getElementById('recordingTime').textContent = formatRecordingTime(elapsed);
+      // Hard cap voice notes at 5 minutes — auto-send once the limit is hit.
+      if (elapsed >= MAX_RECORDING_SECONDS) sendRecording();
     }, 500);
   }
 
@@ -352,9 +356,9 @@
     stopRecordingStream();
   });
 
-  document.getElementById('sendRecordingBtn').addEventListener('click', () => {
+  function sendRecording() {
     if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
-    const durationSeconds = Math.round((Date.now() - recordingStartedAt) / 1000);
+    const durationSeconds = Math.min(Math.round((Date.now() - recordingStartedAt) / 1000), MAX_RECORDING_SECONDS);
     mediaRecorder.onstop = async () => {
       stopRecordingStream();
       if (recordedChunks.length === 0 || !activeChannel) return;
@@ -380,7 +384,9 @@
       openChannel(activeChannel.id);
     };
     mediaRecorder.stop();
-  });
+  }
+
+  document.getElementById('sendRecordingBtn').addEventListener('click', sendRecording);
 
   document.getElementById('commForm').addEventListener('submit', async function (e) {
     e.preventDefault();
