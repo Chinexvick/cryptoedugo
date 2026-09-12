@@ -188,7 +188,7 @@
     // ---- Courses tab ----
     const { data: enrollments } = await supabase
       .from('enrollments')
-      .select('progress_percent, course:courses(slug, title, subtitle, level, thumbnail_url)')
+      .select('progress_percent, course:courses(id, slug, title, subtitle, level, thumbnail_url)')
       .eq('student_id', session.user.id)
       .eq('status', 'paid')
       .order('last_activity_at', { ascending: false, nullsFirst: false });
@@ -214,24 +214,81 @@
     // ---- Certificates tab ----
     const { data: certs } = await supabase
       .from('certificates')
-      .select('certificate_code, status, issued_at, course:courses(title)')
+      .select('certificate_code, status, issued_at, course:courses(id, title)')
       .eq('student_id', session.user.id)
       .order('issued_at', { ascending: false });
 
+    const certifiedCourseIds = new Set((certs || []).map(c => c.course?.id));
+    // Courses the student is enrolled in but hasn't earned a certificate for yet —
+    // shown with an explicit "finish the course first" message rather than nothing.
+    const inProgress = (enrollments || []).filter(e => !certifiedCourseIds.has(e.course?.id));
+
     const certWrap = document.getElementById('pfCertsWrap');
-    certWrap.innerHTML = (certs || []).length
-      ? certs.map(c => `
-          <div class="details-card" style="margin-bottom:14px;">
-            <div class="details-row" style="border-top:none;"><span class="k">Course</span><span class="v">${escapeHtml(c.course?.title || '—')}</span></div>
-            <div class="details-row"><span class="k">Certificate ID</span><span class="v">${escapeHtml(c.certificate_code)}</span></div>
-            <div class="details-row"><span class="k">Issued</span><span class="v">${new Date(c.issued_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span></div>
-            <div class="details-row"><span class="k">Status</span><span class="v">${c.status === 'valid' ? 'Valid' : 'Revoked'}</span></div>
-          </div>`).join('')
-      : `<div class="empty-state">
+    const certifiedHtml = (certs || []).map(c => `
+      <div class="details-card" style="margin-bottom:14px;">
+        <div class="details-row" style="border-top:none;"><span class="k">Course</span><span class="v">${escapeHtml(c.course?.title || '—')}</span></div>
+        <div class="details-row"><span class="k">Certificate ID</span><span class="v">${escapeHtml(c.certificate_code)}</span></div>
+        <div class="details-row"><span class="k">Issued</span><span class="v">${new Date(c.issued_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span></div>
+        <div class="details-row"><span class="k">Status</span><span class="v">${c.status === 'valid' ? 'Valid' : 'Revoked'}</span></div>
+        <div class="form-actions">
+          <button class="btn btn-primary btn-sm" data-generate-cert data-course-id="${c.course?.id}" data-course-title="${escapeHtml(c.course?.title || '')}" data-cert-code="${escapeHtml(c.certificate_code)}" data-issued-at="${c.issued_at}" ${c.status !== 'valid' ? 'disabled' : ''}>
+            ${c.status === 'valid' ? 'Generate & download certificate' : 'Certificate revoked'}
+          </button>
+        </div>
+      </div>`).join('');
+
+    const inProgressHtml = inProgress.map(e => `
+      <div class="details-card" style="margin-bottom:14px;">
+        <div class="details-row" style="border-top:none;"><span class="k">Course</span><span class="v">${escapeHtml(e.course?.title || '—')}</span></div>
+        <div class="details-row"><span class="k">Progress</span><span class="v">${e.progress_percent}% complete</span></div>
+        <p style="color:var(--n700);font-size:13.5px;margin-top:10px;">Finish this course and pass its quiz with a score of 70% or higher to unlock your certificate.</p>
+        <div class="form-actions"><a href="course-player.html?slug=${encodeURIComponent(e.course?.slug || '')}" class="btn btn-outline btn-sm">Continue course</a></div>
+      </div>`).join('');
+
+    certWrap.innerHTML = (certifiedHtml + inProgressHtml) || `<div class="empty-state">
            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="8" r="6"/><path d="M15.5 13.5L17 22l-5-3-5 3 1.5-8.5"/></svg>
            <p>No certificate acquired yet</p>
            <a href="courses.html" class="btn btn-primary">Browse courses</a>
          </div>`;
+
+    certWrap.querySelectorAll('[data-generate-cert]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        const originalText = btn.textContent;
+        btn.textContent = 'Generating…';
+        try {
+          const { renderCertificate, downloadBlob } = await import('./assets/js/certificate.js');
+          const courseId = btn.getAttribute('data-course-id');
+
+          // Best passing score for this course's quiz, shown on the certificate as proof of the pass mark.
+          let scorePercent = null;
+          const { data: bestAttempt } = await supabase
+            .from('quiz_attempt_sessions')
+            .select('score_percent')
+            .eq('student_id', session.user.id)
+            .eq('course_id', courseId)
+            .eq('passed', true)
+            .order('score_percent', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (bestAttempt) scorePercent = bestAttempt.score_percent;
+
+          const blob = await renderCertificate({
+            studentName: profile.full_name || profile.username || 'Student',
+            courseTitle: btn.getAttribute('data-course-title'),
+            certCode: btn.getAttribute('data-cert-code'),
+            issuedDate: new Date(btn.getAttribute('data-issued-at')),
+            scorePercent,
+          });
+          downloadBlob(blob, `neko-academy-certificate-${btn.getAttribute('data-cert-code')}.png`);
+        } catch (err) {
+          window.showToast ? window.showToast('Could not generate certificate: ' + err.message) : alert(err.message);
+        } finally {
+          btn.disabled = false;
+          btn.textContent = originalText;
+        }
+      });
+    });
 
     // ---- Change password ----
     document.getElementById('pfUpdatePasswordBtn').addEventListener('click', async function () {
