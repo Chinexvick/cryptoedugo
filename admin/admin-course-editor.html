@@ -431,8 +431,24 @@
     // A manually-pasted path (e.g. from a direct Supabase dashboard upload) applies
     // first; a file picked in the upload box just now always wins over it, since
     // that's the most recent explicit action.
-    const manualMainVideoPath = document.getElementById('fMainVideoPath').value.trim();
-    if (manualMainVideoPath) fields.main_video_url = manualMainVideoPath;
+    let manualMainVideoPath = document.getElementById('fMainVideoPath').value.trim();
+    if (manualMainVideoPath) {
+      // The Supabase dashboard's "Get URL" button gives a full signed/public
+      // URL (https://.../object/sign/course-videos/FILE.MOV?token=...), not
+      // a bare path — but this field must hold just the object path inside
+      // the course-videos bucket, since it's later passed straight into
+      // createSignedUrl(). Auto-extract the real path so pasting the
+      // dashboard's URL verbatim still works instead of silently breaking
+      // playback for students.
+      const bucketMarker = '/course-videos/';
+      if (manualMainVideoPath.includes(bucketMarker)) {
+        manualMainVideoPath = manualMainVideoPath
+          .split(bucketMarker)[1]
+          .split('?')[0];
+        manualMainVideoPath = decodeURIComponent(manualMainVideoPath);
+      }
+      fields.main_video_url = manualMainVideoPath;
+    }
     if (pendingMainVideoPath) fields.main_video_url = pendingMainVideoPath;
 
     const saveBtns = [document.getElementById('saveDraftBtn'), document.getElementById('publishBtn')];
