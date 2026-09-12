@@ -158,6 +158,7 @@
       <div class="form-field"><label>Certificate on completion</label><select id="fCertificate"><option value="true">Yes</option><option value="false">No</option></select></div>
       <div class="form-field"><label>Status</label><select id="fStatus"><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select></div>
       <div class="form-field"><label>Available for purchase?</label><select id="fPurchasable"><option value="false">No — show "Coming soon"</option><option value="true">Yes — students can buy it</option></select></div>
+      <div class="form-field"><label>Display order (lower shows first, e.g. beginner courses)</label><input type="number" id="fDisplayOrder" min="0" step="1" placeholder="e.g. 1"></div>
     </div>
   </div>
   <div class="panel">
@@ -350,6 +351,8 @@
         ? Math.round(parseFloat(document.getElementById('fCompareAt').value) * 100) : null,
       certificate_on_completion: document.getElementById('fCertificate').value === 'true',
       is_purchasable: document.getElementById('fPurchasable').value === 'true',
+      display_order: document.getElementById('fDisplayOrder').value
+        ? parseInt(document.getElementById('fDisplayOrder').value, 10) : null,
       price_ngn_cents: document.getElementById('fPriceNgn').value
         ? Math.round(parseFloat(document.getElementById('fPriceNgn').value) * 100) : null,
       price_ghs_cents: document.getElementById('fPriceGhs').value
@@ -386,6 +389,7 @@
     document.getElementById('fCompareAt').value = c.compare_at_price_cents ? (c.compare_at_price_cents / 100).toFixed(0) : '';
     document.getElementById('fCertificate').value = c.certificate_on_completion ? 'true' : 'false';
     document.getElementById('fPurchasable').value = c.is_purchasable ? 'true' : 'false';
+    document.getElementById('fDisplayOrder').value = c.display_order != null ? c.display_order : '';
     document.getElementById('fPriceNgn').value = c.price_ngn_cents ? (c.price_ngn_cents / 100).toFixed(0) : '';
     document.getElementById('fPriceGhs').value = c.price_ghs_cents ? (c.price_ghs_cents / 100).toFixed(0) : '';
     document.getElementById('fStatus').value = c.status || 'draft';

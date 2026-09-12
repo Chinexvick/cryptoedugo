@@ -272,6 +272,7 @@
       .from('courses')
       .select('id, slug, title, subtitle, level, category, price_cents, compare_at_price_cents, currency, thumbnail_url, is_purchasable')
       .eq('status', 'published')
+      .order('display_order', { ascending: true, nullsFirst: false })
       .order('created_at', { ascending: true });
 
     if (error) {
