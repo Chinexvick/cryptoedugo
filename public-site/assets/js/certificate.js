@@ -56,7 +56,7 @@ function roundRectPath(ctx, x, y, w, h, r) {
 export async function renderCertificate(opts) {
   await ensureFonts();
 
-  const W = 2400, H = 1600; // 3:2 landscape, high-res for crisp printing/downloads
+  const W = 2400, H = 1500; // ~8:5 landscape, high-res for crisp printing/downloads
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
@@ -176,7 +176,7 @@ export async function renderCertificate(opts) {
   }
 
   // ---- Seal ----
-  const sealX = W / 2, sealY = 990, sealR = 78;
+  const sealX = W / 2, sealY = 940, sealR = 78;
   const sealGrad = ctx.createLinearGradient(sealX - sealR, sealY - sealR, sealX + sealR, sealY + sealR);
   sealGrad.addColorStop(0, PRIMARY);
   sealGrad.addColorStop(1, CYAN);
@@ -195,8 +195,24 @@ export async function renderCertificate(opts) {
   ctx.font = '700 12px "Inter", sans-serif';
   ctx.fillText('OFFICIAL', sealX, sealY + 44);
 
+  // ---- Signature line ----
+  const sigY = sealY + 170;
+  ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(W / 2 - 160, sigY);
+  ctx.lineTo(W / 2 + 160, sigY);
+  ctx.stroke();
+  ctx.textAlign = 'center';
+  ctx.font = 'italic 600 32px "Playfair Display", serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('Neko Academy', W / 2, sigY - 14);
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.font = '600 16px "Inter", sans-serif';
+  ctx.fillText('Authorized Signatory', W / 2, sigY + 30);
+
   // ---- Footer: issuer + verification, split left/right ----
-  const footerY = H - 190;
+  const footerY = H - 160;
   ctx.textAlign = 'left';
   ctx.fillStyle = '#ffffff';
   ctx.font = '700 24px "Space Grotesk", sans-serif';
@@ -221,10 +237,10 @@ export async function renderCertificate(opts) {
   ctx.textAlign = 'center';
   ctx.fillStyle = 'rgba(255,255,255,0.4)';
   ctx.font = '400 16px "Inter", sans-serif';
-  ctx.fillText('This certificate is unique to Neko Academy and can be verified using the code above.', W / 2, H - 96);
+  ctx.fillText('This certificate is unique to Neko Academy and can be verified using the code above.', W / 2, H - 90);
   ctx.fillStyle = 'rgba(239,68,68,0.75)';
   ctx.font = '600 16px "Inter", sans-serif';
-  ctx.fillText('Any forgery or unauthorized alteration of this certificate will result in legal action.', W / 2, H - 68);
+  ctx.fillText('Any forgery or unauthorized alteration of this certificate will result in legal action.', W / 2, H - 62);
 
   return new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 1));
 }
