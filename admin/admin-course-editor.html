@@ -134,6 +134,11 @@
           <p style="font-size:12px;color:var(--n50);margin-top:4px;" id="mainVideoProgressLabel">Uploading… 0%</p>
         </div>
       </div>
+      <div class="form-field">
+        <label>Or paste the storage path (if uploaded directly via Supabase dashboard)</label>
+        <input type="text" id="fMainVideoPath" placeholder="e.g. IMG_4052.MOV">
+        <span style="font-size:12px;color:var(--n50);">If uploading here is slow or unreliable on your connection, upload the file directly in the Supabase dashboard (Storage → course-videos bucket) and paste the exact object path it shows you here instead.</span>
+      </div>
     </div>
   </div>
 </div>
@@ -234,14 +239,20 @@
   // required for any file that would otherwise hit the project's single-request
   // upload size limit in Storage settings (a 413 there is a dashboard-level
   // cap, not something this app can raise on its own).
-  function tusUploadOnce(endpoint, bucket, path, file, onProgress, onStatus) {
-    return new Promise(async (resolve, reject) => {
-      const { data: { session } } = await supabase.auth.getSession();
+  // Note: on a very slow/unstable connection, this in-browser upload may
+  // still struggle no matter how it's tuned — a 6MB chunk can take minutes
+  // at a few KB/s. If it keeps failing, the "paste storage path" field next
+  // to each upload box is the reliable fallback: upload directly via the
+  // Supabase dashboard's own file browser (Storage → bucket → Upload), then
+  // paste the resulting object path/URL there instead.
+  async function uploadVideoResumable(bucket, path, file, onProgress, onStatus) {
+    const { data: { session } } = await supabase.auth.getSession();
+    return new Promise((resolve, reject) => {
       const upload = new tus.Upload(file, {
-        endpoint,
-        // More attempts with a longer tail than the library default — a 6MB
-        // chunk can legitimately take minutes on a very slow mobile connection,
-        // so a hiccup needs real patience, not a handful of quick retries.
+        endpoint: `${SUPABASE_URL}/storage/v1/upload/resumable`,
+        // A longer tail than the library default — a 6MB chunk can
+        // legitimately take minutes on a slow mobile connection, so a
+        // hiccup needs real patience, not a handful of quick retries.
         retryDelays: [0, 3000, 5000, 10000, 20000, 30000, 45000, 60000],
         headers: {
           authorization: `Bearer ${session.access_token}`,
@@ -251,10 +262,9 @@
         // false, not Supabase's sample value of true: "true" bundles the first
         // 6MB chunk into the creation POST itself, which on a slow connection
         // can take minutes and hit the gateway's request timeout before any
-        // response comes back — indistinguishable from a CORS/network failure
-        // client-side. Keeping creation to a tiny metadata-only request first
-        // means each 6MB chunk after that gets its own PATCH, retried
-        // independently by retryDelays if it times out.
+        // response comes back. Keeping creation to a tiny metadata-only
+        // request first means each 6MB chunk after that gets its own PATCH,
+        // retried independently by retryDelays if it times out.
         uploadDataDuringCreation: false,
         removeFingerprintOnSuccess: true,
         metadata: {
@@ -283,30 +293,6 @@
         upload.start();
       });
     });
-  }
-
-  // Supabase recommends the "direct storage hostname" (<ref>.storage.supabase.co)
-  // for resumable uploads, but that alternate domain isn't reliably
-  // CORS-provisioned for browser uploads on every project — it has failed
-  // outright with an opaque network-level error before any HTTP response in
-  // testing here. Try it first (best performance when it works), but only
-  // fall back to the standard project domain if NO bytes have uploaded yet —
-  // falling back after real progress would silently restart the whole file
-  // from 0% on a different upload, which looks like the upload "just stopped"
-  // with no explanation.
-  async function uploadVideoResumable(bucket, path, file, onProgress, onStatus) {
-    const projectRef = new URL(SUPABASE_URL).hostname.split('.')[0];
-    const directEndpoint = `https://${projectRef}.storage.supabase.co/storage/v1/upload/resumable`;
-    const standardEndpoint = `${SUPABASE_URL}/storage/v1/upload/resumable`;
-    let madeProgress = false;
-    const trackedProgress = (pct) => { if (pct > 0) madeProgress = true; if (onProgress) onProgress(pct); };
-    try {
-      await tusUploadOnce(directEndpoint, bucket, path, file, trackedProgress, onStatus);
-    } catch (err) {
-      const isNetworkLevelFailure = !err || !err.originalResponse; // no HTTP response at all = CORS/DNS, not a real upload error (e.g. 413)
-      if (!isNetworkLevelFailure || madeProgress) throw err;
-      await tusUploadOnce(standardEndpoint, bucket, path, file, onProgress, onStatus);
-    }
   }
 
   // A 413/EntityTooLarge here means the project's Storage "Global file size
@@ -391,8 +377,9 @@
     if (c.main_video_url) {
       document.getElementById('mainVideoIcon').style.display = 'none';
       document.getElementById('mainVideoLabel').textContent = 'Click to replace the full course video';
+      document.getElementById('fMainVideoPath').value = c.main_video_url;
       const statusEl = document.getElementById('mainVideoStatus');
-      statusEl.textContent = 'A course video is already uploaded. Selecting a new file will replace it on save.';
+      statusEl.textContent = 'A course video is already uploaded. Selecting a new file, or pasting a different path, will replace it on save.';
       statusEl.style.display = 'block';
     }
     document.getElementById('fPrice').value = (c.price_cents / 100).toFixed(0);
@@ -437,6 +424,11 @@
 
     if (pendingThumbUrl) fields.thumbnail_url = pendingThumbUrl;
     if (pendingPreviewUrl) fields.preview_video_url = pendingPreviewUrl;
+    // A manually-pasted path (e.g. from a direct Supabase dashboard upload) applies
+    // first; a file picked in the upload box just now always wins over it, since
+    // that's the most recent explicit action.
+    const manualMainVideoPath = document.getElementById('fMainVideoPath').value.trim();
+    if (manualMainVideoPath) fields.main_video_url = manualMainVideoPath;
     if (pendingMainVideoPath) fields.main_video_url = pendingMainVideoPath;
 
     const saveBtns = [document.getElementById('saveDraftBtn'), document.getElementById('publishBtn')];
