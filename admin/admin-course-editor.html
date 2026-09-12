@@ -9,6 +9,7 @@
 <link rel="apple-touch-icon" href="assets/img/favicon-180.png">
 <meta name="robots" content="noindex, nofollow, noarchive">
 <link rel="stylesheet" href="assets/css/style.css">
+<script src="assets/js/tus.min.js"></script>
 </head>
 <body>
 
@@ -227,6 +228,55 @@
     });
   }
 
+  // Videos use Supabase's resumable (TUS) upload protocol instead of a single
+  // XHR PUT: it uploads in 6MB chunks with automatic retry on network
+  // hiccups, which is both far more reliable on slow/mobile connections and
+  // required for any file that would otherwise hit the project's single-request
+  // upload size limit in Storage settings (a 413 there is a dashboard-level
+  // cap, not something this app can raise on its own).
+  async function uploadVideoResumable(bucket, path, file, onProgress) {
+    const { data: { session } } = await supabase.auth.getSession();
+    const projectRef = new URL(SUPABASE_URL).hostname.split('.')[0];
+    return new Promise((resolve, reject) => {
+      const upload = new tus.Upload(file, {
+        endpoint: `https://${projectRef}.storage.supabase.co/storage/v1/upload/resumable`,
+        retryDelays: [0, 3000, 5000, 10000, 20000],
+        headers: {
+          authorization: `Bearer ${session.access_token}`,
+          apikey: SUPABASE_PUBLISHABLE_KEY,
+          'x-upsert': 'true',
+        },
+        uploadDataDuringCreation: true,
+        removeFingerprintOnSuccess: true,
+        metadata: {
+          bucketName: bucket,
+          objectName: path,
+          contentType: file.type || 'application/octet-stream',
+          cacheControl: '3600',
+        },
+        chunkSize: 6 * 1024 * 1024, // required exact value for Supabase's TUS endpoint
+        onError: (err) => reject(err),
+        onProgress: (uploaded, total) => { if (onProgress) onProgress(Math.round((uploaded / total) * 100)); },
+        onSuccess: () => resolve(),
+      });
+      upload.findPreviousUploads().then((previous) => {
+        if (previous.length) upload.resumeFromPreviousUpload(previous[0]);
+        upload.start();
+      });
+    });
+  }
+
+  // A 413/EntityTooLarge here means the project's Storage "Global file size
+  // limit" (Supabase Dashboard → Storage → Settings) is below this file's
+  // size — that setting can't be changed from this app, only in the dashboard.
+  function friendlyUploadError(err) {
+    const msg = (err && err.message) || String(err);
+    if (/413|EntityTooLarge|exceeded the maximum allowed size|Payload too large/i.test(msg)) {
+      return 'This file is larger than your Supabase project\'s upload size limit. Raise "Global file size limit" in Supabase Dashboard → Storage → Settings, then try again.';
+    }
+    return msg;
+  }
+
   function wireProgressUi(wrapId, fillId, labelId) {
     const wrap = document.getElementById(wrapId);
     const fill = document.getElementById(fillId);
@@ -442,13 +492,13 @@
       try {
         // Preview videos are deliberately PUBLIC — they're the free teaser shown
         // before purchase. Full lesson videos stay in the private bucket.
-        await uploadFileWithProgress('course-thumbnails', path, file, (pct) => previewProgress.update(pct));
+        await uploadVideoResumable('course-thumbnails', path, file, (pct) => previewProgress.update(pct));
         const { data } = supabase.storage.from('course-thumbnails').getPublicUrl(path);
         pendingPreviewUrl = data.publicUrl;
         previewProgress.done('Uploaded ✓');
         document.getElementById('previewLabel').textContent = 'Click to replace preview video';
       } catch (err) {
-        previewProgress.fail('Upload failed: ' + err.message);
+        previewProgress.fail('Upload failed: ' + friendlyUploadError(err));
       } finally {
         uploadsInFlight--; setUploadingState();
       }
@@ -480,14 +530,15 @@
       // size/length is accepted. Students never get this path directly; it's
       // only ever resolved to a short-lived signed URL after an entitlement
       // check (see the get-course-video-url edge function).
-      await uploadFileWithProgress('course-videos', path, file, (pct) => mainVideoProgress.update(pct));
+      await uploadVideoResumable('course-videos', path, file, (pct) => mainVideoProgress.update(pct));
       pendingMainVideoPath = path;
       mainVideoProgress.done('Uploaded ✓');
       statusEl.textContent = 'Course video uploaded — will be saved with the course.';
       document.getElementById('mainVideoLabel').textContent = 'Click to replace the full course video';
     } catch (err) {
-      mainVideoProgress.fail('Upload failed: ' + err.message);
-      statusEl.textContent = 'Upload failed — try again.';
+      const friendly = friendlyUploadError(err);
+      mainVideoProgress.fail('Upload failed: ' + friendly);
+      statusEl.textContent = friendly;
     } finally {
       uploadsInFlight--; setUploadingState();
     }
