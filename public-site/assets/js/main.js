@@ -691,6 +691,53 @@
     }, 10000);
   })();
 
+  /* ---- Neko Meow Token awareness popup: shown once per browser, 60 seconds
+     after landing on the site, on any page. Purely informational (no CTA
+     tracking beyond the localStorage seen-flag). ---- */
+  (function () {
+    if (localStorage.getItem('crypedugo_nekomeow_popup_seen')) return;
+
+    setTimeout(() => {
+      if (document.querySelector('.nekomeow-popup-scrim')) return;
+      localStorage.setItem('crypedugo_nekomeow_popup_seen', '1');
+
+      const CA = '0x103c164727572d7a0be8021f3d9274f0eb9f4cf8';
+      const scrim = document.createElement('div');
+      scrim.className = 'nekomeow-popup-scrim';
+      scrim.innerHTML = `
+        <div class="nekomeow-popup">
+          <button type="button" class="nekomeow-popup-close" aria-label="Close">✕</button>
+          <img class="nekomeow-popup-logo" src="assets/img/nekomeow-token-logo.png" alt="Neko Meow Token logo">
+          <span class="nekomeow-popup-chip">Did you know?</span>
+          <h3>NEKOMEOW TOKEN is the official token of Neko Academy!</h3>
+          <p>Neko Academy runs as a real-world utility for Neko Meow Token holders on the BNB Chain.</p>
+          <div class="nekomeow-popup-ca">
+            <span>CA</span>
+            <code id="nekomeowPopupCa">${CA}</code>
+            <button type="button" id="nekomeowPopupCopyBtn" class="btn btn-outline btn-sm">Copy</button>
+          </div>
+          <a href="https://nekomeowtoken.com" target="_blank" rel="noopener" class="btn btn-primary btn-block">Visit nekomeowtoken.com</a>
+        </div>`;
+      document.body.appendChild(scrim);
+      requestAnimationFrame(() => scrim.classList.add('open'));
+
+      function close() {
+        scrim.classList.remove('open');
+        setTimeout(() => scrim.remove(), 250);
+      }
+      scrim.querySelector('.nekomeow-popup-close').addEventListener('click', close);
+      scrim.addEventListener('click', (e) => { if (e.target === scrim) close(); });
+      scrim.querySelector('#nekomeowPopupCopyBtn').addEventListener('click', () => {
+        navigator.clipboard.writeText(CA).then(() => {
+          const btn = scrim.querySelector('#nekomeowPopupCopyBtn');
+          const original = btn.textContent;
+          btn.textContent = 'Copied!';
+          setTimeout(() => { btn.textContent = original; }, 1800);
+        });
+      });
+    }, 60000);
+  })();
+
   /* ---- AI assistant: a small animated helper that only appears when it's
      actually useful — the user has gone quiet for a while (might be stuck),
      or right after a real mistake (a form error, a failed payment). It is

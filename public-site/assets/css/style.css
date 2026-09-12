@@ -1609,6 +1609,67 @@ a, button, .btn, .icon-btn, .course-card, .course-cta, .account-nav-item, .comm-
   animation: empty-pop .18s cubic-bezier(.34,1.56,.64,1) both;
 }
 
+/* ---- About page: Neko Meow Token card ---- */
+.nekomeow-card{
+  display:flex; gap:48px; align-items:center; flex-wrap:wrap; background:var(--surface);
+  border:1px solid rgba(255,255,255,.08); border-radius:20px; padding:44px; box-sizing:border-box; width:100%;
+}
+.nekomeow-card-img{ flex:0 0 auto; margin:0 auto; max-width:100%; }
+.nekomeow-card-img img{ width:180px; max-width:100%; height:auto; display:block; margin:0 auto; }
+.nekomeow-card-body{ flex:1 1 360px; min-width:0; }
+.nekomeow-ca-box{
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:10px;
+  padding:14px 16px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:22px;
+}
+.nekomeow-ca-label{ font-size:12px; color:var(--n50); text-transform:uppercase; letter-spacing:.05em; flex-shrink:0; }
+.nekomeow-ca-code{ font-size:13px; color:#fff; word-break:break-all; flex:1; min-width:0; }
+.nekomeow-ca-copy{ flex-shrink:0; }
+@media (max-width:480px){
+  .nekomeow-card{ padding:28px 20px; gap:24px; }
+  .nekomeow-card-img img{ width:140px; }
+  .nekomeow-ca-code{ flex-basis:100%; order:1; }
+  .nekomeow-ca-copy{ order:2; }
+}
+
+/* ---- Neko Meow Token awareness popup (site-wide, once per browser) ---- */
+.nekomeow-popup-scrim {
+  position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; align-items: center; justify-content: center;
+  z-index: 300; padding: 16px; backdrop-filter: blur(3px);
+}
+.nekomeow-popup-scrim.open { display: flex; animation: empty-pop .25s ease both; }
+.nekomeow-popup {
+  position: relative; background: #17171b; background-image: var(--grad-brand-soft);
+  border: 1px solid rgba(134,93,247,.35); border-radius: 20px;
+  max-width: 400px; width: 100%; color: #fff; overflow-y: auto; max-height: 90vh;
+  padding: 32px 26px 26px; text-align: center; box-sizing: border-box;
+  animation: empty-pop .35s cubic-bezier(.34,1.56,.64,1) both;
+}
+.nekomeow-popup-close {
+  position: absolute; top: 12px; right: 12px; z-index: 2; width: 30px; height: 30px; border-radius: 50%;
+  background: rgba(0,0,0,.45); color: #fff; display: flex; align-items: center; justify-content: center;
+  border: none; cursor: pointer; font-size: 16px; line-height: 1;
+}
+.nekomeow-popup-close:hover { background: rgba(0,0,0,.7); }
+.nekomeow-popup-logo { width: 110px; height: auto; margin: 0 auto 14px; display: block; }
+.nekomeow-popup-chip {
+  display: inline-block; background: var(--grad-brand); color: #fff; font-size: 11px; font-weight: 700;
+  padding: 4px 12px; border-radius: 99px; margin-bottom: 12px; letter-spacing: .02em;
+}
+.nekomeow-popup h3 { font-size: 19px; line-height: 1.35; margin: 0 0 10px; }
+.nekomeow-popup p { font-size: 13.5px; color: #c8c8ce; margin: 0 0 18px; line-height: 1.55; }
+.nekomeow-popup-ca {
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 10px;
+  padding: 10px 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; text-align: left;
+}
+.nekomeow-popup-ca span { font-size: 10.5px; color: var(--n50); text-transform: uppercase; letter-spacing: .05em; flex-shrink: 0; }
+.nekomeow-popup-ca code { font-size: 11.5px; color: #fff; word-break: break-all; flex: 1; min-width: 0; }
+.nekomeow-popup-ca .btn { flex-shrink: 0; }
+@media (max-width: 480px) {
+  .nekomeow-popup { max-width: calc(100vw - 32px); padding: 28px 18px 20px; }
+  .nekomeow-popup-ca code { flex-basis: 100%; order: 1; }
+  .nekomeow-popup-ca .btn { order: 2; }
+}
+
 /* ---- Free-trial promo popup (homepage) ---- */
 .promo-modal-scrim {
   position: fixed; inset: 0; background: rgba(0,0,0,.55); display: none; align-items: center; justify-content: center;
