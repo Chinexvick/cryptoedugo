@@ -234,7 +234,7 @@
   // required for any file that would otherwise hit the project's single-request
   // upload size limit in Storage settings (a 413 there is a dashboard-level
   // cap, not something this app can raise on its own).
-  function tusUploadOnce(endpoint, bucket, path, file, onProgress) {
+  function tusUploadOnce(endpoint, bucket, path, file, onProgress, onStatus) {
     return new Promise(async (resolve, reject) => {
       const { data: { session } } = await supabase.auth.getSession();
       const upload = new tus.Upload(file, {
@@ -264,6 +264,16 @@
         onError: (err) => reject(err),
         onProgress: (uploaded, total) => { if (onProgress) onProgress(Math.round((uploaded / total) * 100)); },
         onSuccess: () => resolve(),
+        onShouldRetry: (err, retryAttempt, options) => {
+          // Mirrors tus-js-client's own default decision (don't retry a permanent
+          // 4xx like a real 413 — only transient/network failures and 409/423)
+          // instead of blindly retrying everything; this hook only adds visible
+          // status text so a retry doesn't look like the upload silently froze.
+          const status = err.originalResponse ? err.originalResponse.getStatus() : 0;
+          const isTransient = (status < 400 || status >= 500 || status === 409 || status === 423) && navigator.onLine;
+          if (isTransient && onStatus) onStatus(`Connection hiccup — retrying (attempt ${retryAttempt + 1} of ${options.retryDelays.length})…`);
+          return isTransient;
+        },
       });
       upload.findPreviousUploads().then((previous) => {
         if (previous.length) upload.resumeFromPreviousUpload(previous[0]);
@@ -276,19 +286,23 @@
   // for resumable uploads, but that alternate domain isn't reliably
   // CORS-provisioned for browser uploads on every project — it has failed
   // outright with an opaque network-level error before any HTTP response in
-  // testing here. Rather than hard-code a guess, try it first (best
-  // performance when it works) and transparently fall back to the standard
-  // project domain if that attempt never gets an HTTP response at all.
-  async function uploadVideoResumable(bucket, path, file, onProgress) {
+  // testing here. Try it first (best performance when it works), but only
+  // fall back to the standard project domain if NO bytes have uploaded yet —
+  // falling back after real progress would silently restart the whole file
+  // from 0% on a different upload, which looks like the upload "just stopped"
+  // with no explanation.
+  async function uploadVideoResumable(bucket, path, file, onProgress, onStatus) {
     const projectRef = new URL(SUPABASE_URL).hostname.split('.')[0];
     const directEndpoint = `https://${projectRef}.storage.supabase.co/storage/v1/upload/resumable`;
     const standardEndpoint = `${SUPABASE_URL}/storage/v1/upload/resumable`;
+    let madeProgress = false;
+    const trackedProgress = (pct) => { if (pct > 0) madeProgress = true; if (onProgress) onProgress(pct); };
     try {
-      await tusUploadOnce(directEndpoint, bucket, path, file, onProgress);
+      await tusUploadOnce(directEndpoint, bucket, path, file, trackedProgress, onStatus);
     } catch (err) {
       const isNetworkLevelFailure = !err || !err.originalResponse; // no HTTP response at all = CORS/DNS, not a real upload error (e.g. 413)
-      if (!isNetworkLevelFailure) throw err;
-      await tusUploadOnce(standardEndpoint, bucket, path, file, onProgress);
+      if (!isNetworkLevelFailure || madeProgress) throw err;
+      await tusUploadOnce(standardEndpoint, bucket, path, file, onProgress, onStatus);
     }
   }
 
@@ -308,8 +322,9 @@
     const fill = document.getElementById(fillId);
     const label = document.getElementById(labelId);
     return {
-      show() { wrap.style.display = 'block'; fill.style.width = '0%'; label.textContent = 'Uploading… 0%'; },
-      update(pct) { fill.style.width = pct + '%'; label.textContent = `Uploading… ${pct}%`; },
+      show() { wrap.style.display = 'block'; fill.style.width = '0%'; label.textContent = 'Uploading… 0%'; label.style.color = ''; },
+      update(pct) { fill.style.width = pct + '%'; label.textContent = `Uploading… ${pct}%`; label.style.color = ''; },
+      status(text) { label.textContent = text; label.style.color = 'var(--warning, #f59e0b)'; },
       done(text) { label.textContent = text; fill.style.width = '100%'; setTimeout(() => { wrap.style.display = 'none'; }, 2500); },
       fail(text) { label.textContent = text; label.style.color = 'var(--danger)'; },
     };
@@ -518,7 +533,7 @@
       try {
         // Preview videos are deliberately PUBLIC — they're the free teaser shown
         // before purchase. Full lesson videos stay in the private bucket.
-        await uploadVideoResumable('course-thumbnails', path, file, (pct) => previewProgress.update(pct));
+        await uploadVideoResumable('course-thumbnails', path, file, (pct) => previewProgress.update(pct), (msg) => previewProgress.status(msg));
         const { data } = supabase.storage.from('course-thumbnails').getPublicUrl(path);
         pendingPreviewUrl = data.publicUrl;
         previewProgress.done('Uploaded ✓');
@@ -556,7 +571,7 @@
       // size/length is accepted. Students never get this path directly; it's
       // only ever resolved to a short-lived signed URL after an entitlement
       // check (see the get-course-video-url edge function).
-      await uploadVideoResumable('course-videos', path, file, (pct) => mainVideoProgress.update(pct));
+      await uploadVideoResumable('course-videos', path, file, (pct) => mainVideoProgress.update(pct), (msg) => mainVideoProgress.status(msg));
       pendingMainVideoPath = path;
       mainVideoProgress.done('Uploaded ✓');
       statusEl.textContent = 'Course video uploaded — will be saved with the course.';
