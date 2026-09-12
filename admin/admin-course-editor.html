@@ -236,10 +236,13 @@
   // cap, not something this app can raise on its own).
   async function uploadVideoResumable(bucket, path, file, onProgress) {
     const { data: { session } } = await supabase.auth.getSession();
-    const projectRef = new URL(SUPABASE_URL).hostname.split('.')[0];
     return new Promise((resolve, reject) => {
       const upload = new tus.Upload(file, {
-        endpoint: `https://${projectRef}.storage.supabase.co/storage/v1/upload/resumable`,
+        // Use the standard project hostname, not the "direct storage hostname"
+        // (<ref>.storage.supabase.co) — that alternate domain isn't reliably
+        // CORS-enabled for browser uploads on every project and failed here
+        // with an opaque network-level error before any HTTP response.
+        endpoint: `${SUPABASE_URL}/storage/v1/upload/resumable`,
         retryDelays: [0, 3000, 5000, 10000, 20000],
         headers: {
           authorization: `Bearer ${session.access_token}`,
