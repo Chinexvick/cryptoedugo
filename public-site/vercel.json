@@ -2,6 +2,22 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
   "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/course-detail.html",
+      "has": [
+        { "type": "header", "key": "user-agent", "value": ".*([Ff]acebook[Ee]xternal[Hh]it|[Ff]acebot|[Tt]witterbot|WhatsApp|[Tt]elegram[Bb]ot|LinkedInBot|Slackbot|Discordbot|redditbot|SkypeUriPreview|Pinterest|vkShare|W3C_Validator).*" }
+      ],
+      "destination": "/api/course-og"
+    },
+    {
+      "source": "/course-detail",
+      "has": [
+        { "type": "header", "key": "user-agent", "value": ".*([Ff]acebook[Ee]xternal[Hh]it|[Ff]acebot|[Tt]witterbot|WhatsApp|[Tt]elegram[Bb]ot|LinkedInBot|Slackbot|Discordbot|redditbot|SkypeUriPreview|Pinterest|vkShare|W3C_Validator).*" }
+      ],
+      "destination": "/api/course-og"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
