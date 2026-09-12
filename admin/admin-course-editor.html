@@ -95,6 +95,10 @@
           <span>JPG or PNG — 1280×720 recommended</span>
         </div>
         <input type="file" id="thumbFileInput" accept="image/png,image/jpeg" style="display:none;">
+        <div id="thumbProgressWrap" style="display:none;margin-top:8px;">
+          <div class="progress-track"><div class="progress-fill" id="thumbProgressFill" style="width:0%;"></div></div>
+          <p style="font-size:12px;color:var(--n50);margin-top:4px;" id="thumbProgressLabel">Uploading… 0%</p>
+        </div>
       </div>
       <div class="form-field full">
         <label>Free preview video</label>
@@ -102,9 +106,13 @@
           <video id="previewVideoPlayer" controls style="display:none;max-width:100%;max-height:200px;border-radius:8px;margin-bottom:10px;background:#000;"></video>
           <svg id="previewIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
           <b id="previewLabel">Drop a preview video, or click to browse</b>
-          <span>MP4 recommended — this is the free teaser shown before purchase</span>
+          <span>MP4 recommended — this is the free teaser shown before purchase. No file size limit.</span>
         </div>
         <input type="file" id="previewFileInput" accept="video/mp4,video/webm,video/quicktime" style="display:none;">
+        <div id="previewProgressWrap" style="display:none;margin-top:8px;">
+          <div class="progress-track"><div class="progress-fill" id="previewProgressFill" style="width:0%;"></div></div>
+          <p style="font-size:12px;color:var(--n50);margin-top:4px;" id="previewProgressLabel">Uploading… 0%</p>
+        </div>
       </div>
       <div class="form-field">
         <label>Or paste a preview video URL</label>
@@ -116,10 +124,14 @@
           <video id="mainVideoPlayer" controls style="display:none;max-width:100%;max-height:200px;border-radius:8px;margin-bottom:10px;background:#000;"></video>
           <svg id="mainVideoIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
           <b id="mainVideoLabel">Drop the full course video, or click to browse</b>
-          <span>MP4 recommended — one video covering the entire curriculum. No length limit. Kept private; only enrolled students (or an active free trial) can play it.</span>
+          <span>MP4 recommended — one video covering the entire curriculum. No file size or length limit. Kept private; only enrolled students (or an active free trial) can play it.</span>
         </div>
         <input type="file" id="mainVideoFileInput" accept="video/mp4,video/webm,video/quicktime" style="display:none;">
         <p id="mainVideoStatus" style="font-size:12px;color:var(--n50);margin-top:6px;display:none;"></p>
+        <div id="mainVideoProgressWrap" style="display:none;margin-top:8px;">
+          <div class="progress-track"><div class="progress-fill" id="mainVideoProgressFill" style="width:0%;"></div></div>
+          <p style="font-size:12px;color:var(--n50);margin-top:4px;" id="mainVideoProgressLabel">Uploading… 0%</p>
+        </div>
       </div>
     </div>
   </div>
@@ -179,10 +191,53 @@
 
   const params = new URLSearchParams(window.location.search);
   let courseId = params.get('id'); // null = create mode
-  let pendingThumbFile = null;
-  let pendingPreviewFile = null;
-  let pendingMainVideoFile = null;
+  // Storage paths need a folder before the course row exists (create mode) — use a
+  // stable random id for that instead of waiting on a save round-trip.
+  const draftId = courseId || crypto.randomUUID();
+  let pendingThumbUrl = null;
+  let pendingPreviewUrl = null;
+  let pendingMainVideoPath = null;
   const MAX_PREVIEW_SECONDS = 300; // 5 minutes — the free teaser only, never the full course video
+
+  const SUPABASE_URL = 'https://rbncpakigxzbstefisgd.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_XFRsJzrx35nobAiGaxehpg_ugez4hu2';
+
+  // Uploads directly against the Storage REST endpoint via XHR (instead of the
+  // supabase-js client) purely so we get real upload progress events — the
+  // client's fetch-based upload() has no progress callback. RLS on the storage
+  // buckets is unaffected: this sends the same bearer token and apikey.
+  async function uploadFileWithProgress(bucket, path, file, onProgress) {
+    const { data: { session } } = await supabase.auth.getSession();
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${SUPABASE_URL}/storage/v1/object/${bucket}/${path}`, true);
+      xhr.setRequestHeader('Authorization', `Bearer ${session.access_token}`);
+      xhr.setRequestHeader('apikey', SUPABASE_PUBLISHABLE_KEY);
+      xhr.setRequestHeader('x-upsert', 'true');
+      xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable && onProgress) onProgress(Math.round((e.loaded / e.total) * 100));
+      };
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) resolve();
+        else reject(new Error(`Upload failed (${xhr.status}): ${xhr.responseText}`));
+      };
+      xhr.onerror = () => reject(new Error('Upload failed — network error.'));
+      xhr.send(file);
+    });
+  }
+
+  function wireProgressUi(wrapId, fillId, labelId) {
+    const wrap = document.getElementById(wrapId);
+    const fill = document.getElementById(fillId);
+    const label = document.getElementById(labelId);
+    return {
+      show() { wrap.style.display = 'block'; fill.style.width = '0%'; label.textContent = 'Uploading… 0%'; },
+      update(pct) { fill.style.width = pct + '%'; label.textContent = `Uploading… ${pct}%`; },
+      done(text) { label.textContent = text; fill.style.width = '100%'; setTimeout(() => { wrap.style.display = 'none'; }, 2500); },
+      fail(text) { label.textContent = text; label.style.color = 'var(--danger)'; },
+    };
+  }
 
   const saveMsg = document.getElementById('saveMsg');
   function showMsg(text, isError) {
@@ -263,44 +318,12 @@
     document.getElementById('editorSubtitle').textContent = c.title;
   }
 
-  async function uploadPreviewIfPending(id) {
-    if (!pendingPreviewFile) return null;
-    const ext = pendingPreviewFile.name.split('.').pop();
-    const path = `${id}/preview-${Date.now()}.${ext}`;
-    // Preview videos are deliberately PUBLIC — they're the free teaser shown
-    // before purchase. Full lesson videos stay in the private bucket.
-    const { error: upErr } = await supabase.storage
-      .from('course-thumbnails').upload(path, pendingPreviewFile, { upsert: true });
-    if (upErr) { showMsg('Preview video upload failed: ' + upErr.message, true); return null; }
-    const { data } = supabase.storage.from('course-thumbnails').getPublicUrl(path);
-    return data.publicUrl;
-  }
-
-  async function uploadMainVideoIfPending(id) {
-    if (!pendingMainVideoFile) return null;
-    const ext = pendingMainVideoFile.name.split('.').pop();
-    const path = `${id}/main-${Date.now()}.${ext}`;
-    // Private bucket — no size cap set here or in Storage policy, so any
-    // length is accepted. Students never get this path directly; it's only
-    // ever resolved to a short-lived signed URL after an entitlement check
-    // (see the get-course-video-url edge function).
-    const { error: upErr } = await supabase.storage
-      .from('course-videos').upload(path, pendingMainVideoFile, { upsert: true });
-    if (upErr) { showMsg('Course video upload failed: ' + upErr.message, true); return null; }
-    return path;
-  }
-
-  async function uploadThumbnailIfPending(id) {
-    if (!pendingThumbFile) return null;
-    const ext = pendingThumbFile.name.split('.').pop();
-    const path = `${id}/thumbnail-${Date.now()}.${ext}`;
-    const { error: upErr } = await supabase.storage.from('course-thumbnails').upload(path, pendingThumbFile, { upsert: true });
-    if (upErr) {
-      showMsg('Thumbnail upload failed: ' + upErr.message, true);
-      return null;
-    }
-    const { data } = supabase.storage.from('course-thumbnails').getPublicUrl(path);
-    return data.publicUrl;
+  let uploadsInFlight = 0;
+  function setUploadingState() {
+    const busy = uploadsInFlight > 0;
+    document.getElementById('saveDraftBtn').disabled = busy;
+    document.getElementById('publishBtn').disabled = busy;
+    if (busy) showMsg('Upload in progress — please wait for it to finish before saving.');
   }
 
   async function saveCourse(publish) {
@@ -313,43 +336,36 @@
 
     fields.status = publish ? 'published' : (document.getElementById('fStatus').value || 'draft');
 
+    if (uploadsInFlight > 0) {
+      showMsg('Please wait for the upload to finish before saving.', true);
+      return;
+    }
+
+    if (pendingThumbUrl) fields.thumbnail_url = pendingThumbUrl;
+    if (pendingPreviewUrl) fields.preview_video_url = pendingPreviewUrl;
+    if (pendingMainVideoPath) fields.main_video_url = pendingMainVideoPath;
+
     const saveBtns = [document.getElementById('saveDraftBtn'), document.getElementById('publishBtn')];
     saveBtns.forEach(b => b.disabled = true);
 
     try {
       if (!courseId) {
-        // Create mode — insert a new course row.
+        // Create mode — insert a new course row. Media was already uploaded
+        // (under draftId) the moment each file was chosen, so this is just the row insert.
         fields.slug = slugify(fields.title) + '-' + Math.random().toString(36).slice(2, 6);
         const { data, error } = await supabase.from('courses').insert(fields).select('id').single();
         if (error) { showMsg('Could not create course: ' + error.message, true); return; }
         courseId = data.id;
-        const thumbUrl = await uploadThumbnailIfPending(courseId);
-        const prevUrl = await uploadPreviewIfPending(courseId);
-        const mainVideoPath = await uploadMainVideoIfPending(courseId);
-        const post = {};
-        if (thumbUrl) post.thumbnail_url = thumbUrl;
-        if (prevUrl) post.preview_video_url = prevUrl;
-        if (mainVideoPath) post.main_video_url = mainVideoPath;
-        if (Object.keys(post).length) await supabase.from('courses').update(post).eq('id', courseId);
         history.replaceState(null, '', 'admin-course-editor.html?id=' + courseId);
         showMsg(publish ? 'Course created and published!' : 'Course created as draft.');
         document.getElementById('editorTitle').textContent = 'Edit course';
         document.getElementById('editorSubtitle').textContent = fields.title;
         enableCurriculumTab();
       } else {
-        const thumbUrl = await uploadThumbnailIfPending(courseId);
-        if (thumbUrl) fields.thumbnail_url = thumbUrl;
-        const prevUrl = await uploadPreviewIfPending(courseId);
-        if (prevUrl) fields.preview_video_url = prevUrl;
-        const mainVideoPath = await uploadMainVideoIfPending(courseId);
-        if (mainVideoPath) fields.main_video_url = mainVideoPath;
         const { error } = await supabase.from('courses').update(fields).eq('id', courseId);
         if (error) { showMsg('Could not save: ' + error.message, true); return; }
         showMsg(publish ? 'Published!' : 'Saved.');
       }
-      pendingThumbFile = null;
-      pendingPreviewFile = null;
-      pendingMainVideoFile = null;
     } finally {
       saveBtns.forEach(b => b.disabled = false);
     }
@@ -358,26 +374,43 @@
   document.getElementById('saveDraftBtn').addEventListener('click', () => saveCourse(false));
   document.getElementById('publishBtn').addEventListener('click', () => saveCourse(true));
 
-  // Thumbnail upload UI
+  // Thumbnail upload UI — uploads immediately on selection with a live progress bar.
   const dropZone = document.getElementById('thumbDropZone');
   const fileInput = document.getElementById('thumbFileInput');
+  const thumbProgress = wireProgressUi('thumbProgressWrap', 'thumbProgressFill', 'thumbProgressLabel');
   dropZone.addEventListener('click', () => fileInput.click());
-  fileInput.addEventListener('change', () => {
+  fileInput.addEventListener('change', async () => {
     const file = fileInput.files[0];
     if (!file) return;
-    pendingThumbFile = file;
     const reader = new FileReader();
     reader.onload = (e) => {
       document.getElementById('thumbPreview').src = e.target.result;
       document.getElementById('thumbPreview').style.display = 'block';
       document.getElementById('thumbIcon').style.display = 'none';
-      document.getElementById('thumbLabel').textContent = file.name + ' — will upload on save';
     };
     reader.readAsDataURL(file);
+
+    const ext = file.name.split('.').pop();
+    const path = `${draftId}/thumbnail-${Date.now()}.${ext}`;
+    document.getElementById('thumbLabel').textContent = file.name;
+    thumbProgress.show();
+    uploadsInFlight++; setUploadingState();
+    try {
+      await uploadFileWithProgress('course-thumbnails', path, file, (pct) => thumbProgress.update(pct));
+      const { data } = supabase.storage.from('course-thumbnails').getPublicUrl(path);
+      pendingThumbUrl = data.publicUrl;
+      thumbProgress.done('Uploaded ✓');
+      document.getElementById('thumbLabel').textContent = 'Click to replace thumbnail';
+    } catch (err) {
+      thumbProgress.fail('Upload failed: ' + err.message);
+    } finally {
+      uploadsInFlight--; setUploadingState();
+    }
   });
 
   const previewZone = document.getElementById('previewDropZone');
   const previewInput = document.getElementById('previewFileInput');
+  const previewProgress = wireProgressUi('previewProgressWrap', 'previewProgressFill', 'previewProgressLabel');
   previewZone.addEventListener('click', () => previewInput.click());
   previewInput.addEventListener('change', () => {
     const file = previewInput.files[0];
@@ -387,8 +420,8 @@
     pv.src = objectUrl;
     // Reject anything longer than 5 minutes — the free preview is meant to
     // be a short teaser, not the full course. The full course video (below)
-    // has no such limit.
-    pv.addEventListener('loadedmetadata', function checkDuration() {
+    // has no such limit, and neither video has a file-size cap.
+    pv.addEventListener('loadedmetadata', async function checkDuration() {
       pv.removeEventListener('loadedmetadata', checkDuration);
       if (pv.duration > MAX_PREVIEW_SECONDS) {
         showMsg(`Preview video is ${Math.ceil(pv.duration / 60)} minutes — please keep the free preview under 5 minutes. Use the "Full course video" field below for the complete lesson.`, true);
@@ -398,28 +431,66 @@
         URL.revokeObjectURL(objectUrl);
         return;
       }
-      pendingPreviewFile = file;
       pv.style.display = 'block';
       document.getElementById('previewIcon').style.display = 'none';
-      document.getElementById('previewLabel').textContent = file.name + ' — will upload on save';
+
+      const ext = file.name.split('.').pop();
+      const path = `${draftId}/preview-${Date.now()}.${ext}`;
+      document.getElementById('previewLabel').textContent = file.name;
+      previewProgress.show();
+      uploadsInFlight++; setUploadingState();
+      try {
+        // Preview videos are deliberately PUBLIC — they're the free teaser shown
+        // before purchase. Full lesson videos stay in the private bucket.
+        await uploadFileWithProgress('course-thumbnails', path, file, (pct) => previewProgress.update(pct));
+        const { data } = supabase.storage.from('course-thumbnails').getPublicUrl(path);
+        pendingPreviewUrl = data.publicUrl;
+        previewProgress.done('Uploaded ✓');
+        document.getElementById('previewLabel').textContent = 'Click to replace preview video';
+      } catch (err) {
+        previewProgress.fail('Upload failed: ' + err.message);
+      } finally {
+        uploadsInFlight--; setUploadingState();
+      }
     }, { once: true });
   });
 
   const mainVideoZone = document.getElementById('mainVideoDropZone');
   const mainVideoInput = document.getElementById('mainVideoFileInput');
+  const mainVideoProgress = wireProgressUi('mainVideoProgressWrap', 'mainVideoProgressFill', 'mainVideoProgressLabel');
   mainVideoZone.addEventListener('click', () => mainVideoInput.click());
-  mainVideoInput.addEventListener('change', () => {
+  mainVideoInput.addEventListener('change', async () => {
     const file = mainVideoInput.files[0];
     if (!file) return;
-    pendingMainVideoFile = file;
     const mv = document.getElementById('mainVideoPlayer');
     mv.src = URL.createObjectURL(file);
     mv.style.display = 'block';
     document.getElementById('mainVideoIcon').style.display = 'none';
-    document.getElementById('mainVideoLabel').textContent = file.name + ' — will upload on save';
+    document.getElementById('mainVideoLabel').textContent = file.name;
     const statusEl = document.getElementById('mainVideoStatus');
-    statusEl.textContent = 'No length limit — this can be as long as the full course.';
+    statusEl.textContent = 'No file size or length limit — uploading now in the background.';
     statusEl.style.display = 'block';
+
+    const ext = file.name.split('.').pop();
+    const path = `${draftId}/main-${Date.now()}.${ext}`;
+    mainVideoProgress.show();
+    uploadsInFlight++; setUploadingState();
+    try {
+      // Private bucket — no size cap set here or in Storage policy, so any
+      // size/length is accepted. Students never get this path directly; it's
+      // only ever resolved to a short-lived signed URL after an entitlement
+      // check (see the get-course-video-url edge function).
+      await uploadFileWithProgress('course-videos', path, file, (pct) => mainVideoProgress.update(pct));
+      pendingMainVideoPath = path;
+      mainVideoProgress.done('Uploaded ✓');
+      statusEl.textContent = 'Course video uploaded — will be saved with the course.';
+      document.getElementById('mainVideoLabel').textContent = 'Click to replace the full course video';
+    } catch (err) {
+      mainVideoProgress.fail('Upload failed: ' + err.message);
+      statusEl.textContent = 'Upload failed — try again.';
+    } finally {
+      uploadsInFlight--; setUploadingState();
+    }
   });
 
   // ---- Curriculum builder (writes directly to the database, no separate save step) ----
