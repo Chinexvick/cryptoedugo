@@ -245,7 +245,14 @@
           apikey: SUPABASE_PUBLISHABLE_KEY,
           'x-upsert': 'true',
         },
-        uploadDataDuringCreation: true,
+        // false, not Supabase's sample value of true: "true" bundles the first
+        // 6MB chunk into the creation POST itself, which on a slow connection
+        // can take minutes and hit the gateway's request timeout before any
+        // response comes back — indistinguishable from a CORS/network failure
+        // client-side. Keeping creation to a tiny metadata-only request first
+        // means each 6MB chunk after that gets its own PATCH, retried
+        // independently by retryDelays if it times out.
+        uploadDataDuringCreation: false,
         removeFingerprintOnSuccess: true,
         metadata: {
           bucketName: bucket,
