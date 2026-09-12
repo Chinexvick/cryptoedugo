@@ -239,7 +239,10 @@
       const { data: { session } } = await supabase.auth.getSession();
       const upload = new tus.Upload(file, {
         endpoint,
-        retryDelays: [0, 3000, 5000, 10000, 20000],
+        // More attempts with a longer tail than the library default — a 6MB
+        // chunk can legitimately take minutes on a very slow mobile connection,
+        // so a hiccup needs real patience, not a handful of quick retries.
+        retryDelays: [0, 3000, 5000, 10000, 20000, 30000, 45000, 60000],
         headers: {
           authorization: `Bearer ${session.access_token}`,
           apikey: SUPABASE_PUBLISHABLE_KEY,
@@ -512,9 +515,8 @@
     // Reject anything longer than 5 minutes — the free preview is meant to
     // be a short teaser, not the full course. The full course video (below)
     // has no such limit, and neither video has a file-size cap.
-    pv.addEventListener('loadedmetadata', async function checkDuration() {
-      pv.removeEventListener('loadedmetadata', checkDuration);
-      if (pv.duration > MAX_PREVIEW_SECONDS) {
+    async function proceedWithPreviewUpload(durationKnown) {
+      if (durationKnown && pv.duration > MAX_PREVIEW_SECONDS) {
         showMsg(`Preview video is ${Math.ceil(pv.duration / 60)} minutes — please keep the free preview under 5 minutes. Use the "Full course video" field below for the complete lesson.`, true);
         pv.src = '';
         pv.style.display = 'none';
@@ -543,6 +545,33 @@
       } finally {
         uploadsInFlight--; setUploadingState();
       }
+    }
+
+    // Some phone-recorded video files never fire loadedmetadata on a blob URL
+    // in every browser — without a fallback, that silently blocked the whole
+    // upload with zero feedback (looked like nothing happened at all). Give
+    // it 4 seconds, then proceed without the duration check rather than hang.
+    let settled = false;
+    const metadataTimeout = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      showMsg('Could not read this video\'s length — uploading it as-is without the 5-minute preview check.');
+      proceedWithPreviewUpload(false);
+    }, 4000);
+    pv.addEventListener('loadedmetadata', function checkDuration() {
+      pv.removeEventListener('loadedmetadata', checkDuration);
+      if (settled) return;
+      settled = true;
+      clearTimeout(metadataTimeout);
+      proceedWithPreviewUpload(true);
+    }, { once: true });
+    pv.addEventListener('error', function onVideoError() {
+      pv.removeEventListener('error', onVideoError);
+      if (settled) return;
+      settled = true;
+      clearTimeout(metadataTimeout);
+      showMsg('Could not preview this video file — uploading it as-is without the 5-minute preview check.');
+      proceedWithPreviewUpload(false);
     }, { once: true });
   });
 
