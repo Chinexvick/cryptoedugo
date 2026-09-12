@@ -234,15 +234,11 @@
   // required for any file that would otherwise hit the project's single-request
   // upload size limit in Storage settings (a 413 there is a dashboard-level
   // cap, not something this app can raise on its own).
-  async function uploadVideoResumable(bucket, path, file, onProgress) {
-    const { data: { session } } = await supabase.auth.getSession();
-    return new Promise((resolve, reject) => {
+  function tusUploadOnce(endpoint, bucket, path, file, onProgress) {
+    return new Promise(async (resolve, reject) => {
+      const { data: { session } } = await supabase.auth.getSession();
       const upload = new tus.Upload(file, {
-        // Use the standard project hostname, not the "direct storage hostname"
-        // (<ref>.storage.supabase.co) — that alternate domain isn't reliably
-        // CORS-enabled for browser uploads on every project and failed here
-        // with an opaque network-level error before any HTTP response.
-        endpoint: `${SUPABASE_URL}/storage/v1/upload/resumable`,
+        endpoint,
         retryDelays: [0, 3000, 5000, 10000, 20000],
         headers: {
           authorization: `Bearer ${session.access_token}`,
@@ -267,6 +263,26 @@
         upload.start();
       });
     });
+  }
+
+  // Supabase recommends the "direct storage hostname" (<ref>.storage.supabase.co)
+  // for resumable uploads, but that alternate domain isn't reliably
+  // CORS-provisioned for browser uploads on every project — it has failed
+  // outright with an opaque network-level error before any HTTP response in
+  // testing here. Rather than hard-code a guess, try it first (best
+  // performance when it works) and transparently fall back to the standard
+  // project domain if that attempt never gets an HTTP response at all.
+  async function uploadVideoResumable(bucket, path, file, onProgress) {
+    const projectRef = new URL(SUPABASE_URL).hostname.split('.')[0];
+    const directEndpoint = `https://${projectRef}.storage.supabase.co/storage/v1/upload/resumable`;
+    const standardEndpoint = `${SUPABASE_URL}/storage/v1/upload/resumable`;
+    try {
+      await tusUploadOnce(directEndpoint, bucket, path, file, onProgress);
+    } catch (err) {
+      const isNetworkLevelFailure = !err || !err.originalResponse; // no HTTP response at all = CORS/DNS, not a real upload error (e.g. 413)
+      if (!isNetworkLevelFailure) throw err;
+      await tusUploadOnce(standardEndpoint, bucket, path, file, onProgress);
+    }
   }
 
   // A 413/EntityTooLarge here means the project's Storage "Global file size
