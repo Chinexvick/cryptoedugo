@@ -349,12 +349,28 @@
         return;
       }
 
+      // Re-fetch the session right before uploading rather than reusing the one
+      // captured at page load — that snapshot's JWT can go stale on a long-open
+      // tab, which surfaces as a confusing "row-level security policy" error
+      // from storage since the path's uid no longer matches an expired/renewed
+      // auth.uid(). A fresh session here means the path always matches whoever
+      // is actually authenticated right now.
+      const { data: { session: freshSession } } = await supabase.auth.getSession();
+      if (!freshSession) {
+        window.showToast && window.showToast('Your session has expired — please refresh the page and log in again.');
+        this.value = '';
+        return;
+      }
+
       const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-      const path = `${session.user.id}/avatar.${ext}`;
+      const path = `${freshSession.user.id}/avatar.${ext}`;
 
       const { error: upErr } = await supabase.storage.from('avatars').upload(path, file, { upsert: true, cacheControl: '3600' });
       if (upErr) {
-        window.showToast && window.showToast('Could not upload image: ' + upErr.message);
+        const friendly = /row-level security/i.test(upErr.message)
+          ? 'Your session may have expired — please refresh the page and try again.'
+          : upErr.message;
+        window.showToast && window.showToast('Could not upload image: ' + friendly);
         this.value = '';
         return;
       }
@@ -362,7 +378,7 @@
       const { data: pub } = supabase.storage.from('avatars').getPublicUrl(path);
       const url = pub.publicUrl + '?t=' + Date.now(); // cache-bust so the new photo shows immediately
 
-      const { error: dbErr } = await supabase.from('profiles').update({ avatar_url: url }).eq('id', session.user.id);
+      const { error: dbErr } = await supabase.from('profiles').update({ avatar_url: url }).eq('id', freshSession.user.id);
       if (dbErr) {
         window.showToast && window.showToast('Uploaded, but could not save to your profile: ' + dbErr.message);
         return;

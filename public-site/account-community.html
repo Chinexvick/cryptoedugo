@@ -363,16 +363,31 @@
       stopRecordingStream();
       if (recordedChunks.length === 0 || !activeChannel) return;
       const blob = new Blob(recordedChunks, { type: 'audio/webm' });
-      const path = `${currentUserId}/${Date.now()}.webm`;
+
+      // Re-fetch the session right before uploading rather than trusting the
+      // currentUserId captured at page load — on a long-open tab that snapshot's
+      // JWT can go stale, which surfaces as a confusing "row-level security
+      // policy" storage error instead of a clear "please log back in".
+      const { data: { session: freshSession } } = await supabase.auth.getSession();
+      if (!freshSession) {
+        window.showToast ? window.showToast('Your session has expired — please refresh the page and log in again.') : alert('Please log in again.');
+        return;
+      }
+      const uploaderId = freshSession.user.id;
+
+      const path = `${uploaderId}/${Date.now()}.webm`;
       const { error: upErr } = await supabase.storage.from('community-audio').upload(path, blob, { contentType: 'audio/webm' });
       if (upErr) {
-        window.showToast ? window.showToast('Could not upload voice note.') : alert('Could not upload voice note.');
+        const friendly = /row-level security/i.test(upErr.message)
+          ? 'Your session may have expired — please refresh the page and try again.'
+          : 'Could not upload voice note.';
+        window.showToast ? window.showToast(friendly) : alert(friendly);
         return;
       }
       const { data: pub } = supabase.storage.from('community-audio').getPublicUrl(path);
       const { error } = await supabase.from('community_messages').insert({
         channel_id: activeChannel.id,
-        author_id: currentUserId,
+        author_id: uploaderId,
         body: '🎤 Voice note',
         audio_url: pub.publicUrl,
         audio_duration_seconds: durationSeconds,
