@@ -337,9 +337,13 @@
       window.showToast && window.showToast('Password updated');
     });
 
-    // ---- Avatar upload: stored in the public "avatars" bucket under the
-    // user's own folder (storage policies only allow writing there), then
-    // profiles.avatar_url is updated to the public URL.
+    // ---- Avatar upload: sent to the upload-avatar edge function, which
+    // verifies the caller's identity server-side (auth.getUser()) and writes
+    // with the service-role client, keyed to that verified id. This replaced
+    // a direct client-side storage.upload() after a student hit "row-level
+    // security policy" on that path even though the policy itself checked
+    // out correctly in isolation — moving the write server-side sidesteps
+    // that whole class of live-session/RLS-propagation issue entirely.
     document.getElementById('avatarFileInput').addEventListener('change', async function () {
       const file = this.files[0];
       if (!file) return;
@@ -349,12 +353,6 @@
         return;
       }
 
-      // Re-fetch the session right before uploading rather than reusing the one
-      // captured at page load — that snapshot's JWT can go stale on a long-open
-      // tab, which surfaces as a confusing "row-level security policy" error
-      // from storage since the path's uid no longer matches an expired/renewed
-      // auth.uid(). A fresh session here means the path always matches whoever
-      // is actually authenticated right now.
       const { data: { session: freshSession } } = await supabase.auth.getSession();
       if (!freshSession) {
         window.showToast && window.showToast('Your session has expired — please refresh the page and log in again.');
@@ -362,29 +360,25 @@
         return;
       }
 
-      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-      const path = `${freshSession.user.id}/avatar.${ext}`;
+      const formData = new FormData();
+      formData.append('file', file);
 
-      const { error: upErr } = await supabase.storage.from('avatars').upload(path, file, { upsert: true, cacheControl: '3600' });
-      if (upErr) {
-        const friendly = /row-level security/i.test(upErr.message)
-          ? 'Your session may have expired — please refresh the page and try again.'
-          : upErr.message;
-        window.showToast && window.showToast('Could not upload image: ' + friendly);
+      let result;
+      try {
+        const resp = await fetch('https://rbncpakigxzbstefisgd.supabase.co/functions/v1/upload-avatar', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${freshSession.access_token}` },
+          body: formData,
+        });
+        result = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(result.error || 'Upload failed');
+      } catch (err) {
+        window.showToast && window.showToast('Could not upload image: ' + err.message);
         this.value = '';
         return;
       }
 
-      const { data: pub } = supabase.storage.from('avatars').getPublicUrl(path);
-      const url = pub.publicUrl + '?t=' + Date.now(); // cache-bust so the new photo shows immediately
-
-      const { error: dbErr } = await supabase.from('profiles').update({ avatar_url: url }).eq('id', freshSession.user.id);
-      if (dbErr) {
-        window.showToast && window.showToast('Uploaded, but could not save to your profile: ' + dbErr.message);
-        return;
-      }
-
-      showAvatar(url, profile?.full_name || profile?.username);
+      showAvatar(result.url, profile?.full_name || profile?.username);
       window.showToast && window.showToast('Profile picture updated');
       this.value = '';
     });
