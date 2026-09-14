@@ -66,9 +66,9 @@
     </div>
     <div class="comm-mobile-channels" id="commMobileChannels"></div>
 
-    <div class="comm-pinned">
+    <div class="comm-pinned" id="commPinned" hidden>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24z"/></svg>
-      Pinned: Welcome! Read the community guidelines in #announcements before posting.
+      <span id="commPinnedText"></span>
     </div>
 
     <div class="comm-feed" id="commFeed">
@@ -250,6 +250,32 @@
     if (activeChannel) openChannel(activeChannel.id, true);
   }
 
+  // Only what an admin has actually pinned (community_messages.is_pinned)
+  // shows here — this used to be a hardcoded "Welcome!" line unrelated to
+  // any real pinned message.
+  let pinnedBannerToken = 0;
+  async function refreshPinnedBanner(channelId) {
+    const myToken = ++pinnedBannerToken;
+    const { data: pinned } = await supabase
+      .from('community_messages')
+      .select('id, body, attachment_type, sticker_id')
+      .eq('channel_id', channelId)
+      .eq('is_pinned', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (myToken !== pinnedBannerToken) return;
+    const banner = document.getElementById('commPinned');
+    if (!pinned) {
+      banner.hidden = true;
+      return;
+    }
+    const text = pinned.sticker_id ? '🎨 Sticker' : pinned.attachment_type === 'image' ? '📷 Photo' : pinned.attachment_type === 'doc' ? '📎 Document' : pinned.body;
+    document.getElementById('commPinnedText').textContent = 'Pinned: ' + text;
+    banner.hidden = false;
+    banner.onclick = () => jumpToMessage(pinned.id);
+  }
+
   async function openChannel(channelId, silent) {
     const myToken = ++loadToken;
     activeChannel = channels.find(c => c.id === channelId);
@@ -269,6 +295,7 @@
     document.getElementById('attachBtn').disabled = isReadOnly;
     document.getElementById('stickerBtn').disabled = isReadOnly;
     document.getElementById('micBtn').disabled = isReadOnly;
+    refreshPinnedBanner(channelId);
 
     const feed = document.getElementById('commFeed');
     const wasAtBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 40;
