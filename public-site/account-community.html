@@ -71,8 +71,13 @@
       <span id="commPinnedText"></span>
     </div>
 
-    <div class="comm-feed" id="commFeed">
-      <p style="color:var(--n50);font-size:13.5px;">Loading messages…</p>
+    <div class="comm-feed-wrap">
+      <div class="comm-feed" id="commFeed">
+        <p style="color:var(--n50);font-size:13.5px;">Loading messages…</p>
+      </div>
+      <button type="button" class="scroll-to-latest" id="scrollToLatestBtn" hidden aria-label="Jump to latest message">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+      </button>
     </div>
 
     <div class="recording-indicator" id="recordingIndicator" style="display:none;">
@@ -287,12 +292,17 @@
   const OLDER_PAGE_SIZE = 50;
   let loadingOlder = false;
 
+  function wireLoadOlderButton(container) {
+    const btn = container.querySelector('[data-load-older]');
+    if (btn) btn.addEventListener('click', loadOlderMessages);
+  }
+
   async function loadOlderMessages() {
     if (loadingOlder || view.allOlderLoaded || !activeChannel || !view.oldestLoadedAt) return;
     loadingOlder = true;
     const feed = document.getElementById('commFeed');
     const loadingEl = feed.querySelector('[data-load-older]');
-    if (loadingEl) loadingEl.textContent = 'Loading older messages…';
+    if (loadingEl) { loadingEl.textContent = 'Loading older messages…'; loadingEl.disabled = true; }
     try {
       const { data: olderDesc, error } = await supabase
         .from('community_messages')
@@ -323,7 +333,7 @@
       const afterAnchor = loadingEl ? loadingEl.nextSibling : feed.firstChild;
       while (wrapper.firstChild) feed.insertBefore(wrapper.firstChild, afterAnchor);
       if (view.allOlderLoaded && loadingEl) loadingEl.remove();
-      else if (loadingEl) loadingEl.textContent = 'Scroll up for earlier messages';
+      else if (loadingEl) { loadingEl.textContent = 'Load earlier messages'; loadingEl.disabled = false; }
       // Prepending content pushes everything below it down — restore the
       // reader's position instead of letting the browser leave scrollTop
       // untouched (which would visually jump them to a different message).
@@ -333,8 +343,22 @@
     }
   }
 
+  function updateScrollToLatestVisibility() {
+    const feed = document.getElementById('commFeed');
+    const btn = document.getElementById('scrollToLatestBtn');
+    const nearBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 120;
+    btn.hidden = nearBottom;
+  }
+
+  document.getElementById('scrollToLatestBtn').addEventListener('click', () => {
+    const feed = document.getElementById('commFeed');
+    feed.scrollTo({ top: feed.scrollHeight, behavior: 'smooth' });
+  });
+
   document.getElementById('commFeed').addEventListener('scroll', () => {
-    if (document.getElementById('commFeed').scrollTop < 80) loadOlderMessages();
+    const feed = document.getElementById('commFeed');
+    if (feed.scrollTop < 80) loadOlderMessages();
+    updateScrollToLatestVisibility();
   });
 
   function renderMentions(escapedBody) {
@@ -506,9 +530,10 @@
     await hydrateMessages(messages);
     if (myToken !== loadToken) return;
 
-    const loadOlderHtml = view.allOlderLoaded ? '' : `<p class="load-older" data-load-older>Scroll up for earlier messages</p>`;
+    const loadOlderHtml = view.allOlderLoaded ? '' : `<button type="button" class="load-older" data-load-older>Load earlier messages</button>`;
     feed.innerHTML = loadOlderHtml + messages.map(messageHtml).join('');
     wireMessageEvents(feed);
+    wireLoadOlderButton(feed);
     const shouldScrollToBottom = !silent || wasAtBottom;
     if (shouldScrollToBottom) {
       feed.scrollTop = feed.scrollHeight;
@@ -525,6 +550,7 @@
       // Also catch fonts/layout settling a frame later, independent of images.
       requestAnimationFrame(() => { feed.scrollTop = feed.scrollHeight; });
     }
+    updateScrollToLatestVisibility();
   }
 
   function jumpToMessage(messageId) {
