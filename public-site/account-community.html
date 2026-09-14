@@ -81,9 +81,12 @@
       <button type="button" class="btn btn-sm btn-primary" id="sendRecordingBtn">Send</button>
     </div>
     <form class="comm-input-bar" id="commForm">
+      <div class="comm-input-wrap">
+        <div class="mention-dropdown" id="mentionDropdown" hidden></div>
+        <textarea placeholder="Message #general…" id="commInput" rows="1"></textarea>
+      </div>
       <button type="button" class="mic-btn" id="micBtn" aria-label="Record voice note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
-      <input type="text" placeholder="Message #general…" id="commInput">
-      <button type="submit" class="btn btn-primary btn-sm">Send</button>
+      <button type="submit" class="btn btn-primary btn-sm" id="commSendBtn">Send</button>
     </form>
   </main>
 
@@ -125,7 +128,22 @@
   let channels = [];
   let activeChannel = null;
   let currentUserId = null;
+  let currentUsername = null;
   let isCurrentUserAdmin = false;
+  // Bumped on every openChannel() call; a call whose token has been
+  // superseded by a newer one discards its result instead of rendering —
+  // otherwise an in-flight fetch from (say) the realtime listener can land
+  // after a fetch triggered by the user's own send and stomp on it, which is
+  // what made the feed appear to "refresh"/jump on every send.
+  let loadToken = 0;
+
+  function renderMentions(escapedBody) {
+    // Body is already HTML-escaped, so plain word-matching on the escaped
+    // text is safe here — @ and word characters pass through escaping unchanged.
+    return escapedBody.replace(/(^|[^\w])@([a-zA-Z0-9_]{2,32})/g, (full, pre, uname) => {
+      return `${pre}<span class="mention-tag">@${uname}</span>`;
+    });
+  }
 
   function ago(dateStr) {
     const mins = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
@@ -200,6 +218,7 @@
   }
 
   async function openChannel(channelId, silent) {
+    const myToken = ++loadToken;
     activeChannel = channels.find(c => c.id === channelId);
     if (!activeChannel) return;
     renderChannels();
@@ -228,6 +247,7 @@
       .limit(100);
 
     slow.stop();
+    if (myToken !== loadToken) return;
 
     if (error) {
       feed.innerHTML = '<p style="color:var(--danger);font-size:13.5px;">Could not load messages.</p>';
@@ -262,15 +282,18 @@
     const reactionsByMessage = {};
     (reactions || []).forEach(r => { (reactionsByMessage[r.message_id] = reactionsByMessage[r.message_id] || []).push(r); });
 
+    if (myToken !== loadToken) return;
+
     feed.innerHTML = messages.map(m => {
       const name = m.author?.full_name || m.author?.username || 'Unknown';
       const isAdmin = m.author?.role === 'admin';
       const canDelete = m.author_id === currentUserId || isCurrentUserAdmin;
+      const mentionsMe = !!(currentUsername && m.body && new RegExp(`(^|[^\\w])@${currentUsername}(?![\\w])`, 'i').test(m.body));
       const contentHtml = m.audio_url
         ? `<div class="voice-note"><audio controls preload="metadata" src="${escapeHtml(m.audio_url)}"></audio>${m.audio_duration_seconds ? `<span style="font-size:11px;color:var(--n50);">${Math.floor(m.audio_duration_seconds / 60)}:${String(m.audio_duration_seconds % 60).padStart(2, '0')}</span>` : ''}</div>`
-        : `<div class="bubble-text">${escapeHtml(m.body)}</div>`;
+        : `<div class="bubble-text">${renderMentions(escapeHtml(m.body))}</div>`;
       return `
-        <div class="comm-msg msg-in">
+        <div class="comm-msg msg-in${mentionsMe ? ' mentions-me' : ''}">
           ${avatarHtml(m.author, isAdmin)}
           <div>
             <div class="meta">
@@ -415,12 +438,151 @@
         window.showToast ? window.showToast(error.message) : alert(error.message);
         return;
       }
-      openChannel(activeChannel.id);
+      // Silent: we already know the channel and are already scrolled to the
+      // bottom, so there's no need for the "Loading messages…" flash — that
+      // flash (and the scroll reset that came with it) was what made sending
+      // a message feel like it "refreshed the page".
+      openChannel(activeChannel.id, true);
     };
     mediaRecorder.stop();
   }
 
   document.getElementById('sendRecordingBtn').addEventListener('click', sendRecording);
+
+  // ---- Compose box: auto-grow textarea, Enter-to-send, @mentions ----
+  const commInput = document.getElementById('commInput');
+  const mentionDropdown = document.getElementById('mentionDropdown');
+
+  function resizeCommInput() {
+    commInput.style.height = 'auto';
+    commInput.style.height = Math.min(commInput.scrollHeight, 160) + 'px';
+  }
+  commInput.addEventListener('input', resizeCommInput);
+
+  // ---- @mention autocomplete ----
+  let mentionMatches = [];
+  let mentionActiveIndex = -1;
+  let mentionRange = null; // { start, end } of the "@partial" token being replaced
+  let mentionSearchToken = 0;
+
+  function closeMentionDropdown() {
+    mentionDropdown.hidden = true;
+    mentionDropdown.innerHTML = '';
+    mentionMatches = [];
+    mentionActiveIndex = -1;
+    mentionRange = null;
+  }
+
+  function renderMentionDropdown() {
+    if (mentionMatches.length === 0) {
+      mentionDropdown.innerHTML = '<div class="mention-dropdown-empty">No matching members</div>';
+    } else {
+      mentionDropdown.innerHTML = mentionMatches.map((p, i) => {
+        const name = p.full_name || p.username;
+        const avatar = p.avatar_url
+          ? `<img src="${escapeHtml(p.avatar_url)}" alt="">`
+          : `<span class="avatar-fallback">${escapeHtml((name || '?').charAt(0).toUpperCase())}</span>`;
+        return `<div class="mention-dropdown-item${i === mentionActiveIndex ? ' active' : ''}" data-mention-index="${i}">
+          ${avatar}<span>${escapeHtml(name)}</span><span class="uname">@${escapeHtml(p.username)}</span>
+        </div>`;
+      }).join('');
+      mentionDropdown.querySelectorAll('[data-mention-index]').forEach(el => {
+        el.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          applyMention(parseInt(el.getAttribute('data-mention-index'), 10));
+        });
+      });
+    }
+    mentionDropdown.hidden = false;
+  }
+
+  function applyMention(index) {
+    const profile = mentionMatches[index];
+    if (!profile || !mentionRange) return;
+    const value = commInput.value;
+    const before = value.slice(0, mentionRange.start);
+    const after = value.slice(mentionRange.end);
+    const insertText = '@' + profile.username + ' ';
+    commInput.value = before + insertText + after;
+    const caret = before.length + insertText.length;
+    commInput.focus();
+    commInput.setSelectionRange(caret, caret);
+    resizeCommInput();
+    closeMentionDropdown();
+  }
+
+  async function checkForMentionQuery() {
+    const value = commInput.value;
+    const caret = commInput.selectionStart;
+    // Look backwards from the caret for an "@partial" token that hasn't hit
+    // whitespace yet — that's the mention currently being typed.
+    const uptoCaret = value.slice(0, caret);
+    const match = uptoCaret.match(/(?:^|[\s])@([a-zA-Z0-9_]{0,32})$/);
+    if (!match) {
+      closeMentionDropdown();
+      return;
+    }
+    const query = match[1];
+    const start = caret - query.length - 1;
+    mentionRange = { start, end: caret };
+
+    if (query.length === 0) {
+      closeMentionDropdown();
+      return;
+    }
+
+    const myToken = ++mentionSearchToken;
+    const { data, error } = await supabase.rpc('search_profiles_public', { p_query: query, p_limit: 6 });
+    if (myToken !== mentionSearchToken) return;
+    if (error || !commInput.matches(':focus')) { closeMentionDropdown(); return; }
+    mentionMatches = data || [];
+    mentionActiveIndex = mentionMatches.length > 0 ? 0 : -1;
+    renderMentionDropdown();
+  }
+
+  commInput.addEventListener('input', checkForMentionQuery);
+  commInput.addEventListener('click', checkForMentionQuery);
+
+  commInput.addEventListener('keydown', (e) => {
+    if (!mentionDropdown.hidden && mentionMatches.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        mentionActiveIndex = (mentionActiveIndex + 1) % mentionMatches.length;
+        renderMentionDropdown();
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        mentionActiveIndex = (mentionActiveIndex - 1 + mentionMatches.length) % mentionMatches.length;
+        renderMentionDropdown();
+        return;
+      }
+      if (e.key === 'Enter' || e.key === 'Tab') {
+        e.preventDefault();
+        applyMention(mentionActiveIndex);
+        return;
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeMentionDropdown();
+        return;
+      }
+    }
+    // Enter sends the message; Shift+Enter (or Enter while composing an IME
+    // candidate) inserts a real newline so longer messages can be typed
+    // across multiple lines like a normal chat box instead of the box
+    // fighting the user.
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+      e.preventDefault();
+      document.getElementById('commForm').requestSubmit();
+    }
+  });
+
+  commInput.addEventListener('blur', () => {
+    // Slight delay so a mousedown on a dropdown item (which also blurs the
+    // textarea) still gets to run its click handler first.
+    setTimeout(closeMentionDropdown, 150);
+  });
 
   let sendingMessage = false;
   document.getElementById('commForm').addEventListener('submit', async function (e) {
@@ -432,11 +594,12 @@
     // visibly happened, before the scroll fix) produced several duplicate
     // copies of the same message.
     if (sendingMessage) return;
-    const input = document.getElementById('commInput');
-    const submitBtn = this.querySelector('button[type="submit"]');
+    const input = commInput;
+    const submitBtn = document.getElementById('commSendBtn');
     const body = input.value.trim();
     if (!body || !activeChannel) return;
 
+    closeMentionDropdown();
     sendingMessage = true;
     input.disabled = true;
     if (submitBtn) submitBtn.disabled = true;
@@ -451,7 +614,11 @@
         return;
       }
       input.value = '';
-      openChannel(activeChannel.id);
+      resizeCommInput();
+      // Silent: avoids the "Loading messages…" flash/scroll-reset on every
+      // send — the sender is already at the bottom, so it should just settle
+      // there once the new message renders.
+      openChannel(activeChannel.id, true);
     } finally {
       sendingMessage = false;
       input.disabled = false;
@@ -468,6 +635,10 @@
     const { data: adminCheck } = await supabase.rpc('is_admin');
     isCurrentUserAdmin = !!adminCheck;
 
+    const { data: myProfile } = await supabase.from('profiles').select('full_name, username').eq('id', currentUserId).single();
+    currentUsername = myProfile?.username || null;
+    const myName = myProfile?.full_name || myProfile?.username || 'Student';
+
     const { data: chans, error } = await supabase
       .from('community_channels')
       .select('id, slug, description, is_announcement_only')
@@ -483,9 +654,6 @@
     activeChannel = channels[0];
     renderChannels();
     openChannel(channels[0].id);
-
-    const { data: myProfile } = await supabase.from('profiles').select('full_name, username').eq('id', currentUserId).single();
-    const myName = myProfile?.full_name || myProfile?.username || 'Student';
 
     // Live updates: new messages and reactions appear without a manual refresh.
     supabase.channel('community-live')
