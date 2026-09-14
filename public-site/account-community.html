@@ -170,6 +170,173 @@
   let replyTarget = null; // { id, name, text }
   let pendingAttachment = null; // { file, kind: 'image'|'doc' }
 
+  // Per-channel pagination/render state, replaced wholesale on every full
+  // openChannel() load and reused by loadOlderMessages() so "load earlier"
+  // can keep resolving replies/reactions/authors against the same maps.
+  let view = { byId: {}, authorsById: {}, stickersById: {}, reactionsByMessage: {}, oldestLoadedAt: null, allOlderLoaded: true, channelId: null };
+
+  function replyPreviewLabel(target) {
+    if (!target) return { name: 'Message', text: 'Original message unavailable' };
+    const authorName = view.authorsById[target.author_id]?.full_name || view.authorsById[target.author_id]?.username || 'Unknown';
+    const text = target.sticker_id ? '🎨 Sticker' : target.attachment_type === 'image' ? '📷 Photo' : target.attachment_type === 'doc' ? '📎 Document' : (target.body || '');
+    return { name: authorName, text };
+  }
+
+  function messageHtml(m) {
+    const name = m.author?.full_name || m.author?.username || 'Unknown';
+    const isAdmin = m.author?.role === 'admin';
+    const canDelete = m.author_id === currentUserId || isCurrentUserAdmin;
+    const mentionsMe = !!(currentUsername && m.body && new RegExp(`(^|[^\\w])@${currentUsername}(?![\\w])`, 'i').test(m.body));
+
+    const replyQuoteHtml = m.reply_to_id ? (() => {
+      const { name: rName, text: rText } = replyPreviewLabel(view.byId[m.reply_to_id]);
+      return `<div class="reply-quote" data-jump-to-message="${m.reply_to_id}"><b>${escapeHtml(rName)}</b><span>${escapeHtml(rText)}</span></div>`;
+    })() : '';
+
+    let contentHtml;
+    if (m.sticker_id) {
+      const sticker = view.stickersById[m.sticker_id];
+      contentHtml = sticker ? `<img class="sticker-image" src="${escapeHtml(sticker.url)}" data-save-sticker="${m.sticker_id}" data-sticker-url="${escapeHtml(sticker.url)}" alt="Sticker">` : `<div class="bubble-text">🎨 Sticker</div>`;
+    } else if (m.audio_url) {
+      contentHtml = `<div class="voice-note"><audio controls preload="metadata" src="${escapeHtml(m.audio_url)}"></audio>${m.audio_duration_seconds ? `<span style="font-size:11px;color:var(--n50);">${Math.floor(m.audio_duration_seconds / 60)}:${String(m.audio_duration_seconds % 60).padStart(2, '0')}</span>` : ''}</div>`;
+    } else if (m.attachment_url && m.attachment_type === 'image') {
+      contentHtml = `<img class="attach-image" src="${escapeHtml(m.attachment_url)}" alt="Attachment" onclick="window.open('${escapeHtml(m.attachment_url)}','_blank')">${m.body && !m.body.startsWith('📷') ? `<div class="bubble-text">${renderMentions(escapeHtml(m.body))}</div>` : ''}`;
+    } else if (m.attachment_url) {
+      contentHtml = `<a class="attach-doc" href="${escapeHtml(m.attachment_url)}" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span>${escapeHtml(m.attachment_name || 'Document')}</span>
+      </a>`;
+    } else {
+      contentHtml = `<div class="bubble-text">${renderMentions(escapeHtml(m.body))}</div>`;
+    }
+
+    return `
+      <div class="comm-msg msg-in${mentionsMe ? ' mentions-me' : ''}" data-message-id="${m.id}">
+        ${avatarHtml(m.author, isAdmin)}
+        <div>
+          <div class="meta">
+            <span class="name">${escapeHtml(name)}</span>
+            ${isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}
+            ${m.is_pinned ? '<span class="admin-badge" style="background:#f59e0b;">PINNED</span>' : ''}
+            <span class="time">${ago(m.created_at)}</span>
+          </div>
+          ${replyQuoteHtml}
+          ${contentHtml}
+          ${reactionsHtml(m.id, view.reactionsByMessage[m.id])}
+        </div>
+        ${canDelete ? `<button type="button" class="msg-delete-btn" data-delete-message="${m.id}" aria-label="Delete message"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>` : ''}
+      </div>`;
+  }
+
+  function wireMessageEvents(container) {
+    wireReactionEvents(container);
+    container.querySelectorAll('[data-delete-message]').forEach(btn => {
+      btn.addEventListener('click', () => deleteMessage(btn.getAttribute('data-delete-message')));
+    });
+    container.querySelectorAll('[data-jump-to-message]').forEach(el => {
+      el.addEventListener('click', () => jumpToMessage(el.getAttribute('data-jump-to-message')));
+    });
+    container.querySelectorAll('[data-save-sticker]').forEach(img => {
+      img.addEventListener('click', () => saveStickerToMyTray(img.getAttribute('data-save-sticker'), img.getAttribute('data-sticker-url')));
+    });
+    wireSwipeToReply(container, view.byId);
+  }
+
+  // Fetches authors, reactions, sticker images and reply-quote targets for a
+  // batch of messages and merges them into `view`'s shared maps (rather than
+  // per-batch locals) so a "load earlier" batch can still resolve a reply
+  // that points at a message from the initial batch, and vice versa.
+  async function hydrateMessages(messages) {
+    messages.forEach(m => { view.byId[m.id] = m; });
+
+    const missingAuthorIds = [...new Set(messages.map(m => m.author_id))].filter(id => !view.authorsById[id]);
+    if (missingAuthorIds.length > 0) {
+      const { data: authors } = await supabase.rpc('get_profiles_public', { p_ids: missingAuthorIds });
+      (authors || []).forEach(a => { view.authorsById[a.id] = a; });
+    }
+    messages.forEach(m => { m.author = view.authorsById[m.author_id]; });
+
+    const { data: reactions } = await supabase
+      .from('message_reactions')
+      .select('message_id, user_id, emoji')
+      .in('message_id', messages.map(m => m.id));
+    (reactions || []).forEach(r => { (view.reactionsByMessage[r.message_id] = view.reactionsByMessage[r.message_id] || []).push(r); });
+
+    const missingReplyIds = [...new Set(messages.map(m => m.reply_to_id).filter(id => id && !view.byId[id]))];
+    if (missingReplyIds.length > 0) {
+      const { data: replyTargets } = await supabase
+        .from('community_messages')
+        .select('id, body, author_id, attachment_type, sticker_id')
+        .in('id', missingReplyIds);
+      (replyTargets || []).forEach(m => { view.byId[m.id] = m; });
+      const replyAuthorIds = [...new Set((replyTargets || []).map(m => m.author_id))].filter(id => !view.authorsById[id]);
+      if (replyAuthorIds.length > 0) {
+        const { data: extraAuthors } = await supabase.rpc('get_profiles_public', { p_ids: replyAuthorIds });
+        (extraAuthors || []).forEach(a => { view.authorsById[a.id] = a; });
+      }
+    }
+
+    const stickerIds = [...new Set(messages.map(m => m.sticker_id).filter(id => id && !view.stickersById[id]))];
+    if (stickerIds.length > 0) {
+      const { data: stickers } = await supabase.from('community_stickers').select('id, url').in('id', stickerIds);
+      (stickers || []).forEach(s => { view.stickersById[s.id] = s; });
+    }
+  }
+
+  const MESSAGE_PAGE_SIZE = 100;
+  const OLDER_PAGE_SIZE = 50;
+  let loadingOlder = false;
+
+  async function loadOlderMessages() {
+    if (loadingOlder || view.allOlderLoaded || !activeChannel || !view.oldestLoadedAt) return;
+    loadingOlder = true;
+    const feed = document.getElementById('commFeed');
+    const loadingEl = feed.querySelector('[data-load-older]');
+    if (loadingEl) loadingEl.textContent = 'Loading older messages…';
+    try {
+      const { data: olderDesc, error } = await supabase
+        .from('community_messages')
+        .select('id, body, is_pinned, created_at, author_id, audio_url, audio_duration_seconds, attachment_url, attachment_type, attachment_name, reply_to_id, sticker_id')
+        .eq('channel_id', activeChannel.id)
+        .lt('created_at', view.oldestLoadedAt)
+        .order('created_at', { ascending: false })
+        .limit(OLDER_PAGE_SIZE);
+      if (error || !olderDesc || olderDesc.length === 0) {
+        view.allOlderLoaded = true;
+        if (loadingEl) loadingEl.remove();
+        return;
+      }
+      const older = olderDesc.slice().reverse();
+      await hydrateMessages(older);
+      view.oldestLoadedAt = older[0].created_at;
+      if (older.length < OLDER_PAGE_SIZE) view.allOlderLoaded = true;
+
+      const prevScrollHeight = feed.scrollHeight;
+      const prevScrollTop = feed.scrollTop;
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = older.map(messageHtml).join('');
+      // Wire events while the new messages are still inside `wrapper`, not
+      // after moving them into `feed` — wiring against the whole feed would
+      // re-bind every listener on messages already rendered from earlier
+      // loads too, firing each click/reaction/reply handler multiple times.
+      wireMessageEvents(wrapper);
+      const afterAnchor = loadingEl ? loadingEl.nextSibling : feed.firstChild;
+      while (wrapper.firstChild) feed.insertBefore(wrapper.firstChild, afterAnchor);
+      if (view.allOlderLoaded && loadingEl) loadingEl.remove();
+      else if (loadingEl) loadingEl.textContent = 'Scroll up for earlier messages';
+      // Prepending content pushes everything below it down — restore the
+      // reader's position instead of letting the browser leave scrollTop
+      // untouched (which would visually jump them to a different message).
+      feed.scrollTop = prevScrollTop + (feed.scrollHeight - prevScrollHeight);
+    } finally {
+      loadingOlder = false;
+    }
+  }
+
+  document.getElementById('commFeed').addEventListener('scroll', () => {
+    if (document.getElementById('commFeed').scrollTop < 80) loadOlderMessages();
+  });
+
   function renderMentions(escapedBody) {
     // Body is already HTML-escaped, so plain word-matching on the escaped
     // text is safe here — @ and word characters pass through escaping unchanged.
@@ -295,7 +462,12 @@
     document.getElementById('attachBtn').disabled = isReadOnly;
     document.getElementById('stickerBtn').disabled = isReadOnly;
     document.getElementById('micBtn').disabled = isReadOnly;
-    refreshPinnedBanner(channelId);
+    // Awaited here (not fired-and-forgotten) so the banner's height settles
+    // before the scroll-to-bottom below runs — otherwise it can pop in after
+    // the scroll and shrink the feed's available height, nudging the view
+    // away from the bottom.
+    await refreshPinnedBanner(channelId);
+    if (myToken !== loadToken) return;
 
     const feed = document.getElementById('commFeed');
     const wasAtBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 40;
@@ -307,7 +479,7 @@
       .select('id, body, is_pinned, created_at, author_id, audio_url, audio_duration_seconds, attachment_url, attachment_type, attachment_name, reply_to_id, sticker_id')
       .eq('channel_id', channelId)
       .order('created_at', { ascending: false })
-      .limit(100);
+      .limit(MESSAGE_PAGE_SIZE);
 
     slow.stop();
     if (myToken !== loadToken) return;
@@ -316,10 +488,13 @@
       feed.innerHTML = '<p style="color:var(--danger);font-size:13.5px;">Could not load messages.</p>';
       return;
     }
-    // Fetched newest-first (so the 100-row cap keeps the most recent
+    // Fetched newest-first (so the page-size cap keeps the most recent
     // messages, not the oldest), then reversed back to chronological order
-    // for display.
+    // for display. Older history beyond this window loads on demand via
+    // loadOlderMessages() when the reader scrolls near the top.
     const messages = (messagesDesc || []).slice().reverse();
+    view = { byId: {}, authorsById: {}, stickersById: {}, reactionsByMessage: {}, oldestLoadedAt: messages[0]?.created_at || null, allOlderLoaded: messages.length < MESSAGE_PAGE_SIZE, channelId };
+
     if (!messages || messages.length === 0) {
       feed.innerHTML = `<div class="empty-state-anim" style="text-align:center;padding:40px 20px;color:var(--n50);">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:12px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -328,121 +503,12 @@
       return;
     }
 
-    // Author names/avatars come from the profiles_public view (safe fields
-    // only — full_name, username, role, avatar_url) rather than an embed
-    // against profiles directly, since profiles is now restricted to the
-    // owner or an admin.
-    const { data: authors } = await supabase
-      .rpc('get_profiles_public', { p_ids: [...new Set(messages.map(m => m.author_id))] });
-    const authorsById = {};
-    (authors || []).forEach(a => { authorsById[a.id] = a; });
-    messages.forEach(m => { m.author = authorsById[m.author_id]; });
-
-    const { data: reactions } = await supabase
-      .from('message_reactions')
-      .select('message_id, user_id, emoji')
-      .in('message_id', messages.map(m => m.id));
-    const reactionsByMessage = {};
-    (reactions || []).forEach(r => { (reactionsByMessage[r.message_id] = reactionsByMessage[r.message_id] || []).push(r); });
-
-    // Reply targets: most replies point at a message already in this batch,
-    // but a reply to something further back needs its own small fetch so the
-    // quoted preview still has real content instead of "message not found".
-    const byId = {};
-    messages.forEach(m => { byId[m.id] = m; });
-    const missingReplyIds = [...new Set(messages.map(m => m.reply_to_id).filter(id => id && !byId[id]))];
-    if (missingReplyIds.length > 0) {
-      const { data: replyTargets } = await supabase
-        .from('community_messages')
-        .select('id, body, author_id, attachment_type, sticker_id')
-        .in('id', missingReplyIds);
-      (replyTargets || []).forEach(m => { byId[m.id] = m; });
-      const replyAuthorIds = [...new Set((replyTargets || []).map(m => m.author_id))].filter(id => !authorsById[id]);
-      if (replyAuthorIds.length > 0) {
-        const { data: extraAuthors } = await supabase.rpc('get_profiles_public', { p_ids: replyAuthorIds });
-        (extraAuthors || []).forEach(a => { authorsById[a.id] = a; });
-      }
-    }
-
-    const stickerIds = [...new Set(messages.map(m => m.sticker_id).filter(Boolean))];
-    let stickersById = {};
-    if (stickerIds.length > 0) {
-      const { data: stickers } = await supabase.from('community_stickers').select('id, url').in('id', stickerIds);
-      (stickers || []).forEach(s => { stickersById[s.id] = s; });
-    }
-
+    await hydrateMessages(messages);
     if (myToken !== loadToken) return;
 
-    function replyPreviewLabel(target) {
-      if (!target) return { name: 'Message', text: 'Original message unavailable' };
-      const authorName = authorsById[target.author_id]?.full_name || authorsById[target.author_id]?.username || 'Unknown';
-      let text = target.sticker_id ? '🎨 Sticker' : target.attachment_type === 'image' ? '📷 Photo' : target.attachment_type === 'doc' ? '📎 Document' : (target.body || '');
-      return { name: authorName, text };
-    }
-
-    feed.innerHTML = messages.map(m => {
-      const name = m.author?.full_name || m.author?.username || 'Unknown';
-      const isAdmin = m.author?.role === 'admin';
-      const canDelete = m.author_id === currentUserId || isCurrentUserAdmin;
-      const mentionsMe = !!(currentUsername && m.body && new RegExp(`(^|[^\\w])@${currentUsername}(?![\\w])`, 'i').test(m.body));
-
-      const replyQuoteHtml = m.reply_to_id ? (() => {
-        const { name: rName, text: rText } = replyPreviewLabel(byId[m.reply_to_id]);
-        return `<div class="reply-quote" data-jump-to-message="${m.reply_to_id}"><b>${escapeHtml(rName)}</b><span>${escapeHtml(rText)}</span></div>`;
-      })() : '';
-
-      let contentHtml;
-      if (m.sticker_id) {
-        const sticker = stickersById[m.sticker_id];
-        contentHtml = sticker ? `<img class="sticker-image" src="${escapeHtml(sticker.url)}" data-save-sticker="${m.sticker_id}" data-sticker-url="${escapeHtml(sticker.url)}" alt="Sticker">` : `<div class="bubble-text">🎨 Sticker</div>`;
-      } else if (m.audio_url) {
-        contentHtml = `<div class="voice-note"><audio controls preload="metadata" src="${escapeHtml(m.audio_url)}"></audio>${m.audio_duration_seconds ? `<span style="font-size:11px;color:var(--n50);">${Math.floor(m.audio_duration_seconds / 60)}:${String(m.audio_duration_seconds % 60).padStart(2, '0')}</span>` : ''}</div>`;
-      } else if (m.attachment_url && m.attachment_type === 'image') {
-        contentHtml = `<img class="attach-image" src="${escapeHtml(m.attachment_url)}" alt="Attachment" onclick="window.open('${escapeHtml(m.attachment_url)}','_blank')">${m.body && !m.body.startsWith('📷') ? `<div class="bubble-text">${renderMentions(escapeHtml(m.body))}</div>` : ''}`;
-      } else if (m.attachment_url) {
-        contentHtml = `<a class="attach-doc" href="${escapeHtml(m.attachment_url)}" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          <span>${escapeHtml(m.attachment_name || 'Document')}</span>
-        </a>`;
-      } else {
-        contentHtml = `<div class="bubble-text">${renderMentions(escapeHtml(m.body))}</div>`;
-      }
-
-      return `
-        <div class="comm-msg msg-in${mentionsMe ? ' mentions-me' : ''}" data-message-id="${m.id}">
-          ${avatarHtml(m.author, isAdmin)}
-          <button type="button" class="reply-swipe-btn" data-reply-to="${m.id}" aria-label="Reply"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg></button>
-          <div>
-            <div class="meta">
-              <span class="name">${escapeHtml(name)}</span>
-              ${isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}
-              ${m.is_pinned ? '<span class="admin-badge" style="background:#f59e0b;">PINNED</span>' : ''}
-              <span class="time">${ago(m.created_at)}</span>
-            </div>
-            ${replyQuoteHtml}
-            ${contentHtml}
-            ${reactionsHtml(m.id, reactionsByMessage[m.id])}
-          </div>
-          ${canDelete ? `<button type="button" class="msg-delete-btn" data-delete-message="${m.id}" aria-label="Delete message"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>` : ''}
-        </div>`;
-    }).join('');
-    wireReactionEvents(feed);
-    feed.querySelectorAll('[data-delete-message]').forEach(btn => {
-      btn.addEventListener('click', () => deleteMessage(btn.getAttribute('data-delete-message')));
-    });
-    feed.querySelectorAll('[data-jump-to-message]').forEach(el => {
-      el.addEventListener('click', () => jumpToMessage(el.getAttribute('data-jump-to-message')));
-    });
-    feed.querySelectorAll('[data-reply-to]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const msg = byId[btn.getAttribute('data-reply-to')];
-        setReplyTarget(btn.getAttribute('data-reply-to'), msg);
-      });
-    });
-    feed.querySelectorAll('[data-save-sticker]').forEach(img => {
-      img.addEventListener('click', () => saveStickerToMyTray(img.getAttribute('data-save-sticker'), img.getAttribute('data-sticker-url')));
-    });
-    wireSwipeToReply(feed, byId);
+    const loadOlderHtml = view.allOlderLoaded ? '' : `<p class="load-older" data-load-older>Scroll up for earlier messages</p>`;
+    feed.innerHTML = loadOlderHtml + messages.map(messageHtml).join('');
+    wireMessageEvents(feed);
     const shouldScrollToBottom = !silent || wasAtBottom;
     if (shouldScrollToBottom) {
       feed.scrollTop = feed.scrollHeight;

@@ -42,6 +42,12 @@
 }
 
 *,*::before,*::after{ box-sizing:border-box; }
+/* An element's own class can set "display" unconditionally (e.g. display:flex
+   for a toolbar), which then out-ranks the browser's default [hidden]{display:none}
+   rule since both are plain author-origin selectors of equal specificity and
+   this one is more specific — leaving a "hidden" element visibly on screen as
+   an empty shell. This keeps hidden authoritative everywhere. */
+[hidden]{ display:none !important; }
 html{ scroll-behavior:smooth; scroll-padding-top:100px; }
 body{
   margin:0;
@@ -1105,6 +1111,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .comm-pinned span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .comm-pinned svg{ width:15px; height:15px; flex-shrink:0; }
 .comm-feed{ flex:1; overflow-y:auto; padding:20px 24px; display:flex; flex-direction:column; gap:18px; }
+.comm-feed .load-older{ text-align:center; font-size:12px; color:var(--n50); padding:4px 0 2px; }
 .comm-msg{ display:flex; gap:12px; }
 .comm-msg .avatar{ width:36px; height:36px; border-radius:10px; flex-shrink:0; object-fit:cover; }
 .comm-msg > div:last-child{ min-width:0; flex:1; }
@@ -1156,13 +1163,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .comm-msg .reply-quote span{ font-size:12px; color:var(--n50); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .comm-msg.reply-target-flash{ animation: reply-flash 1.4s ease; }
 @keyframes reply-flash{ 0%{ background:rgba(134,93,247,.28); } 100%{ background:transparent; } }
-.reply-swipe-btn{
-  position:absolute; top:50%; left:-4px; transform:translate(-100%,-50%); width:32px; height:32px; border-radius:50%;
-  background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); color:var(--n50); align-items:center; justify-content:center;
-  display:none; flex-shrink:0;
-}
-.comm-msg:hover .reply-swipe-btn{ display:flex; }
-.reply-swipe-btn svg{ width:15px; height:15px; }
 .comm-msg{ position:relative; touch-action:pan-y; transition:transform .15s ease; }
 
 /* ---- Attachments: image / document bubbles + compose-bar preview ---- */
@@ -1197,7 +1197,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 @media (max-width: 640px){
   .reply-preview, .attach-preview, .sticker-picker{ padding-left:16px; padding-right:16px; }
   .comm-msg .attach-image{ max-width:200px; max-height:200px; }
-  .reply-swipe-btn{ display:none !important; }
 }
 .comm-members{ border-left:1px solid rgba(255,255,255,.08); padding:20px 16px; overflow-y:auto; }
 .comm-members h4{ font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--n700); margin-bottom:14px; }
