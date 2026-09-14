@@ -220,11 +220,11 @@
     if (!silent) feed.innerHTML = '<p style="color:var(--n50);font-size:13.5px;">Loading messages…</p>';
     const slow = window.watchSlowLoad(feed, 8000);
 
-    const { data: messages, error } = await supabase
+    const { data: messagesDesc, error } = await supabase
       .from('community_messages')
       .select('id, body, is_pinned, created_at, author_id, audio_url, audio_duration_seconds')
       .eq('channel_id', channelId)
-      .order('created_at', { ascending: true })
+      .order('created_at', { ascending: false })
       .limit(100);
 
     slow.stop();
@@ -233,6 +233,10 @@
       feed.innerHTML = '<p style="color:var(--danger);font-size:13.5px;">Could not load messages.</p>';
       return;
     }
+    // Fetched newest-first (so the 100-row cap keeps the most recent
+    // messages, not the oldest), then reversed back to chronological order
+    // for display.
+    const messages = (messagesDesc || []).slice().reverse();
     if (!messages || messages.length === 0) {
       feed.innerHTML = `<div class="empty-state-anim" style="text-align:center;padding:40px 20px;color:var(--n50);">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:12px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
