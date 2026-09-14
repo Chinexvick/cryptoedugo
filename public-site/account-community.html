@@ -285,7 +285,22 @@
     feed.querySelectorAll('[data-delete-message]').forEach(btn => {
       btn.addEventListener('click', () => deleteMessage(btn.getAttribute('data-delete-message')));
     });
-    if (!silent || wasAtBottom) feed.scrollTop = feed.scrollHeight;
+    const shouldScrollToBottom = !silent || wasAtBottom;
+    if (shouldScrollToBottom) {
+      feed.scrollTop = feed.scrollHeight;
+      // Avatar <img> tags load asynchronously — scrollHeight measured right
+      // after innerHTML is set doesn't yet include their final rendered
+      // height, so this initial scroll can land short of the true bottom
+      // once every avatar finishes loading and the feed grows taller. Each
+      // avatar re-applies the scroll on load so it always settles correctly.
+      feed.querySelectorAll('img.avatar').forEach((img) => {
+        if (img.complete) return;
+        img.addEventListener('load', () => { feed.scrollTop = feed.scrollHeight; }, { once: true });
+        img.addEventListener('error', () => { feed.scrollTop = feed.scrollHeight; }, { once: true });
+      });
+      // Also catch fonts/layout settling a frame later, independent of images.
+      requestAnimationFrame(() => { feed.scrollTop = feed.scrollHeight; });
+    }
   }
 
   async function deleteMessage(messageId) {
@@ -403,26 +418,42 @@
 
   document.getElementById('sendRecordingBtn').addEventListener('click', sendRecording);
 
+  let sendingMessage = false;
   document.getElementById('commForm').addEventListener('submit', async function (e) {
     e.preventDefault();
+    // Guards against duplicate sends from repeated taps on the Send button
+    // while a previous send is still in flight — disabling the text input
+    // alone doesn't stop a separate submit button from firing again, which
+    // is exactly how a user tapping Send several times (because nothing
+    // visibly happened, before the scroll fix) produced several duplicate
+    // copies of the same message.
+    if (sendingMessage) return;
     const input = document.getElementById('commInput');
+    const submitBtn = this.querySelector('button[type="submit"]');
     const body = input.value.trim();
     if (!body || !activeChannel) return;
 
+    sendingMessage = true;
     input.disabled = true;
-    const { error } = await supabase.from('community_messages').insert({
-      channel_id: activeChannel.id,
-      author_id: currentUserId,
-      body,
-    });
-    input.disabled = false;
-
-    if (error) {
-      window.showToast ? window.showToast(error.message) : alert(error.message);
-      return;
+    if (submitBtn) submitBtn.disabled = true;
+    try {
+      const { error } = await supabase.from('community_messages').insert({
+        channel_id: activeChannel.id,
+        author_id: currentUserId,
+        body,
+      });
+      if (error) {
+        window.showToast ? window.showToast(error.message) : alert(error.message);
+        return;
+      }
+      input.value = '';
+      openChannel(activeChannel.id);
+    } finally {
+      sendingMessage = false;
+      input.disabled = false;
+      if (submitBtn) submitBtn.disabled = false;
+      input.focus();
     }
-    input.value = '';
-    openChannel(activeChannel.id);
   });
 
   (async () => {
