@@ -379,8 +379,17 @@
     '😏','😜','😝','😛','😠','😡','🤬','😓','😥','😨','😰','🤯','😲','😯','😦','🙁','😢','☹️'
   ];
 
-  /* ---- Reaction picker: opens a small emoji grid anchored to a button, clamped to stay
-     within the nearest scrolling chat container so it never spills outside the chat screen. ---- */
+  /* ---- Reaction picker: opens a small emoji grid anchored to a button.
+     Rendered as position:fixed on <body>, positioned from the anchor's
+     viewport rect (not appended inside the message/feed). Appending it
+     inside .comm-msg (a descendant of .comm-feed, which scrolls via
+     overflow-y:auto) meant the picker could be visually clipped by that
+     ancestor's overflow whenever it opened near the top or bottom edge of
+     the currently-scrolled view — a real, reproducible bug on desktop with
+     more than a screenful of messages, not a transparency issue (the
+     picker's background was already opaque). Escaping to body + fixed
+     positioning removes that clipping entirely and guarantees the picker
+     always renders above every other element on the page. ---- */
   window.openReactionPicker = function (anchorEl, onPick) {
     document.querySelectorAll('.reaction-picker').forEach(function (el) { el.remove(); });
 
@@ -390,47 +399,62 @@
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.textContent = emoji;
+      btn.setAttribute('aria-label', emoji);
       btn.addEventListener('click', function (e) {
         e.stopPropagation();
-        picker.remove();
+        closePicker();
         onPick(emoji);
       });
       picker.appendChild(btn);
     });
 
-    // Anchor inside the message row, and clamp against the nearest scrolling chat/list
-    // container so the picker always stays within the chat screen, never outside it.
-    const containerEl = anchorEl.closest('.comm-msg, .inbox-item') || anchorEl.parentElement;
-    const scrollBounds = anchorEl.closest('.comm-feed, .inbox-list') || containerEl;
-    containerEl.style.position = containerEl.style.position || 'relative';
-    containerEl.appendChild(picker);
+    document.body.appendChild(picker);
 
-    requestAnimationFrame(function () {
+    function position() {
       const anchorRect = anchorEl.getBoundingClientRect();
-      const containerRect = containerEl.getBoundingClientRect();
-      const boundsRect = scrollBounds.getBoundingClientRect();
       const pickerRect = picker.getBoundingClientRect();
+      const margin = 8;
 
-      const desiredLeft = anchorRect.left - containerRect.left;
-      const maxLeft = boundsRect.right - containerRect.left - pickerRect.width - 8;
-      const minLeft = boundsRect.left - containerRect.left + 8;
-      const left = Math.max(minLeft, Math.min(desiredLeft, maxLeft));
+      const desiredLeft = anchorRect.left;
+      const maxLeft = window.innerWidth - pickerRect.width - margin;
+      const left = Math.max(margin, Math.min(desiredLeft, maxLeft));
 
-      const desiredTop = anchorEl.offsetTop + anchorEl.offsetHeight + 6;
-      const wouldOverflowBottom = containerRect.top + desiredTop + pickerRect.height > boundsRect.bottom;
-      const top = wouldOverflowBottom ? (anchorEl.offsetTop - pickerRect.height - 6) : desiredTop;
+      const desiredBelow = anchorRect.bottom + 6;
+      const fitsBelow = desiredBelow + pickerRect.height <= window.innerHeight - margin;
+      const desiredAbove = anchorRect.top - pickerRect.height - 6;
+      const top = fitsBelow ? desiredBelow : Math.max(margin, desiredAbove);
 
       picker.style.left = left + 'px';
-      picker.style.top = Math.max(0, top) + 'px';
-    });
-
-    function closeOnOutsideClick(e) {
-      if (!picker.contains(e.target) && e.target !== anchorEl) {
-        picker.remove();
-        document.removeEventListener('click', closeOnOutsideClick);
-      }
+      picker.style.top = top + 'px';
     }
-    setTimeout(function () { document.addEventListener('click', closeOnOutsideClick); }, 0);
+    // Measure-then-place on the next frame (picker needs a layout pass to
+    // report its real width/height), then keep it pinned to the anchor if
+    // the page reflows (e.g. a font finishes loading) before it's closed.
+    requestAnimationFrame(position);
+
+    function closePicker() {
+      picker.remove();
+      document.removeEventListener('click', closeOnOutsideClick);
+      document.removeEventListener('keydown', closeOnEscape);
+      window.removeEventListener('scroll', closePicker, true);
+      window.removeEventListener('resize', position);
+    }
+    function closeOnOutsideClick(e) {
+      if (!picker.contains(e.target) && e.target !== anchorEl) closePicker();
+    }
+    function closeOnEscape(e) {
+      if (e.key === 'Escape') closePicker();
+    }
+    // A fixed-position picker doesn't move with the anchor if the chat feed
+    // (or the page) scrolls while it's open — rather than let it drift out
+    // of alignment, close it. `capture: true` catches scroll on the
+    // .comm-feed container too, since scroll events don't bubble.
+    setTimeout(function () {
+      document.addEventListener('click', closeOnOutsideClick);
+      document.addEventListener('keydown', closeOnEscape);
+      window.addEventListener('scroll', closePicker, true);
+      window.addEventListener('resize', position);
+    }, 0);
   };
 
   /* ---- Trial countdown: renders "Xh Ym Zs" (or "Xd Yh") into an element, live-updating.
