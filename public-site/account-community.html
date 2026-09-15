@@ -244,6 +244,9 @@
     container.querySelectorAll('[data-save-sticker]').forEach(img => {
       img.addEventListener('click', () => saveStickerToMyTray(img.getAttribute('data-save-sticker'), img.getAttribute('data-sticker-url')));
     });
+    container.querySelectorAll('[data-reply-to]').forEach(btn => {
+      btn.addEventListener('click', () => setReplyTarget(btn.getAttribute('data-reply-to'), view.byId[btn.getAttribute('data-reply-to')]));
+    });
     wireSwipeToReply(container, view.byId);
   }
 
@@ -416,7 +419,7 @@
     const chips = Object.entries(byEmoji).map(([emoji, info]) => `
       <span class="reaction ${info.mine ? 'mine' : ''}" data-react-emoji="${emoji}" data-message-id="${messageId}">${emoji} ${info.count}</span>
     `).join('');
-    return `<div class="reactions">${chips}<button type="button" class="reaction-add-btn" data-add-reaction="${messageId}">+</button></div>`;
+    return `<div class="reactions">${chips}<button type="button" class="reaction-add-btn" data-add-reaction="${messageId}">+</button><button type="button" class="reply-btn" data-reply-to="${messageId}" aria-label="Reply"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg></button></div>`;
   }
 
   function wireReactionEvents(feed) {
