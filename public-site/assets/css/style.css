@@ -1591,6 +1591,13 @@ a, button, .btn, .icon-btn, .course-card, .course-cta, .account-nav-item, .comm-
   color: var(--n50); font-size: 13px; cursor: pointer; flex-shrink: 0;
 }
 .reaction-add-btn:hover { background: rgba(134,93,247,.18); color: #fff; }
+.reply-btn {
+  display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px;
+  border-radius: 50%; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+  color: var(--n50); cursor: pointer; flex-shrink: 0;
+}
+.reply-btn svg { width: 13px; height: 13px; }
+.reply-btn:hover { background: rgba(134,93,247,.18); color: #fff; }
 
 .msg-delete-btn {
   position: absolute; top: 0; right: 0; display: none; align-items: center; justify-content: center;
