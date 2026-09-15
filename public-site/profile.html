@@ -130,6 +130,16 @@
             <div class="form-actions"><button class="btn btn-primary btn-sm" id="pfUpdatePasswordBtn">Update password</button></div>
           </div>
 
+          <div class="details-card" style="margin-bottom:20px;">
+            <div class="details-head"><h3>Change email</h3></div>
+            <p style="color:var(--n700);font-size:13.5px;margin:-6px 0 14px;">Current email: <b id="pfCurrentEmailLabel">—</b></p>
+            <div class="form-grid">
+              <div class="form-field full"><label>New email address</label><input type="email" id="pfNewEmail" placeholder="you@example.com" autocomplete="email"></div>
+            </div>
+            <div id="pfEmailChangeNotice" style="display:none;background:#eef9f2;color:#1a7f4b;border-radius:8px;padding:10px 14px;font-size:13.5px;margin-top:12px;"></div>
+            <div class="form-actions"><button class="btn btn-primary btn-sm" id="pfUpdateEmailBtn">Update email</button></div>
+          </div>
+
           <div class="details-card">
             <div class="details-head"><h3>Notification preferences</h3></div>
             <div class="details-row"><span class="k">Course updates &amp; new lessons</span><label class="remember"><input type="checkbox" checked> Email me</label></div>
@@ -183,6 +193,7 @@
       document.getElementById('pfUsername').textContent = profile.username || '—';
       document.getElementById('pfBio').textContent = profile.bio || 'No bio yet';
       document.getElementById('pfEmail').textContent = profile.email || '—';
+      document.getElementById('pfCurrentEmailLabel').textContent = profile.email || session.user.email || '—';
     }
 
     // ---- Courses tab ----
@@ -335,6 +346,49 @@
       document.getElementById('pfNewPassword').value = '';
       document.getElementById('pfConfirmPassword').value = '';
       window.showToast && window.showToast('Password updated');
+    });
+
+    // ---- Change email ----
+    // updateUser({ email }) doesn't change anything immediately — Supabase
+    // emails a confirmation link to the NEW address (via the "Change Email
+    // Address" template) and the change only takes effect once that's
+    // clicked, so the account can't be handed to an email the person doesn't
+    // actually control. The link points at confirm-email-change.html, which
+    // verifies it client-side the same scanner-proof way reset-password.html
+    // does, rather than relying on Supabase's own /verify redirect.
+    document.getElementById('pfUpdateEmailBtn').addEventListener('click', async function () {
+      const notice = document.getElementById('pfEmailChangeNotice');
+      notice.style.display = 'none';
+      const newEmail = document.getElementById('pfNewEmail').value.trim();
+
+      if (!newEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+        window.showToast && window.showToast('Enter a valid email address');
+        return;
+      }
+      if (newEmail.toLowerCase() === (profile?.email || session.user.email || '').toLowerCase()) {
+        window.showToast && window.showToast('That’s already your current email');
+        return;
+      }
+
+      this.disabled = true;
+      this.textContent = 'Sending…';
+
+      const { error } = await supabase.auth.updateUser(
+        { email: newEmail },
+        { emailRedirectTo: 'https://learn.nekomeowtoken.com/confirm-email-change' }
+      );
+
+      this.disabled = false;
+      this.textContent = 'Update email';
+
+      if (error) {
+        window.showToast && window.showToast('Could not start email change: ' + error.message);
+        return;
+      }
+
+      notice.textContent = `We sent a confirmation link to ${newEmail}. Your email won't change until you click it.`;
+      notice.style.display = 'block';
+      document.getElementById('pfNewEmail').value = '';
     });
 
     // ---- Avatar upload: sent to the upload-avatar edge function, which

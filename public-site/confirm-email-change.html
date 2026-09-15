@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confirm your new email — Neko Academy</title>
+<link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="assets/img/favicon-64.png">
+<link rel="apple-touch-icon" href="assets/img/favicon-180.png">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="auth-shell">
+  <div class="auth-image">
+    <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200&q=80" alt="Student studying blockchain development on a laptop outdoors">
+  </div>
+  <div class="auth-panel">
+    <div class="confirm-box" id="pendingView">
+      <a href="index.html" class="auth-logo">
+        <span class="brand-mark"><img src="assets/img/logo-icon.png" alt="Neko Academy logo"></span>
+        <span style="color:#000;">Neko Academy</span>
+      </a>
+      <h2>Confirming your new email…</h2>
+      <div class="confirm-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 6l-10 7L2 6"/><path d="M2 6h20v12H2z"/></svg>
+        <p>One moment while we confirm the change.</p>
+      </div>
+    </div>
+
+    <div class="confirm-box" id="invalidView" style="display:none;">
+      <a href="index.html" class="auth-logo">
+        <span class="brand-mark"><img src="assets/img/logo-icon.png" alt="Neko Academy logo"></span>
+        <span style="color:#000;">Neko Academy</span>
+      </a>
+      <h2>This link has expired</h2>
+      <div class="confirm-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <p>Email confirmation links only work once and expire after a short time. Go to your profile settings and request the change again.</p>
+      </div>
+      <a href="profile.html" class="btn btn-primary" style="margin-top:8px;align-self:flex-start;">Back to profile</a>
+    </div>
+
+    <div class="confirm-box" id="successView" style="display:none;">
+      <a href="index.html" class="auth-logo">
+        <span class="brand-mark"><img src="assets/img/logo-icon.png" alt="Neko Academy logo"></span>
+        <span style="color:#000;">Neko Academy</span>
+      </a>
+      <h2>Email updated</h2>
+      <div class="confirm-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="20 6 9 17 4 12"/></svg>
+        <p>Your account email has been changed. Use your new email address the next time you log in.</p>
+      </div>
+      <a href="profile.html" class="btn btn-primary" style="margin-top:8px;align-self:flex-start;">Back to profile</a>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/main.js"></script>
+<script type="module">
+  import { supabase } from './assets/js/supabase-client.js';
+
+  const pendingView = document.getElementById('pendingView');
+  const invalidView = document.getElementById('invalidView');
+  const successView = document.getElementById('successView');
+
+  // Same scanner-proof pattern as reset-password.html: the emailed link
+  // carries a raw token_hash and calls verifyOtp() itself, client-side,
+  // instead of relying on Supabase's own GET /auth/v1/verify to consume the
+  // token and redirect back. A corporate email scanner that prefetches this
+  // URL only fetches HTML — it never runs this page's JavaScript — so it
+  // can't burn the one-time link before the real user clicks it.
+  (async () => {
+    const params = new URLSearchParams(window.location.search);
+    const tokenHash = params.get('token_hash');
+    const otpType = params.get('type') || 'email_change';
+
+    if (!tokenHash) {
+      // Fallback for the old hash-fragment flow, in case this page is ever
+      // reached via Supabase's default /verify redirect instead.
+      const { data } = await supabase.auth.getSession();
+      pendingView.style.display = 'none';
+      (data.session ? successView : invalidView).style.display = 'flex';
+      return;
+    }
+
+    const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: otpType });
+    pendingView.style.display = 'none';
+    (error ? invalidView : successView).style.display = 'flex';
+  })();
+</script>
+</body>
+</html>
