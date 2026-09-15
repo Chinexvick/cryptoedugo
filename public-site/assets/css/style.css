@@ -1137,13 +1137,16 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .comm-input-bar{ padding:16px 24px; border-top:1px solid rgba(255,255,255,.08); display:flex; gap:12px; box-sizing:border-box; align-items:flex-end; }
 .comm-input-wrap{ position:relative; flex:1; min-width:0; }
 .comm-input-bar textarea{
-  width:100%; box-sizing:border-box; resize:none; min-height:44px; max-height:160px; overflow-y:auto;
-  padding:12px 16px; border-radius:10px; background:var(--surface); border:1px solid rgba(255,255,255,.1);
-  color:#fff; font-size:14px; font-family:inherit; line-height:1.4; display:block;
+  width:100%; box-sizing:border-box; resize:none; min-height:48px; max-height:200px; overflow-y:auto;
+  padding:14px 16px; border-radius:22px; background:var(--surface); border:1px solid rgba(255,255,255,.1);
+  color:#fff; font-size:15px; font-family:inherit; line-height:1.45; display:block;
 }
 .comm-input-bar textarea:focus{ outline:none; border-color:var(--primary); }
 .comm-input-bar button{ flex-shrink:0; }
-.comm-input-bar .btn{ height:44px; }
+.comm-input-bar .btn{ height:48px; width:48px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:50%; }
+.comm-input-bar .btn svg{ width:19px; height:19px; }
+.comm-input-bar .mic-btn{ width:48px; height:48px; }
+.comm-input-bar .mic-btn svg{ width:19px; height:19px; }
 .mention-dropdown{
   position:absolute; left:0; right:0; bottom:calc(100% + 8px); background:#1a1a1f; border:1px solid rgba(255,255,255,.12);
   border-radius:10px; max-height:220px; overflow-y:auto; box-shadow:0 12px 32px rgba(0,0,0,.4); z-index:20;
@@ -1157,6 +1160,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .mention-dropdown-item .uname{ color:var(--n50); font-size:12px; }
 .mention-dropdown-empty{ padding:10px 12px; font-size:12.5px; color:var(--n50); }
 .comm-msg .mention-tag{ color:var(--primary-glow); font-weight:600; background:rgba(134,93,247,.14); border-radius:5px; padding:0 3px; }
+.comm-msg .ticker-tag{ color:var(--primary-glow); font-weight:700; }
+.comm-msg .msg-link{ color:var(--cyan); text-decoration:underline; text-decoration-color:rgba(34,211,238,.4); word-break:break-all; }
+.comm-msg .msg-link:hover{ text-decoration-color:var(--cyan); }
 .comm-msg.mentions-me{ background:rgba(134,93,247,.07); border-radius:12px; margin:0 -10px; padding:6px 10px; }
 
 /* ---- Reply preview bar + quoted reply block inside a message ---- */

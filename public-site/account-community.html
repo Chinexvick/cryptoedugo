@@ -122,7 +122,7 @@
       </div>
       <button type="button" class="mic-btn" id="stickerBtn" aria-label="Send a sticker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></button>
       <button type="button" class="mic-btn" id="micBtn" aria-label="Record voice note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
-      <button type="submit" class="btn btn-primary btn-sm" id="commSendBtn">Send</button>
+      <button type="submit" class="btn btn-primary btn-sm" id="commSendBtn" aria-label="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
     </form>
   </main>
 
@@ -205,14 +205,14 @@
     } else if (m.audio_url) {
       contentHtml = `<div class="voice-note"><audio controls preload="metadata" src="${escapeHtml(m.audio_url)}"></audio>${m.audio_duration_seconds ? `<span style="font-size:11px;color:var(--n50);">${Math.floor(m.audio_duration_seconds / 60)}:${String(m.audio_duration_seconds % 60).padStart(2, '0')}</span>` : ''}</div>`;
     } else if (m.attachment_url && m.attachment_type === 'image') {
-      contentHtml = `<img class="attach-image" src="${escapeHtml(m.attachment_url)}" alt="Attachment" onclick="window.open('${escapeHtml(m.attachment_url)}','_blank')">${m.body && !m.body.startsWith('📷') ? `<div class="bubble-text">${renderMentions(escapeHtml(m.body))}</div>` : ''}`;
+      contentHtml = `<img class="attach-image" src="${escapeHtml(m.attachment_url)}" alt="Attachment" onclick="window.open('${escapeHtml(m.attachment_url)}','_blank')">${m.body && !m.body.startsWith('📷') ? `<div class="bubble-text">${renderRichText(escapeHtml(m.body))}</div>` : ''}`;
     } else if (m.attachment_url) {
       contentHtml = `<a class="attach-doc" href="${escapeHtml(m.attachment_url)}" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         <span>${escapeHtml(m.attachment_name || 'Document')}</span>
       </a>`;
     } else {
-      contentHtml = `<div class="bubble-text">${renderMentions(escapeHtml(m.body))}</div>`;
+      contentHtml = `<div class="bubble-text">${renderRichText(escapeHtml(m.body))}</div>`;
     }
 
     return `
@@ -364,11 +364,18 @@
     updateScrollToLatestVisibility();
   });
 
-  function renderMentions(escapedBody) {
-    // Body is already HTML-escaped, so plain word-matching on the escaped
-    // text is safe here — @ and word characters pass through escaping unchanged.
-    return escapedBody.replace(/(^|[^\w])@([a-zA-Z0-9_]{2,32})/g, (full, pre, uname) => {
-      return `${pre}<span class="mention-tag">@${uname}</span>`;
+  // Matches, in one pass so none of the three can corrupt another's match
+  // (e.g. a $ or @ character inside a URL): links, @mentions, and $TICKER
+  // symbols. Body is already HTML-escaped, so plain matching on the escaped
+  // text is safe — none of these characters are touched by escaping.
+  const RICH_TEXT_RE = /(https?:\/\/[^\s<]+)|(^|[^\w])@([a-zA-Z0-9_]{2,32})|(^|[^\w$])\$([A-Za-z][A-Za-z0-9]{0,14})\b/g;
+
+  function renderRichText(escapedBody) {
+    return escapedBody.replace(RICH_TEXT_RE, (full, url, mentionPre, mentionName, tickerPre, tickerSym) => {
+      if (url) return `<a class="msg-link" href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+      if (mentionName !== undefined) return `${mentionPre}<span class="mention-tag">@${mentionName}</span>`;
+      if (tickerSym !== undefined) return `${tickerPre}<span class="ticker-tag">$${tickerSym}</span>`;
+      return full;
     });
   }
 
@@ -773,9 +780,21 @@
 
   function resizeCommInput() {
     commInput.style.height = 'auto';
-    commInput.style.height = Math.min(commInput.scrollHeight, 160) + 'px';
+    commInput.style.height = Math.min(commInput.scrollHeight, 200) + 'px';
   }
   commInput.addEventListener('input', resizeCommInput);
+
+  // WhatsApp-style compose bar: the mic is only useful when there's nothing
+  // to send yet, so it steps aside for the send button the moment there's
+  // text or an attachment — one action slot instead of two buttons fighting
+  // for the same small space.
+  function updateComposeControls() {
+    const hasContent = commInput.value.trim().length > 0 || !!pendingAttachment;
+    document.getElementById('micBtn').hidden = hasContent;
+    document.getElementById('commSendBtn').hidden = !hasContent;
+  }
+  commInput.addEventListener('input', updateComposeControls);
+  updateComposeControls();
 
   // ---- @mention autocomplete ----
   let mentionMatches = [];
@@ -924,10 +943,12 @@
     }
     preview.hidden = false;
     commInput.focus();
+    updateComposeControls();
   });
   document.getElementById('attachPreviewClose').addEventListener('click', () => {
     pendingAttachment = null;
     document.getElementById('attachPreview').hidden = true;
+    updateComposeControls();
   });
 
   // ---- Stickers ----
@@ -1048,6 +1069,7 @@
       resizeCommInput();
       pendingAttachment = null;
       document.getElementById('attachPreview').hidden = true;
+      updateComposeControls();
       clearReplyTarget();
       // Silent: avoids the "Loading messages…" flash/scroll-reset on every
       // send — the sender is already at the bottom, so it should just settle
