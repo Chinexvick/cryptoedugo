@@ -520,8 +520,11 @@
     document.getElementById('commSubtitle').textContent = activeChannel.description || '';
     document.getElementById('commInput').placeholder = `Message #${activeChannel.slug}…`;
 
-    // Announcement-only channels are read-only for students (enforced by RLS too).
-    const isReadOnly = activeChannel.is_announcement_only;
+    // Announcement-only channels are read-only for students (enforced by RLS
+    // too) — but admins are allowed to post there, which is the whole point
+    // of the channel. This previously disabled the input for admins as well,
+    // since it never checked isCurrentUserAdmin.
+    const isReadOnly = activeChannel.is_announcement_only && !isCurrentUserAdmin;
     document.getElementById('commInput').disabled = isReadOnly;
     document.getElementById('commInput').placeholder = isReadOnly
       ? 'Only admins can post in this channel'
