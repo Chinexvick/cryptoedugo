@@ -78,6 +78,7 @@
       </div>
       <button type="button" class="scroll-to-latest" id="scrollToLatestBtn" hidden aria-label="Jump to latest message">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+        <span class="unread-badge" id="unreadBadge" hidden>0</span>
       </button>
     </div>
 
@@ -347,21 +348,52 @@
     }
   }
 
+  // Unread tracking: a per-channel "last seen" timestamp in localStorage,
+  // compared against each message's own created_at (never guessed from
+  // scroll position) to know exactly how many messages were missed since
+  // the reader was last here.
+  let unreadCount = 0;
+  function lastSeenKey(channelId) { return `nekoCommLastSeen:${channelId}`; }
+  function getLastSeenMs(channelId) {
+    try {
+      const v = localStorage.getItem(lastSeenKey(channelId));
+      return v ? new Date(v).getTime() : null;
+    } catch (e) { return null; }
+  }
+  function setLastSeen(channelId, iso) {
+    try { localStorage.setItem(lastSeenKey(channelId), iso); } catch (e) { /* private mode etc. */ }
+  }
+  function markChannelSeen() {
+    if (!activeChannel) return;
+    setLastSeen(activeChannel.id, new Date().toISOString());
+    if (unreadCount !== 0) { unreadCount = 0; updateScrollToLatestVisibility(); }
+  }
+
   function updateScrollToLatestVisibility() {
     const feed = document.getElementById('commFeed');
     const btn = document.getElementById('scrollToLatestBtn');
+    const badge = document.getElementById('unreadBadge');
     const nearBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 120;
-    btn.hidden = nearBottom;
+    btn.hidden = nearBottom && unreadCount === 0;
+    if (unreadCount > 0) {
+      badge.textContent = unreadCount > 99 ? '99+' : String(unreadCount);
+      badge.hidden = false;
+    } else {
+      badge.hidden = true;
+    }
   }
 
   document.getElementById('scrollToLatestBtn').addEventListener('click', () => {
     const feed = document.getElementById('commFeed');
     feed.scrollTo({ top: feed.scrollHeight, behavior: 'smooth' });
+    markChannelSeen();
   });
 
   document.getElementById('commFeed').addEventListener('scroll', () => {
     const feed = document.getElementById('commFeed');
     if (feed.scrollTop < 80) loadOlderMessages();
+    const nearBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 120;
+    if (nearBottom && unreadCount > 0) markChannelSeen();
     updateScrollToLatestVisibility();
   });
 
@@ -530,6 +562,20 @@
     const messages = (messagesDesc || []).slice().reverse();
     view = { byId: {}, authorsById: {}, stickersById: {}, reactionsByMessage: {}, oldestLoadedAt: messages[0]?.created_at || null, allOlderLoaded: messages.length < MESSAGE_PAGE_SIZE, channelId };
 
+    // Compare each message's own created_at against the last time this
+    // channel was actually seen (not scroll position) to know exactly how
+    // many were missed. Only computed on a real navigation into the
+    // channel, never on a silent post-send/reaction refresh.
+    let freshLastSeenIso = null;
+    if (!silent) {
+      const prevSeenMs = getLastSeenMs(channelId);
+      const newest = messages[messages.length - 1];
+      freshLastSeenIso = newest ? newest.created_at : new Date().toISOString();
+      unreadCount = (prevSeenMs != null)
+        ? messages.filter(m => new Date(m.created_at).getTime() > prevSeenMs).length
+        : 0;
+    }
+
     if (!messages || messages.length === 0) {
       feed.innerHTML = `<div class="empty-state-anim" style="text-align:center;padding:40px 20px;color:var(--n50);">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:12px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -561,6 +607,12 @@
       // Also catch fonts/layout settling a frame later, independent of images.
       requestAnimationFrame(() => { feed.scrollTop = feed.scrollHeight; });
     }
+    // Nothing missed (or this is the first time tracking this channel) —
+    // safe to mark caught-up immediately. When something WAS missed, leave
+    // last-seen untouched until the reader actually reaches the bottom
+    // (scroll handler) or taps the jump-to-latest button, so the unread
+    // badge stays accurate if they navigate away again first.
+    if (!silent && unreadCount === 0 && freshLastSeenIso) setLastSeen(channelId, freshLastSeenIso);
     updateScrollToLatestVisibility();
   }
 
@@ -984,6 +1036,7 @@
     });
     if (error) { window.showToast ? window.showToast(error.message) : alert(error.message); return; }
     clearReplyTarget();
+    markChannelSeen();
     openChannel(activeChannel.id, true);
   }
 
@@ -1072,6 +1125,7 @@
       document.getElementById('attachPreview').hidden = true;
       updateComposeControls();
       clearReplyTarget();
+      markChannelSeen();
       // Silent: avoids the "Loading messages…" flash/scroll-reset on every
       // send — the sender is already at the bottom, so it should just settle
       // there once the new message renders.

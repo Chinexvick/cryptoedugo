@@ -1124,6 +1124,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .scroll-to-latest svg{ width:18px; height:18px; }
 .scroll-to-latest:hover{ filter:brightness(1.1); }
+.scroll-to-latest .unread-badge{
+  position:absolute; top:-4px; right:-4px; min-width:18px; height:18px; padding:0 4px; border-radius:99px;
+  background:var(--danger); color:#fff; font-size:10.5px; font-weight:700; line-height:18px; text-align:center;
+  box-shadow:0 0 0 2px #0b0b0d;
+}
 .comm-msg{ display:flex; gap:12px; }
 .comm-msg .avatar{ width:36px; height:36px; border-radius:10px; flex-shrink:0; object-fit:cover; }
 .comm-msg > div:last-child{ min-width:0; flex:1; }
