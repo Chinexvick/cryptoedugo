@@ -1610,14 +1610,32 @@ a, button, .btn, .icon-btn, .course-card, .course-cta, .account-nav-item, .comm-
 .reply-btn svg { width: 13px; height: 13px; }
 .reply-btn:hover { background: rgba(134,93,247,.18); color: #fff; }
 
-.msg-delete-btn {
-  position: absolute; top: 0; right: 0; display: none; align-items: center; justify-content: center;
+.msg-actions { position: absolute; top: 0; right: 0; display: none; align-items: center; gap: 4px; }
+.comm-msg:hover .msg-actions { display: flex; }
+.msg-delete-btn, .msg-edit-btn {
+  display: flex; align-items: center; justify-content: center;
   width: 24px; height: 24px; border-radius: 50%; background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.1); color: var(--n50); cursor: pointer; flex-shrink: 0;
 }
-.msg-delete-btn svg { width: 13px; height: 13px; }
-.comm-msg:hover .msg-delete-btn { display: flex; }
+.msg-delete-btn svg, .msg-edit-btn svg { width: 13px; height: 13px; }
 .msg-delete-btn:hover { background: rgba(247,107,107,.18); color: var(--danger); border-color: rgba(247,107,107,.3); }
+.msg-edit-btn:hover { background: rgba(134,93,247,.18); color: var(--primary-glow); border-color: rgba(134,93,247,.3); }
+
+.edited-tag { font-size: 11px; color: var(--n700); font-style: italic; }
+
+.bubble-edit-form { display: flex; flex-direction: column; gap: 6px; }
+.bubble-edit-form textarea {
+  width: 100%; box-sizing: border-box; resize: vertical; min-height: 44px; max-height: 200px;
+  padding: 8px 10px; border-radius: 8px; background: var(--surface); border: 1px solid rgba(134,93,247,.4);
+  color: #fff; font-size: 14px; font-family: inherit; line-height: 1.45;
+}
+.bubble-edit-form textarea:focus { outline: none; border-color: var(--primary); }
+.bubble-edit-actions { display: flex; gap: 8px; }
+.bubble-edit-actions button {
+  font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 7px; cursor: pointer;
+}
+.bubble-edit-save { background: var(--grad-brand); color: #fff; border: none; }
+.bubble-edit-cancel { background: rgba(255,255,255,.06); color: var(--n50); border: 1px solid rgba(255,255,255,.1); }
 
 .voice-note { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; padding: 8px 12px; max-width: 280px; }
 .voice-note audio { flex: 1; height: 32px; }
