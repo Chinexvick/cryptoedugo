@@ -1079,8 +1079,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .msg-thread .msg.mine .bubble{ background:var(--primary); color:#fff; border-color:transparent; }
 
 /* ---- Community redesign ---- */
-.comm-shell{ display:grid; grid-template-columns:260px 1fr 240px; background:#0b0b0d; min-height:calc(100vh - 114px); }
-.comm-shell > *{ min-width:0; }
+.comm-shell{ display:grid; grid-template-columns:260px 1fr 240px; background:#0b0b0d; height:calc(100vh - 114px); }
+.comm-shell > *{ min-width:0; min-height:0; }
 .comm-nav{ border-right:1px solid rgba(255,255,255,.08); padding:20px 14px; overflow-y:auto; }
 .comm-back-link{
   display:flex; align-items:center; gap:8px; padding:9px 10px; margin-bottom:16px; border-radius:9px;
@@ -1102,12 +1102,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .comm-channel .hash{ color:var(--primary-glow); opacity:1; font-weight:700; }
 .comm-channel.active .hash{ color:#fff; }
 .comm-channel .badge{ margin-left:auto; background:var(--primary); color:#fff; font-size:10.5px; font-weight:700; padding:1px 6px; border-radius:99px; }
-.comm-main{ display:flex; flex-direction:column; min-width:0; }
-.comm-header{ display:flex; align-items:center; gap:12px; padding:16px 24px; border-bottom:1px solid rgba(255,255,255,.08); }
+.comm-main{ display:flex; flex-direction:column; min-width:0; min-height:0; height:100%; }
+.comm-header{ display:flex; align-items:center; gap:12px; padding:16px 24px; border-bottom:1px solid rgba(255,255,255,.08); flex-shrink:0; }
 .comm-header .title-row{ display:flex; align-items:center; gap:10px; }
 .comm-header b{ font-size:16px; }
 .comm-header span{ font-size:12.5px; color:var(--n50); }
-.comm-pinned{ background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.25); border-radius:10px; padding:10px 14px; margin:12px 24px 0; font-size:13px; color:#f6c265; display:flex; align-items:center; gap:8px; cursor:pointer; }
+.comm-pinned{ background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.25); border-radius:10px; padding:10px 14px; margin:12px 24px 0; font-size:13px; color:#f6c265; display:flex; align-items:center; gap:8px; cursor:pointer; flex-shrink:0; }
 .comm-pinned span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .comm-pinned svg{ width:15px; height:15px; flex-shrink:0; }
 .comm-feed-wrap{ position:relative; flex:1; min-height:0; display:flex; }
@@ -1130,6 +1130,14 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   box-shadow:0 0 0 2px #0b0b0d;
 }
 .comm-msg{ display:flex; gap:12px; }
+.comm-msg.grouped{ margin-top:-10px; }
+.comm-msg .avatar-spacer{ width:36px; flex-shrink:0; }
+
+.date-separator{ display:flex; align-items:center; gap:10px; margin:6px 0; color:var(--n700); font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+.date-separator::before, .date-separator::after{ content:''; flex:1; height:1px; background:rgba(255,255,255,.08); }
+
+.new-messages-divider{ display:flex; align-items:center; gap:10px; margin:4px 0 10px; color:var(--danger); font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+.new-messages-divider::before, .new-messages-divider::after{ content:''; flex:1; height:1px; background:rgba(247,107,107,.35); }
 .comm-msg .avatar{ width:36px; height:36px; border-radius:10px; flex-shrink:0; object-fit:cover; }
 .comm-msg > div:last-child{ min-width:0; flex:1; }
 .comm-msg .meta{ display:flex; align-items:center; gap:8px; margin-bottom:4px; }
@@ -1139,7 +1147,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .comm-msg .bubble-text{ font-size:14px; color:#e8e8ea; line-height:1.55; overflow-wrap:break-word; }
 .comm-msg .reactions{ display:flex; gap:6px; margin-top:8px; }
 .comm-msg .reaction{ display:flex; align-items:center; gap:4px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:99px; padding:3px 8px; font-size:11.5px; color:#fff; }
-.comm-input-bar{ padding:16px 24px; border-top:1px solid rgba(255,255,255,.08); display:flex; gap:12px; box-sizing:border-box; align-items:flex-end; }
+.comm-input-bar{ padding:16px 24px; border-top:1px solid rgba(255,255,255,.08); display:flex; gap:12px; box-sizing:border-box; align-items:flex-end; flex-shrink:0; }
 .comm-input-wrap{ position:relative; flex:1; min-width:0; }
 .comm-input-bar textarea{
   width:100%; box-sizing:border-box; resize:none; min-height:48px; max-height:200px; overflow-y:auto;
@@ -1171,7 +1179,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .comm-msg.mentions-me{ background:rgba(134,93,247,.07); border-radius:12px; margin:0 -10px; padding:6px 10px; }
 
 /* ---- Reply preview bar + quoted reply block inside a message ---- */
-.reply-preview{ display:flex; align-items:center; gap:10px; padding:8px 24px; background:rgba(134,93,247,.08); border-top:1px solid rgba(134,93,247,.25); }
+.reply-preview{ display:flex; align-items:center; gap:10px; padding:8px 24px; background:rgba(134,93,247,.08); border-top:1px solid rgba(134,93,247,.25); flex-shrink:0; }
 .reply-preview svg{ width:16px; height:16px; color:var(--primary-glow); flex-shrink:0; }
 .reply-preview-body{ min-width:0; flex:1; display:flex; flex-direction:column; }
 .reply-preview-body b{ font-size:12.5px; color:var(--primary-glow); }
@@ -1198,7 +1206,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .comm-msg .attach-doc span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .comm-msg .sticker-image{ width:120px; height:120px; object-fit:contain; display:block; margin-top:2px; cursor:pointer; }
 
-.attach-preview{ display:flex; align-items:center; gap:10px; padding:10px 24px; background:rgba(255,255,255,.04); border-top:1px solid rgba(255,255,255,.08); }
+.attach-preview{ display:flex; align-items:center; gap:10px; padding:10px 24px; background:rgba(255,255,255,.04); border-top:1px solid rgba(255,255,255,.08); flex-shrink:0; }
 .attach-preview img{ width:52px; height:52px; border-radius:8px; object-fit:cover; }
 .attach-preview-doc{ display:flex; align-items:center; gap:8px; color:#fff; font-size:13px; }
 .attach-preview-doc svg{ width:20px; height:20px; color:var(--primary-glow); }
@@ -1206,7 +1214,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .attach-preview button, #replyPreviewClose, #attachPreviewClose{ margin-left:auto; }
 
 /* ---- Sticker picker panel ---- */
-.sticker-picker{ border-top:1px solid rgba(255,255,255,.08); padding:12px 24px; max-height:220px; overflow-y:auto; }
+.sticker-picker{ border-top:1px solid rgba(255,255,255,.08); padding:12px 24px; max-height:220px; overflow-y:auto; flex-shrink:0; }
 .sticker-picker-header{ display:flex; align-items:center; gap:12px; margin-bottom:10px; }
 .sticker-picker-header b{ font-size:12.5px; color:var(--n50); text-transform:uppercase; letter-spacing:.05em; }
 .sticker-upload-btn{ margin-left:auto; font-size:12.5px; color:var(--primary-glow); font-weight:600; cursor:pointer; padding:5px 10px; border-radius:8px; background:rgba(134,93,247,.12); }
@@ -1229,7 +1237,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 
 @media (max-width:1200px){ .comm-shell{ grid-template-columns:220px 1fr; } .comm-members{ display:none; } }
 @media (max-width:860px){
-  .comm-shell{ grid-template-columns:1fr; }
+  .comm-shell{ grid-template-columns:1fr; height:calc(100vh - 114px - 74px); }
   .comm-nav{ display:none; }
   .player-shell{ grid-template-columns:1fr; }
   .player-sidebar{ border-left:none; border-top:1px solid rgba(255,255,255,.08); max-height:340px; }
