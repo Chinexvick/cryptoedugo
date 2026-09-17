@@ -189,6 +189,14 @@
     return { name: authorName, text };
   }
 
+  const SUPABASE_STORAGE_PUBLIC_PREFIX = 'https://rbncpakigxzbstefisgd.supabase.co/storage/v1/object/public/';
+  function mediaUrl(url) {
+    if (!url) return url;
+    return url.startsWith(SUPABASE_STORAGE_PUBLIC_PREFIX)
+      ? '/media/' + url.slice(SUPABASE_STORAGE_PUBLIC_PREFIX.length)
+      : url;
+  }
+
   function sameCalendarDay(aIso, bIso) {
     const a = new Date(aIso), b = new Date(bIso);
     return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
@@ -253,13 +261,13 @@
     let contentHtml;
     if (m.sticker_id) {
       const sticker = view.stickersById[m.sticker_id];
-      contentHtml = sticker ? `<img class="sticker-image" src="${escapeHtml(sticker.url)}" data-save-sticker="${m.sticker_id}" data-sticker-url="${escapeHtml(sticker.url)}" alt="Sticker">` : `<div class="bubble-text">🎨 Sticker</div>`;
+      contentHtml = sticker ? `<img class="sticker-image" src="${escapeHtml(mediaUrl(sticker.url))}" data-save-sticker="${m.sticker_id}" data-sticker-url="${escapeHtml(mediaUrl(sticker.url))}" alt="Sticker">` : `<div class="bubble-text">🎨 Sticker</div>`;
     } else if (m.audio_url) {
-      contentHtml = `<div class="voice-note"><audio controls preload="metadata" src="${escapeHtml(m.audio_url)}"></audio>${m.audio_duration_seconds ? `<span style="font-size:11px;color:var(--n50);">${Math.floor(m.audio_duration_seconds / 60)}:${String(m.audio_duration_seconds % 60).padStart(2, '0')}</span>` : ''}</div>`;
+      contentHtml = `<div class="voice-note"><audio controls preload="metadata" src="${escapeHtml(mediaUrl(m.audio_url))}"></audio>${m.audio_duration_seconds ? `<span style="font-size:11px;color:var(--n50);">${Math.floor(m.audio_duration_seconds / 60)}:${String(m.audio_duration_seconds % 60).padStart(2, '0')}</span>` : ''}</div>`;
     } else if (m.attachment_url && m.attachment_type === 'image') {
-      contentHtml = `<img class="attach-image" src="${escapeHtml(m.attachment_url)}" alt="Attachment" onclick="window.open('${escapeHtml(m.attachment_url)}','_blank')">${m.body && !m.body.startsWith('📷') ? `<div class="bubble-text">${renderRichText(escapeHtml(m.body))}</div>` : ''}`;
+      contentHtml = `<img class="attach-image" src="${escapeHtml(mediaUrl(m.attachment_url))}" alt="Attachment" onclick="window.open('${escapeHtml(mediaUrl(m.attachment_url))}','_blank')">${m.body && !m.body.startsWith('📷') ? `<div class="bubble-text">${renderRichText(escapeHtml(m.body))}</div>` : ''}`;
     } else if (m.attachment_url) {
-      contentHtml = `<a class="attach-doc" href="${escapeHtml(m.attachment_url)}" target="_blank" rel="noopener">
+      contentHtml = `<a class="attach-doc" href="${escapeHtml(mediaUrl(m.attachment_url))}" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         <span>${escapeHtml(m.attachment_name || 'Document')}</span>
       </a>`;
@@ -1150,7 +1158,7 @@
       grid.innerHTML = '<p class="sticker-empty">No stickers yet — upload one!</p>';
       return;
     }
-    grid.innerHTML = stickers.map(s => `<img src="${escapeHtml(s.url)}" data-send-sticker="${s.id}" alt="Sticker">`).join('');
+    grid.innerHTML = stickers.map(s => `<img src="${escapeHtml(mediaUrl(s.url))}" data-send-sticker="${s.id}" alt="Sticker">`).join('');
     grid.querySelectorAll('[data-send-sticker]').forEach(img => {
       img.addEventListener('click', () => sendSticker(img.getAttribute('data-send-sticker')));
     });
