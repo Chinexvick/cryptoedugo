@@ -189,7 +189,53 @@
     return { name: authorName, text };
   }
 
-  function messageHtml(m) {
+  function sameCalendarDay(aIso, bIso) {
+    const a = new Date(aIso), b = new Date(bIso);
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  }
+
+  function dateSeparatorLabel(iso) {
+    const d = new Date(iso);
+    const now = new Date();
+    if (sameCalendarDay(iso, now.toISOString())) return 'Today';
+    const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+    if (sameCalendarDay(iso, yesterday.toISOString())) return 'Yesterday';
+    return d.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: d.getFullYear() !== now.getFullYear() ? 'numeric' : undefined });
+  }
+
+  // Consecutive messages from the same sender, same day, within 5 minutes of
+  // each other are visually grouped (no repeated avatar/name) — same
+  // convention as Slack/Discord/WhatsApp. A reply always gets its own full
+  // header since the quoted context makes it read as a distinct message.
+  function shouldGroupWithPrevious(m, prev) {
+    if (!prev || m.reply_to_id) return false;
+    if (prev.author_id !== m.author_id) return false;
+    if (!sameCalendarDay(prev.created_at, m.created_at)) return false;
+    return new Date(m.created_at).getTime() - new Date(prev.created_at).getTime() < 5 * 60 * 1000;
+  }
+
+  // Renders a run of messages in order, inserting date separators and a
+  // single "New messages" divider right before the first message the reader
+  // hasn't seen yet (by real timestamp — see markChannelSeen/getLastSeenMs).
+  function renderMessageList(messages, opts) {
+    opts = opts || {};
+    let html = '';
+    let prev = null;
+    messages.forEach((m) => {
+      if (!prev || !sameCalendarDay(prev.created_at, m.created_at)) {
+        html += `<div class="date-separator"><span>${dateSeparatorLabel(m.created_at)}</span></div>`;
+      }
+      if (opts.newDividerBeforeId && m.id === opts.newDividerBeforeId) {
+        html += `<div class="new-messages-divider"><span>New messages</span></div>`;
+      }
+      html += messageHtml(m, { grouped: shouldGroupWithPrevious(m, prev) });
+      prev = m;
+    });
+    return html;
+  }
+
+  function messageHtml(m, opts) {
+    const grouped = !!(opts && opts.grouped);
     const name = m.author?.full_name || m.author?.username || 'Unknown';
     const isAdmin = m.author?.role === 'admin';
     const canDelete = m.author_id === currentUserId || isCurrentUserAdmin;
@@ -222,12 +268,11 @@
     }
 
     return `
-      <div class="comm-msg msg-in${mentionsMe ? ' mentions-me' : ''}" data-message-id="${m.id}">
-        ${avatarHtml(m.author, isAdmin)}
+      <div class="comm-msg msg-in${mentionsMe ? ' mentions-me' : ''}${grouped ? ' grouped' : ''}" data-message-id="${m.id}">
+        ${grouped ? '<div class="avatar-spacer"></div>' : avatarHtml(m.author, isAdmin)}
         <div>
           <div class="meta">
-            <span class="name">${escapeHtml(name)}</span>
-            ${isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}
+            ${grouped ? '' : `<span class="name">${escapeHtml(name)}</span>${isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}`}
             ${m.is_pinned ? '<span class="admin-badge" style="background:#f59e0b;">PINNED</span>' : ''}
             <span class="time">${ago(m.created_at)}</span>
             ${m.is_edited ? '<span class="edited-tag">(edited)</span>' : ''}
@@ -399,7 +444,7 @@
       const prevScrollHeight = feed.scrollHeight;
       const prevScrollTop = feed.scrollTop;
       const wrapper = document.createElement('div');
-      wrapper.innerHTML = older.map(messageHtml).join('');
+      wrapper.innerHTML = renderMessageList(older);
       // Wire events while the new messages are still inside `wrapper`, not
       // after moving them into `feed` — wiring against the whole feed would
       // re-bind every listener on messages already rendered from earlier
@@ -640,13 +685,18 @@
     // many were missed. Only computed on a real navigation into the
     // channel, never on a silent post-send/reaction refresh.
     let freshLastSeenIso = null;
+    let firstUnreadId = null;
     if (!silent) {
       const prevSeenMs = getLastSeenMs(channelId);
       const newest = messages[messages.length - 1];
       freshLastSeenIso = newest ? newest.created_at : new Date().toISOString();
-      unreadCount = (prevSeenMs != null)
-        ? messages.filter(m => new Date(m.created_at).getTime() > prevSeenMs).length
-        : 0;
+      if (prevSeenMs != null) {
+        const unread = messages.filter(m => new Date(m.created_at).getTime() > prevSeenMs);
+        unreadCount = unread.length;
+        firstUnreadId = unread.length > 0 ? unread[0].id : null;
+      } else {
+        unreadCount = 0;
+      }
     }
 
     if (!messages || messages.length === 0) {
@@ -661,11 +711,20 @@
     if (myToken !== loadToken) return;
 
     const loadOlderHtml = view.allOlderLoaded ? '' : `<button type="button" class="load-older" data-load-older>Load earlier messages</button>`;
-    feed.innerHTML = loadOlderHtml + messages.map(messageHtml).join('');
+    feed.innerHTML = loadOlderHtml + renderMessageList(messages, { newDividerBeforeId: firstUnreadId });
     wireMessageEvents(feed);
     wireLoadOlderButton(feed);
     const shouldScrollToBottom = !silent || wasAtBottom;
-    if (shouldScrollToBottom) {
+    if (firstUnreadId) {
+      // Resume near where the reader left off (right at the first unread
+      // message/divider) instead of jumping straight to the newest message —
+      // the jump-to-latest button + unread badge remain available if they'd
+      // rather skip ahead.
+      requestAnimationFrame(() => {
+        const target = feed.querySelector('.new-messages-divider') || feed.querySelector(`[data-message-id="${firstUnreadId}"]`);
+        if (target) target.scrollIntoView({ block: 'start' });
+      });
+    } else if (shouldScrollToBottom) {
       feed.scrollTop = feed.scrollHeight;
       // Avatar <img> tags load asynchronously — scrollHeight measured right
       // after innerHTML is set doesn't yet include their final rendered

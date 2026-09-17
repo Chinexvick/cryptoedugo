@@ -1130,6 +1130,14 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   box-shadow:0 0 0 2px #0b0b0d;
 }
 .comm-msg{ display:flex; gap:12px; }
+.comm-msg.grouped{ margin-top:-10px; }
+.comm-msg .avatar-spacer{ width:36px; flex-shrink:0; }
+
+.date-separator{ display:flex; align-items:center; gap:10px; margin:6px 0; color:var(--n700); font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+.date-separator::before, .date-separator::after{ content:''; flex:1; height:1px; background:rgba(255,255,255,.08); }
+
+.new-messages-divider{ display:flex; align-items:center; gap:10px; margin:4px 0 10px; color:var(--danger); font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+.new-messages-divider::before, .new-messages-divider::after{ content:''; flex:1; height:1px; background:rgba(247,107,107,.35); }
 .comm-msg .avatar{ width:36px; height:36px; border-radius:10px; flex-shrink:0; object-fit:cover; }
 .comm-msg > div:last-child{ min-width:0; flex:1; }
 .comm-msg .meta{ display:flex; align-items:center; gap:8px; margin-bottom:4px; }
