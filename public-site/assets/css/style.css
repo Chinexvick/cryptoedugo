@@ -1111,7 +1111,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .comm-pinned span{ display:block; min-width:0; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .comm-pinned svg{ width:15px; height:15px; flex-shrink:0; }
 .comm-feed-wrap{ position:relative; flex:1; min-height:0; display:flex; }
-.comm-feed{ flex:1; overflow-y:auto; overflow-x:hidden; padding:20px 24px; display:flex; flex-direction:column; gap:18px; box-sizing:border-box; max-width:100%; }
+.comm-feed{ flex:1; min-width:0; overflow-y:auto; overflow-x:hidden; padding:20px 24px; display:flex; flex-direction:column; gap:18px; box-sizing:border-box; max-width:100%; }
 .comm-feed .load-older{
   align-self:center; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); color:var(--n50);
   font-size:12px; padding:6px 14px; border-radius:99px; cursor:pointer;
@@ -1139,9 +1139,16 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .new-messages-divider{ display:flex; align-items:center; gap:10px; margin:4px 0 10px; color:var(--danger); font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
 .new-messages-divider::before, .new-messages-divider::after{ content:''; flex:1; height:1px; background:rgba(247,107,107,.35); }
 .comm-msg .avatar{ width:36px; height:36px; border-radius:10px; flex-shrink:0; object-fit:cover; }
-.comm-msg > div:last-child{ min-width:0; flex:1; max-width:100%; box-sizing:border-box; }
-.comm-msg .meta{ display:flex; align-items:center; gap:8px; margin-bottom:4px; }
-.comm-msg .name{ font-weight:700; font-size:13.5px; color:#fff; }
+/* The message content column. `.msg-actions` (absolutely positioned hover
+   buttons) is the real last child, so a :last-child selector here silently
+   targets that instead and leaves this column unconstrained — which lets a
+   long nowrap quote blow the row out past the viewport. */
+.comm-msg > .msg-body,
+.comm-msg > div:not(.avatar):not(.avatar-spacer):not(.msg-actions){
+  min-width:0; flex:1; max-width:100%; box-sizing:border-box;
+}
+.comm-msg .meta{ display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:4px; min-width:0; max-width:100%; }
+.comm-msg .name{ font-weight:700; font-size:13.5px; color:#fff; min-width:0; overflow-wrap:anywhere; }
 .comm-msg .admin-badge{ background:var(--grad-brand); color:#fff; font-size:9.5px; font-weight:700; padding:1px 7px; border-radius:99px; }
 .comm-msg .time{ font-size:11px; color:var(--n700); }
 .comm-msg .bubble-text{ font-size:14px; color:#e8e8ea; line-height:1.55; overflow-wrap:anywhere; word-break:break-word; }
@@ -1183,15 +1190,22 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .reply-preview svg{ width:16px; height:16px; color:var(--primary-glow); flex-shrink:0; }
 .reply-preview-body{ min-width:0; width:100%; flex:1; display:flex; flex-direction:column; box-sizing:border-box; }
 .reply-preview-body b{ font-size:12.5px; color:var(--primary-glow); }
-.reply-preview-body span{ display:block; width:100%; min-width:0; font-size:12.5px; color:var(--n50); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.reply-preview-body span{
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  width:100%; min-width:0; font-size:12.5px; color:var(--n50);
+  white-space:normal; overflow-wrap:anywhere; word-break:break-word;
+}
 .reply-preview button{ flex-shrink:0; color:var(--n50); display:flex; }
 .reply-preview button svg{ width:16px; height:16px; }
 .comm-msg .reply-quote{
   display:flex; flex-direction:column; gap:1px; border-left:3px solid var(--primary); background:rgba(255,255,255,.04);
   border-radius:6px; padding:5px 9px; margin-bottom:6px; cursor:pointer; width:100%; min-width:0; box-sizing:border-box;
 }
-.comm-msg .reply-quote b{ font-size:11.5px; color:var(--primary-glow); }
-.comm-msg .reply-quote span{ display:block; width:100%; font-size:12px; color:var(--n50); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+.comm-msg .reply-quote b{ font-size:11.5px; color:var(--primary-glow); overflow-wrap:anywhere; }
+.comm-msg .reply-quote span{
+  display:block; width:100%; min-width:0; font-size:12px; color:var(--n50);
+  white-space:normal; overflow-wrap:anywhere; word-break:break-word;
+}
 .comm-msg.reply-target-flash{ animation: reply-flash 1.4s ease; }
 @keyframes reply-flash{ 0%{ background:rgba(134,93,247,.28); } 100%{ background:transparent; } }
 .comm-msg{ position:relative; touch-action:pan-y; transition:transform .15s ease; }

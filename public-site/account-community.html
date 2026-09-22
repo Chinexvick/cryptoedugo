@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Neko Academy">
-<link rel="stylesheet" href="assets/css/style.css?v=20260922-overflowaudit">
+<link rel="stylesheet" href="assets/css/style.css?v=20260922-msgbody">
 </head>
 <body class="has-bottom-nav">
 
@@ -278,7 +278,7 @@
     return `
       <div class="comm-msg msg-in${mentionsMe ? ' mentions-me' : ''}${grouped ? ' grouped' : ''}" data-message-id="${m.id}">
         ${grouped ? '<div class="avatar-spacer"></div>' : avatarHtml(m.author, isAdmin)}
-        <div>
+        <div class="msg-body">
           <div class="meta">
             ${grouped ? '' : `<span class="name">${escapeHtml(name)}</span>${isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}`}
             ${m.is_pinned ? '<span class="admin-badge" style="background:#f59e0b;">PINNED</span>' : ''}
