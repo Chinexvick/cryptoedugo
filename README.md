@@ -90,3 +90,14 @@ To add another admin: **Admin → Settings → Team → Invite teammate**.
       (otherwise email confirmation links break)
 - [ ] Confirm the Flutterwave webhook points at the `flutterwave-webhook` function URL
 - [ ] Run one real test purchase end to end
+
+---
+
+## NekoMeow token page
+
+`nekomeow/` is the official NekoMeow (NEKO) token information site — a separate
+Next.js app, independent of the two static front-ends above.
+
+Create a **third** Vercel project from this repository with Root Directory `nekomeow`
+and Framework Preset **Next.js**. The contract address and token links live in
+`nekomeow/app/page.tsx`.
